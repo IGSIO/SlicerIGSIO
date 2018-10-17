@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 This file was originally developed by Kyle Sunderland, PerkLab, Queen's University
-and was supported through CANARIE’s Research Software Program, and Cancer
+and was supported through CANARIE's Research Software Program, and Cancer
 Care Ontario.
 
 ==============================================================================*/
@@ -62,6 +62,9 @@ public:
 
   /// Dependencies on other Slicer modules
   virtual QStringList dependencies()const;
+
+  /// Return the authors of the module
+  virtual QStringList contributors()const;
 
 protected:
 

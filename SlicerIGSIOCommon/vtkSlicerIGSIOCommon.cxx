@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 This file was originally developed by Kyle Sunderland, PerkLab, Queen's University
-and was supported through CANARIE’s Research Software Program, and Cancer
+and was supported through CANARIE's Research Software Program, and Cancer
 Care Ontario.
 
 ==============================================================================*/
@@ -109,7 +109,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
     {
       vtkSmartPointer<vtkMRMLStreamingVolumeNode> streamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::New();
       vtkSmartPointer<vtkStreamingVolumeFrame> currentFrame = vtkSmartPointer<vtkStreamingVolumeFrame>::New();
-      currentFrame->SetFrameDimensions(frameSize[0], frameSize[1], frameSize[2]);
+      currentFrame->SetDimensions(frameSize[0], frameSize[1], frameSize[2]);
       currentFrame->SetFrameData(trackedFrame->GetImageData()->GetCompressedFrameData());
       currentFrame->SetFrameType(trackedFrame->GetImageData()->GetFrameType());
       currentFrame->SetCodecFourCC(trackedFrameList->GetCodecFourCC());
@@ -267,7 +267,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
       continue;
     }
 
-    frame->GetFrameDimensions(dimensions);
+    frame->GetDimensions(dimensions);
     codecFourCC = streamingVolumeNode->GetCodecFourCC();
 
     std::stringstream timestampSS;

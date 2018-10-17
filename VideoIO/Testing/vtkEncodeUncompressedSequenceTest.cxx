@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 This file was originally developed by Kyle Sunderland, PerkLab, Queen's University
-and was supported through CANARIE’s Research Software Program, and Cancer
+and was supported through CANARIE's Research Software Program, and Cancer
 Care Ontario.
 
 ==============================================================================*/
@@ -55,89 +55,6 @@ void SetTestingImageDataForValue(vtkImageData* image, unsigned char value)
   }
 }
 
-//---------------------------------------------------------------------------
-unsigned char GetTestingImageDataValue(vtkImageData* image)
-{
-  unsigned char value = 0;
-
-  int dimensions[3] = { 0,0,0 };
-  image->GetDimensions(dimensions);
-
-  unsigned char* imageDataScalars = (unsigned char*)image->GetScalarPointer();
-  value = imageDataScalars[2];
-  return value;
-}
-
-//---------------------------------------------------------------------------
-class vtkTempVolumeCodec : public vtkStreamingVolumeCodec
-{
-public:
-  static vtkTempVolumeCodec *New();
-  virtual vtkStreamingVolumeCodec* CreateCodecInstance();
-  vtkTypeMacro(vtkTempVolumeCodec, vtkStreamingVolumeCodec);
-
-  enum VideoFrameType
-  {
-    FrameKey,
-    FrameInterpolated,
-  };
-
-  virtual std::string GetFourCC() { return "TEMP"; };
-
-protected:
-  vtkTempVolumeCodec() {};
-  ~vtkTempVolumeCodec() {};
-
-  virtual bool DecodeFrameInternal(vtkStreamingVolumeFrame* inputFrame, vtkImageData* outputImageData, bool saveDecodedImage = true)
-  {
-    if (!inputFrame->GetFrameData())
-    {
-      return false;
-    }
-
-    vtkUnsignedCharArray* frameData = inputFrame->GetFrameData();
-    if (frameData->GetSize() != 1)
-    {
-      return false;
-    }
-
-    int dimensions[3] = { 0,0,0 };
-    inputFrame->GetFrameDimensions(dimensions);
-
-    unsigned char value = frameData->GetValue(0);
-    outputImageData->SetDimensions(dimensions[0], dimensions[1], dimensions[0]);
-    outputImageData->AllocateScalars(VTK_UNSIGNED_CHAR, 3);
-    SetTestingImageDataForValue(outputImageData, value);
-
-    return true;
-  };
-
-  virtual bool EncodeImageDataInternal(vtkImageData* inputImageData, vtkStreamingVolumeFrame* outputFrame, bool forceKeyFrame)
-  {
-    unsigned char* value = (unsigned char*)inputImageData->GetScalarPointer();
-    unsigned char red = value[0];
-    unsigned char green = value[1];
-    unsigned char blue = value[2];
-
-    vtkSmartPointer<vtkUnsignedCharArray> frameData = vtkSmartPointer<vtkUnsignedCharArray>::New();
-    frameData->Allocate(1);
-    frameData->SetValue(0, blue);
-
-    outputFrame->SetPreviousFrame(NULL);
-    outputFrame->SetFrameDimensions(inputImageData->GetDimensions());
-    outputFrame->SetFrameData(frameData);
-    outputFrame->SetCodecFourCC(this->GetFourCC());
-
-    return true;
-  };
-
-private:
-  vtkTempVolumeCodec(const vtkTempVolumeCodec&);
-  void operator=(const vtkTempVolumeCodec&);
-};
-
-vtkCodecNewMacro(vtkTempVolumeCodec);
-
 //----------------------------------------------------------------------------
 int main(int argc, char* argv[])
 {
@@ -146,7 +63,6 @@ int main(int argc, char* argv[])
   int numFrames = 25;
 
   vtkSmartPointer<vtkStreamingVolumeCodecFactory> factory = vtkStreamingVolumeCodecFactory::GetInstance();
-  factory->RegisterStreamingCodec(vtkSmartPointer<vtkTempVolumeCodec>::New());
   
   vtkNew<vtkMRMLScene> scene;
   vtkNew<vtkMRMLSequenceNode> sequenceNode;
@@ -175,7 +91,7 @@ int main(int argc, char* argv[])
     sequenceNode->SetDataNodeAtValue(streamingVolumeNode, indexValue.str());
   }
 
-  std::string codecFourCC = "TEMP";
+  std::string codecFourCC = "RV24";
   if (!vtkSlicerIGSIOCommon::ReEncodeVideoSequence(sequenceNode.GetPointer(), 0, -1, codecFourCC))
   {
     return EXIT_FAILURE;
@@ -192,11 +108,34 @@ int main(int argc, char* argv[])
 
   for (int i = 0; i < sequenceNode->GetNumberOfDataNodes(); ++i)
   {
-    vtkMRMLStreamingVolumeNode* streamingVolumeNode = vtkMRMLStreamingVolumeNode::SafeDownCast(sequenceNode->GetNthDataNode(i));
-    vtkImageData* image = streamingVolumeNode->GetImageData();
-    if (GetTestingImageDataValue(image) != GetTestingImageDataValue(images[i]))
+    vtkMRMLStreamingVolumeNode* inputStreamingVolumeNode = vtkMRMLStreamingVolumeNode::SafeDownCast(sequenceNode->GetNthDataNode(i));
+
+    vtkSmartPointer<vtkMRMLStreamingVolumeNode> outputStreamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::New();
+    outputStreamingVolumeNode->SetAndObserveFrame(inputStreamingVolumeNode->GetFrame());
+
+    vtkImageData* inputImage = images[i];
+    vtkImageData* outputImage = outputStreamingVolumeNode->GetImageData();
+    if (!inputImage || !outputImage)
     {
       return EXIT_FAILURE;
+    }
+
+    unsigned char* inputImagePointer = (unsigned char*)inputImage->GetScalarPointer();
+    unsigned char* outputImagePointer = (unsigned char*)outputImage->GetScalarPointer();
+    for (int y = 0; y < height; y++)
+    {
+      for (int x = 0; x < width; x++)
+      {
+        for (int c = 0; c < 3; c++)
+        {
+          if (*inputImagePointer != *outputImagePointer)
+          {
+            return EXIT_FAILURE;
+          }
+          ++inputImagePointer;
+          ++outputImagePointer;
+        }
+      }
     }
   }
 

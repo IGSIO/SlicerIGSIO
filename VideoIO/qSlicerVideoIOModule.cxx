@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 This file was originally developed by Kyle Sunderland, PerkLab, Queen's University
-and was supported through CANARIE’s Research Software Program, and Cancer
+and was supported through CANARIE's Research Software Program, and Cancer
 Care Ontario.
 
 ==============================================================================*/
@@ -78,10 +78,19 @@ QString qSlicerVideoIOModule::helpText()const
 }
 
 //-----------------------------------------------------------------------------
+QStringList qSlicerVideoIOModule::contributors()const
+{
+  QStringList moduleContributors;
+  moduleContributors << QString("Kyle Sunderland (PerkLab, Queen's University)");
+  moduleContributors << QString("Andras Lasso (PerkLab, Queen's University)");
+  return moduleContributors;
+}
+
+
+//-----------------------------------------------------------------------------
 QString qSlicerVideoIOModule::acknowledgementText()const
 {
-  return "This module was developed by Kyle Sunderland (Perk Lab, Queen's University), "
-         "";
+  return "This module was developed through support from CANARIE's Research Software Program, and Cancer Care Ontario.";
 }
 
 //-----------------------------------------------------------------------------
@@ -111,10 +120,8 @@ void qSlicerVideoIOModule::setup()
   qSlicerCoreApplication* app = qSlicerCoreApplication::application();
 
   // Register the IO
- 
   vtkSlicerVideoIOLogic* logic = vtkSlicerVideoIOLogic::SafeDownCast(this->logic());
   app->coreIOManager()->registerIO(new qSlicerVideoReader(logic, this));
-  //app->coreIOManager()->registerIO(new qSlicerNodeWriter("VideoIO", QString("Video Container"), QStringList() << "vtkMRMLSequenceBrowserNode", true, this));
 }
 
 //-----------------------------------------------------------------------------
@@ -127,7 +134,6 @@ void qSlicerVideoIOModule::setMRMLScene(vtkMRMLScene* scene)
 //-----------------------------------------------------------------------------
 qSlicerAbstractModuleRepresentation * qSlicerVideoIOModule::createWidgetRepresentation()
 {
-  //return new qSlicerVideoIOModuleWidget;
   return NULL;
 }
 
