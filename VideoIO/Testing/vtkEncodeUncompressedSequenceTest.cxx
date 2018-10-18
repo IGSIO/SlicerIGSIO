@@ -26,12 +26,18 @@ Care Ontario.
 #include <vtkNew.h>
 #include <vtksys/CommandLineArguments.hxx>
 
-//
+// Sequences includes
 #include <vtkMRMLSequenceBrowserNode.h>
 #include <vtkMRMLSequenceNode.h>
+
+// MRML includes
 #include <vtkMRMLScene.h>
 #include <vtkMRMLStreamingVolumeNode.h>
+
+// vtkAddon includes
 #include <vtkStreamingVolumeCodecFactory.h>
+
+// SlicerIGSIOCommon includes
 #include <vtkSlicerIGSIOCommon.h>
 
 //---------------------------------------------------------------------------
