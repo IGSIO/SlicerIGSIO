@@ -17,7 +17,6 @@ if(DEFINED Foo_DIR AND NOT EXISTS ${Foo_DIR})
 endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
-message("${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}")
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
     "${EP_GIT_PROTOCOL}://github.com/IGSIO/IGSIO.git"
@@ -30,8 +29,6 @@ message("${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}")
     QUIET
     )
 
-  message(${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY})
-    
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
@@ -42,7 +39,7 @@ message("${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}")
     -Dlibwebm_DIR:PATH=${libwebm_DIR}
     )
   message(${CMAKE_BINARY_DIR}/${EXTENSION_BUILD_SUBDIRECTORY}/${Slicer_THIRDPARTY_LIB_DIR})
-  
+
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
     GIT_REPOSITORY "${${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY}"
