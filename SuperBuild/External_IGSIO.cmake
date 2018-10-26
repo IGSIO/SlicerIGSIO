@@ -38,7 +38,6 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     -DVTKVIDEOIO_ENABLE_MKV:BOOL=ON
     -Dlibwebm_DIR:PATH=${libwebm_DIR}
     )
-  message(${CMAKE_BINARY_DIR}/${EXTENSION_BUILD_SUBDIRECTORY}/${Slicer_THIRDPARTY_LIB_DIR})
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}

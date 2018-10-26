@@ -113,7 +113,7 @@ public:
     target->EndModify(oldModified);
   }
 
-  void StreamingVolumeNodeSequencer::AddDefaultSequenceStorageNode(vtkMRMLSequenceNode* node)
+  virtual void AddDefaultSequenceStorageNode(vtkMRMLSequenceNode* node)
   {
     if (node == NULL)
     {
