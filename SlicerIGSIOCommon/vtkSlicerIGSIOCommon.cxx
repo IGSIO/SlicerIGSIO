@@ -56,7 +56,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
     return false;
   }
 
-  std::string trackedFrameName = trackedFrameList->GetName();
+  std::string trackedFrameName = trackedFrameList->GetImageName();
   sequenceNode->SetIndexName("time");
   sequenceNode->SetIndexUnit("s");
 
@@ -125,9 +125,9 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
     }
 
     vtkSmartPointer<vtkMatrix4x4> ijkToRASTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-    igsioTransformName ijkToRasTransformName;
-    ijkToRasTransformName.SetTransformName("IJKToRAS");
-    if (trackedFrame->GetCustomFrameTransform(ijkToRasTransformName, ijkToRASTransformMatrix) == IGSIO_SUCCESS)
+    igsioTransformName imageToPhysicalTransformName;
+    imageToPhysicalTransformName.SetTransformName(trackedFrameName+"ToPhysical");
+    if (trackedFrame->GetCustomFrameTransform(imageToPhysicalTransformName, ijkToRASTransformMatrix) == IGSIO_SUCCESS)
     {
       if (volumeNode)
       {
@@ -158,7 +158,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkTrackedFrameList
     return false;
   }
 
-  std::string name = trackedFrameList->GetName();
+  std::string name = trackedFrameList->GetImageName();
 
   vtkSmartPointer<vtkMRMLSequenceNode> videoSequenceNode = vtkSmartPointer <vtkMRMLSequenceNode>::New();
   videoSequenceNode->SetName(scene->GetUniqueNameByString(name.c_str()));
@@ -260,6 +260,10 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     {
       continue;
     }
+    if (i == 0)
+    {
+      trackedFrameList->SetImageName(streamingVolumeNode->GetName());
+    }
 
     vtkStreamingVolumeFrame* frame = streamingVolumeNode->GetFrame();
     if (!frame)
@@ -284,8 +288,8 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     vtkSmartPointer<vtkMatrix4x4> ijkToRASTransform = vtkSmartPointer<vtkMatrix4x4>::New();
     streamingVolumeNode->GetIJKToRASMatrix(ijkToRASTransform);
 
-    igsioTransformName ijkToRasName;
-    ijkToRasName.SetTransformName("IJKToRAS");
+    igsioTransformName imageToPhysicalName;
+    imageToPhysicalName.SetTransformName(std::string(streamingVolumeNode->GetName())+"ToPhysical");
 
     igsioTrackedFrame trackedFrame;
     igsioVideoFrame videoFrame;
@@ -293,7 +297,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     videoFrame.SetFrameType(frame->GetFrameType());
     trackedFrame.SetImageData(videoFrame);
     trackedFrame.SetTimestamp(timestamp);
-    trackedFrame.SetCustomFrameTransform(ijkToRasName, ijkToRASTransform);
+    trackedFrame.SetCustomFrameTransform(imageToPhysicalName, ijkToRASTransform);
     trackedFrameList->AddTrackedFrame(&trackedFrame);
   }
   trackedFrameList->SetCodecFourCC(codecFourCC);
