@@ -46,6 +46,7 @@ vtkMRMLNodeNewMacro(vtkMRMLStreamingVolumeSequenceStorageNode);
 
 //----------------------------------------------------------------------------
 vtkMRMLStreamingVolumeSequenceStorageNode::vtkMRMLStreamingVolumeSequenceStorageNode()
+  : CodecFourCC("")
 {
 }
 
@@ -101,6 +102,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::ReadDataInternal(vtkMRMLNode* ref
   vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkTrackedFrameList>::New();
   this->ReadVideo(this->FileName, trackedFrameList);
   vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, sequenceNode);
+  this->CodecFourCC = trackedFrameList->GetCodecFourCC();
 
   return 1;
 }
@@ -122,7 +124,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
     return 0;
   }
 
-  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode);
+  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC);
 
   vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkTrackedFrameList>::New();
   vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(videoStreamSequenceNode, trackedFrameList);
@@ -147,4 +149,40 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::InitializeSupportedWriteFileType
 const char* vtkMRMLStreamingVolumeSequenceStorageNode::GetDefaultWriteFileExtension()
 {
   return "mkv";
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLStreamingVolumeSequenceStorageNode::ReadXMLAttributes(const char** atts)
+{
+  Superclass::ReadXMLAttributes(atts);
+  vtkMRMLReadXMLBeginMacro(atts);
+  vtkMRMLReadXMLStdStringMacro(codecFourCC, CodecFourCC);
+  vtkMRMLReadXMLEndMacro();
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLStreamingVolumeSequenceStorageNode::WriteXML(ostream& of, int indent)
+{
+  Superclass::WriteXML(of, indent);
+  vtkMRMLWriteXMLBeginMacro(of);
+  vtkMRMLWriteXMLStdStringMacro(codecFourCC, CodecFourCC);
+  vtkMRMLWriteXMLEndMacro();
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLStreamingVolumeSequenceStorageNode::Copy(vtkMRMLNode *node)
+{
+  Superclass::Copy(node);
+  vtkMRMLCopyBeginMacro(node);
+  vtkMRMLCopyStdStringMacro(CodecFourCC);
+  vtkMRMLCopyEndMacro();
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLStreamingVolumeSequenceStorageNode::PrintSelf(ostream& os, vtkIndent indent)
+{
+  Superclass::PrintSelf(os, indent);
+  vtkMRMLPrintBeginMacro(os, indent);
+  vtkMRMLPrintStdStringMacro(CodecFourCC);
+  vtkMRMLPrintEndMacro();
 }

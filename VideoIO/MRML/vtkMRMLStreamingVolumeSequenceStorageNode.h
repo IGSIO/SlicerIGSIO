@@ -57,6 +57,19 @@ public:
   static bool ReadVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList);
   static bool WriteVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList);
 
+  // FourCC code representing the codec that should be used to encode the video
+  vtkSetMacro(CodecFourCC, std::string);
+  vtkGetMacro(CodecFourCC, std::string);
+
+  /// Read node attributes from XML file
+  virtual void ReadXMLAttributes(const char** atts) VTK_OVERRIDE;
+  /// Write this node's information to a MRML file in XML format.
+  virtual void WriteXML(ostream& of, int indent) VTK_OVERRIDE;
+  /// Copy the node's attributes to this object
+  virtual void Copy(vtkMRMLNode *node) VTK_OVERRIDE;
+  /// Print the contents of the node
+  virtual void PrintSelf(ostream& os, vtkIndent indent) VTK_OVERRIDE;
+
 protected:
   vtkMRMLStreamingVolumeSequenceStorageNode();
   ~vtkMRMLStreamingVolumeSequenceStorageNode();
@@ -76,6 +89,10 @@ protected:
 
   /// Initialize all the supported write file types
   virtual void InitializeSupportedWriteFileTypes();
+
+protected:
+
+  std::string CodecFourCC;
 };
 
 #endif

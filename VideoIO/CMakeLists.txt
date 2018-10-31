@@ -10,21 +10,14 @@ string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 #-----------------------------------------------------------------------------
 add_subdirectory(MRML)
 add_subdirectory(Logic)
-#add_subdirectory(Widgets)
 
 #-----------------------------------------------------------------------------
-set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_VIDEOIO_EXPORT")
+set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 
 # Additional includes - Current_{source,binary} and Slicer_{Libs,Base} already included
 set(MODULE_INCLUDE_DIRECTORIES
-  # ${CMAKE_CURRENT_SOURCE_DIR}/GUI
-  # ${CMAKE_CURRENT_BINARY_DIR}/GUI
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
-  # ${CMAKE_CURRENT_SOURCE_DIR}/MRML
-  # ${CMAKE_CURRENT_BINARY_DIR}/MRML
-  # ${CMAKE_CURRENT_SOURCE_DIR}/Widgets
-  # ${CMAKE_CURRENT_BINARY_DIR}/Widgets
   ${VTKVIDEOIO_INCLUDES}
   ${vtkIGSIOCommon_INCLUDES}
   ${vtkSlicerSequenceBrowserModuleMRML_INCLUDES}
@@ -34,20 +27,24 @@ set(MODULE_INCLUDE_DIRECTORIES
 set(MODULE_SRCS
   qSlicer${MODULE_NAME}Module.cxx
   qSlicer${MODULE_NAME}Module.h
+  qSlicer${MODULE_NAME}ModuleWidget.cxx
+  qSlicer${MODULE_NAME}ModuleWidget.h
   qSlicerVideoReader.cxx
   qSlicerVideoReader.h
   )
 
 set(MODULE_MOC_SRCS
   qSlicer${MODULE_NAME}Module.h
+  qSlicer${MODULE_NAME}ModuleWidget.h
   qSlicerVideoReader.h
   )
 
 set(MODULE_UI_SRCS
+  Resources/UI/qSlicerVideoIOModule.ui
 )
 
 set(MODULE_TARGET_LIBRARIES
-  vtkSlicerVideoIOModuleLogic
+  vtkSlicer${MODULE_NAME}ModuleLogic
   ${MRML_LIBRARIES}
   vtkVideoIO
   vtkIGSIOCommon
@@ -57,6 +54,7 @@ set(MODULE_TARGET_LIBRARIES
   )
 
 set(MODULE_RESOURCES
+  Resources/qSlicer${MODULE_NAME}Module.qrc
   )
 
 #-----------------------------------------------------------------------------

@@ -38,7 +38,7 @@ Care Ontario.
 
 class vtkMRMLIGTLConnectorNode;
 
-/// \ingroup Slicer_QtModules_OpenIGTLinkIF
+/// \ingroup Slicer_QtModules_VideoIO
 class VTK_SLICER_VIDEOIO_MODULE_LOGIC_EXPORT vtkSlicerVideoIOLogic : public vtkSlicerModuleLogic
 {
  public:

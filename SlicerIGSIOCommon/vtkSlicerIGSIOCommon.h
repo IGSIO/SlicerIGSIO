@@ -84,8 +84,8 @@ public:
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
     int startIndex, int endIndex,
     std::string codecFourCC,
-    std::map<std::string, std::string> codecParameters);
-
+    std::map<std::string, std::string> codecParameters,
+    bool forceReEncoding = false);
 };
 
 #endif

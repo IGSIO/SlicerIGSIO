@@ -18,19 +18,22 @@ Care Ontario.
 
 ==============================================================================*/
 
-#ifndef __qSlicerOpenIGTLinkIFModuleWidget_h
-#define __qSlicerOpenIGTLinkIFModuleWidget_h
+#ifndef __qSlicerVideoIOModuleWidget_h
+#define __qSlicerVideoIOModuleWidget_h
 
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 
-#include "qSlicerOpenIGTLinkIFModuleWidgetsExport.h"
+#include "qSlicerVideoIOModuleExport.h"
 
-class qSlicerOpenIGTLinkIFModuleWidgetPrivate;
+#include <QObject>
+#include <QtGui>
+
+class qSlicerVideoIOModuleWidgetPrivate;
 class vtkMRMLNode;
 
-/// \ingroup Slicer_QtModules_OpenIGTLinkIF
-class Q_SLICER_MODULE_OPENIGTLINKIF_WIDGETS_EXPORT qSlicerOpenIGTLinkIFModuleWidget :
+/// \ingroup Slicer_QtModules_VideoIO
+class Q_SLICER_QTMODULES_VIDEOIO_EXPORT qSlicerVideoIOModuleWidget :
   public qSlicerAbstractModuleWidget
 {
   Q_OBJECT
@@ -38,24 +41,23 @@ class Q_SLICER_MODULE_OPENIGTLINKIF_WIDGETS_EXPORT qSlicerOpenIGTLinkIFModuleWid
 public:
 
   typedef qSlicerAbstractModuleWidget Superclass;
-  qSlicerOpenIGTLinkIFModuleWidget(QWidget *parent=0);
-  virtual ~qSlicerOpenIGTLinkIFModuleWidget();
+  qSlicerVideoIOModuleWidget(QWidget *parent=0);
+  virtual ~qSlicerVideoIOModuleWidget();
 
 public slots:
 
+  void onCodecChanged(const QString& fourCC);
+  void encodeVideo();
+
 protected:
-  QScopedPointer<qSlicerOpenIGTLinkIFModuleWidgetPrivate> d_ptr;
+  QScopedPointer<qSlicerVideoIOModuleWidgetPrivate> d_ptr;
 
   virtual void setup();
   virtual void setMRMLScene(vtkMRMLScene*);
 
-protected slots:
-  void onAddConnectorButtonClicked();
-  void onRemoveConnectorButtonClicked();
-
 private:
-  Q_DECLARE_PRIVATE(qSlicerOpenIGTLinkIFModuleWidget);
-  Q_DISABLE_COPY(qSlicerOpenIGTLinkIFModuleWidget);
+  Q_DECLARE_PRIVATE(qSlicerVideoIOModuleWidget);
+  Q_DISABLE_COPY(qSlicerVideoIOModuleWidget);
 
 };
 

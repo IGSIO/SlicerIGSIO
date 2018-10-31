@@ -117,7 +117,7 @@ public:
   {
     if (node == NULL)
     {
-      // not a storable node, there is nothing to do
+      // not a sequence node, there is nothing to do
       return;
     }
 

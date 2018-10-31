@@ -342,7 +342,7 @@ vtkSmartPointer<vtkGenericVideoWriter> vtkSlicerIGSIOCommon::CreateVideoWriter(s
 }
 
 //----------------------------------------------------------------------------
-bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode, int startIndex, int endIndex, std::string codecFourCC, std::map<std::string, std::string> codecParameters)
+bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode, int startIndex, int endIndex, std::string codecFourCC, std::map<std::string, std::string> codecParameters, bool forceReEncoding)
 {
   if (!videoStreamSequenceNode)
   {
@@ -366,63 +366,78 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
   }
 
   std::vector<FrameBlock> frameBlocks;
-  FrameBlock currentFrameBlock;
-  currentFrameBlock.StartFrame = 0;
-  currentFrameBlock.EndFrame = 0;
-  currentFrameBlock.ReEncodingRequired = false;
-  vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = NULL;
-  for (int i = startIndex; i <= endIndex; ++i)
+
+  if (!forceReEncoding)
   {
-    // TODO: for now, only support sequences of vtkMRMLStreamingVolumeNode
-    // In the future, this could be changed to allow all types of volume nodes to be encoded
-    vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(videoStreamSequenceNode->GetNthDataNode(i));
-    if (!streamingNode)
+    FrameBlock currentFrameBlock;
+    currentFrameBlock.StartFrame = 0;
+    currentFrameBlock.EndFrame = 0;
+    currentFrameBlock.ReEncodingRequired = false;
+    vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = NULL;
+    for (int i = startIndex; i <= endIndex; ++i)
     {
-      vtkErrorWithObjectMacro(videoStreamSequenceNode, "Invalid data node at index " << i);
-      return false;
-    }
+      // TODO: for now, only support sequences of vtkMRMLStreamingVolumeNode
+      // In the future, this could be changed to allow all types of volume nodes to be encoded
+      vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(videoStreamSequenceNode->GetNthDataNode(i));
+      if (!streamingNode)
+      {
+        vtkErrorWithObjectMacro(videoStreamSequenceNode, "Invalid data node at index " << i);
+        return false;
+      }
 
-    if (codecFourCC == "")
-    {
-      codecFourCC = streamingNode->GetCodecFourCC();
-    }
+      if (codecFourCC == "")
+      {
+        codecFourCC = streamingNode->GetCodecFourCC();
+      }
 
-    vtkStreamingVolumeFrame* currentFrame = streamingNode->GetFrame();
-    if (i == 0 && !streamingNode->IsKeyFrame())
-    {
-      currentFrameBlock.ReEncodingRequired = true;
-    }
-    else if (!currentFrame)
-    {
-      currentFrameBlock.ReEncodingRequired = true;
-    }
-    else if (codecFourCC == "")
-    {
-      currentFrameBlock.ReEncodingRequired = true;
-    }
-    else if (codecFourCC != streamingNode->GetCodecFourCC())
-    {
-      currentFrameBlock.ReEncodingRequired = true;
-    }
-    else if (currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
-    {
-      currentFrameBlock.ReEncodingRequired = true;
-    }
-    previousFrame = currentFrame;
+      vtkStreamingVolumeFrame* currentFrame = streamingNode->GetFrame();
+      if (i == 0 && !streamingNode->IsKeyFrame())
+      {
+        currentFrameBlock.ReEncodingRequired = true;
+      }
+      else if (!currentFrame)
+      {
+        currentFrameBlock.ReEncodingRequired = true;
+      }
+      else if (codecFourCC == "")
+      {
+        currentFrameBlock.ReEncodingRequired = true;
+      }
+      else if (codecFourCC != streamingNode->GetCodecFourCC())
+      {
+        currentFrameBlock.ReEncodingRequired = true;
+      }
+      else if (currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
+      {
+        currentFrameBlock.ReEncodingRequired = true;
+      }
 
-    if (streamingNode->IsKeyFrame() && i != currentFrameBlock.StartFrame && currentFrame)
-    {
-      frameBlocks.push_back(currentFrameBlock);
-      currentFrameBlock = FrameBlock();
-      currentFrameBlock.StartFrame = i;
+      if (currentFrame && // Current frame exists
+        previousFrame && // Current frame is not the initial frame
+        currentFrame->IsKeyFrame() && // Current frame is a keyframe
+        !previousFrame->IsKeyFrame()) // Previous frame was not also a keyframe
+      {
+        frameBlocks.push_back(currentFrameBlock);
+        currentFrameBlock = FrameBlock();
+        currentFrameBlock.StartFrame = i;
+        currentFrameBlock.EndFrame = i;
+        currentFrameBlock.ReEncodingRequired = false;
+      }
       currentFrameBlock.EndFrame = i;
-      currentFrameBlock.ReEncodingRequired = false;
-    }
-    currentFrameBlock.EndFrame = i;
+      previousFrame = currentFrame;
 
-    /// TODO: If dimension changes, re-encode smaller images with padding
+      /// TODO: If dimension changes, re-encode smaller images with padding
+    }
+    frameBlocks.push_back(currentFrameBlock);
   }
-  frameBlocks.push_back(currentFrameBlock);
+  else
+  {
+    FrameBlock totalFrameBlock;
+    totalFrameBlock.StartFrame = startIndex;
+    totalFrameBlock.EndFrame = endIndex;
+    totalFrameBlock.ReEncodingRequired = true;
+    frameBlocks.push_back(totalFrameBlock);
+  }
 
   if (codecFourCC == "")
   {
@@ -473,7 +488,6 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
         codec->SetParameters(codecParameters);
 
         encodingProxyNode->EncodeImageData();
-        streamingNode->SetAndObserveImageData(NULL);
         streamingNode->SetAndObserveFrame(encodingProxyNode->GetFrame());
       }
     }

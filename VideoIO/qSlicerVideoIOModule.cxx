@@ -27,6 +27,8 @@ Care Ontario.
 // VideoIO Logic includes
 #include <vtkSlicerVideoIOLogic.h>
 
+#include <qSlicerVideoIOModuleWidget.h>
+
 #include <qSlicerCoreApplication.h>
 #include <qSlicerCoreIOManager.h>
 
@@ -74,7 +76,7 @@ qSlicerVideoIOModule::~qSlicerVideoIOModule()
 //-----------------------------------------------------------------------------
 QString qSlicerVideoIOModule::helpText()const
 {
-  return "";
+  return "This is a module for reading, writing, and re-encoding video sequences. If you have questions, or encounter an problem, submit an issue on the <a href=\"https://github.com/IGSIO/SlicerIGSIO\">GitHub page</a>.";
 }
 
 //-----------------------------------------------------------------------------
@@ -134,7 +136,7 @@ void qSlicerVideoIOModule::setMRMLScene(vtkMRMLScene* scene)
 //-----------------------------------------------------------------------------
 qSlicerAbstractModuleRepresentation * qSlicerVideoIOModule::createWidgetRepresentation()
 {
-  return NULL;
+  return new qSlicerVideoIOModuleWidget;
 }
 
 //-----------------------------------------------------------------------------
