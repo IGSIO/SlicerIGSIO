@@ -1,18 +1,17 @@
 
-#************************************************************************
-#*************************** vtkEncodeUncompressedSequenceTest ***************************
-#************************************************************************
-ADD_EXECUTABLE(vtkEncodeUncompressedSequenceTest vtkEncodeUncompressedSequenceTest.cxx)
-SET_TARGET_PROPERTIES(vtkEncodeUncompressedSequenceTest PROPERTIES FOLDER Tests)
-TARGET_LINK_LIBRARIES(vtkEncodeUncompressedSequenceTest vtkSlicerVideoIOModuleMRML )
+set(KIT qSlicer${MODULE_NAME}Module)
 
-#*************************** vtkMKVWriterTest1 ***************************
-ADD_TEST(vtkEncodeUncompressedSequenceTest
-  ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/vtkEncodeUncompressedSequenceTest
-    #--filename=mkvWriterTest1.mkv
-    #--width=10
-    #--height=10
-    #--numFrames=100
-    #--fps=10.0
+#-----------------------------------------------------------------------------
+set(KIT_TEST_SRCS
+  vtkEncodeUncompressedSequenceTest.cxx
   )
-SET_TESTS_PROPERTIES(vtkEncodeUncompressedSequenceTest PROPERTIES FAIL_REGULAR_EXPRESSION "ERROR;WARNING")
+
+#-----------------------------------------------------------------------------
+slicerMacroConfigureModuleCxxTestDriver(
+  NAME ${KIT}
+  SOURCES ${KIT_TEST_SRCS}
+  WITH_VTK_DEBUG_LEAKS_CHECK
+  )
+
+#-----------------------------------------------------------------------------
+simple_test(vtkEncodeUncompressedSequenceTest)
