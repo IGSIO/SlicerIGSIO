@@ -457,7 +457,18 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
   {
     if (frameBlockIt->ReEncodingRequired)
     {
+      vtkNew<vtkMRMLStreamingVolumeNode> decodingProxyNode;
       vtkNew<vtkMRMLStreamingVolumeNode> encodingProxyNode;
+      vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
+        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC));
+      if (!codec)
+      {
+        vtkErrorWithObjectMacro(videoStreamSequenceNode, "Could not find codec: " << codecFourCC);
+        return false;
+      }
+      codec->SetParameters(codecParameters);
+      encodingProxyNode->SetCodecFourCC(codecFourCC);
+      encodingProxyNode->SetCodec(codec);
       for (int i = frameBlockIt->StartFrame; i <= frameBlockIt->EndFrame; ++i)
       {
         vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(videoStreamSequenceNode->GetNthDataNode(i));
@@ -467,27 +478,23 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
           return false;
         }
 
-        vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(videoStreamSequenceNode->GetNthDataNode(i));
+        vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(volumeNode);
         if (streamingNode && streamingNode->GetFrame())
         {
-          encodingProxyNode->SetAndObserveFrame(streamingNode->GetFrame());
-          encodingProxyNode->DecodeFrame();
+          decodingProxyNode->SetAndObserveFrame(streamingNode->GetFrame());
+          decodingProxyNode->DecodeFrame();
+          encodingProxyNode->SetAndObserveImageData(decodingProxyNode->GetImageData());
         }
         else
         {
           encodingProxyNode->SetAndObserveImageData(volumeNode->GetImageData());
         }
-        encodingProxyNode->SetCodecFourCC(codecFourCC);
 
-        vtkStreamingVolumeCodec* codec = encodingProxyNode->GetCodec();
-        if (!codec)
+        if (!encodingProxyNode->EncodeImageData())
         {
+          vtkErrorWithObjectMacro(videoStreamSequenceNode, "Error encoding frame!");
           return false;
         }
-
-        codec->SetParameters(codecParameters);
-
-        encodingProxyNode->EncodeImageData();
         streamingNode->SetAndObserveFrame(encodingProxyNode->GetFrame());
       }
     }
