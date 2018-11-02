@@ -34,6 +34,11 @@ Care Ontario.
 
 #include <qSlicerNodeWriter.h>
 
+#include "vtkVP9VolumeCodec.h"
+
+//
+#include <vtkStreamingVolumeCodecFactory.h>
+
 //-----------------------------------------------------------------------------
 #include <QtGlobal>
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
@@ -124,6 +129,10 @@ void qSlicerVideoIOModule::setup()
   // Register the IO
   vtkSlicerVideoIOLogic* logic = vtkSlicerVideoIOLogic::SafeDownCast(this->logic());
   app->coreIOManager()->registerIO(new qSlicerVideoReader(logic, this));
+
+  // Register the codecs
+  //vtkStreamingVolumeCodecFactory* codecFactory = vtkStreamingVolumeCodecFactory::GetInstance();
+  //codecFactory->RegisterStreamingCodec(vtkSmartPointer<vtkVP9VolumeCodec>::New());
 }
 
 //-----------------------------------------------------------------------------

@@ -59,8 +59,6 @@ class VTK_SLICER_VIDEOIO_MODULE_LOGIC_EXPORT vtkSlicerVideoIOLogic : public vtkS
   //----------------------------------------------------------------
   // MRML Management
   //----------------------------------------------------------------
-  
-  static bool WriteVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList);
 
  protected:
 

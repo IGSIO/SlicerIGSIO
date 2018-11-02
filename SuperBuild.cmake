@@ -19,6 +19,7 @@ set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 # Project dependencies
 set(${proj}_DEPENDS
    IGSIO
+   VP9
    )
 
 ExternalProject_Include_Dependencies(${proj}
@@ -51,6 +52,9 @@ ExternalProject_Add(${proj}
     # Superbuild
     -D${EXTENSION_NAME}_SUPERBUILD:BOOL=OFF
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
+
+    -DVP9_INCLUDE_DIR:STRING=${VP9_INCLUDE_DIR}
+    -DVP9_LIBRARY_DIR:STRING=${VP9_LIBRARY_DIR}
   DEPENDS
     ${${proj}_DEPENDS}
   )

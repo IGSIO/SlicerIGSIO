@@ -181,9 +181,7 @@ void vtkSlicerVideoIOLogic::RegisterNodes()
   }
 
   this->GetMRMLScene()->RegisterNodeClass(vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode>::New());
-
-  vtkMRMLNodeSequencer* sequencer = vtkMRMLNodeSequencer::GetInstance();
-  sequencer->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
+  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
 }
 
 //---------------------------------------------------------------------------
@@ -191,11 +189,4 @@ void vtkSlicerVideoIOLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->vtkObject::PrintSelf(os, indent);
   os << indent << "vtkSlicerVideoIOLogic:             " << this->GetClassName() << "\n";
-}
-
-//---------------------------------------------------------------------------
-bool vtkSlicerVideoIOLogic::WriteVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList)
-{
-
-  return true;
 }
