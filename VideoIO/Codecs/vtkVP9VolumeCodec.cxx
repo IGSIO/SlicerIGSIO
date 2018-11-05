@@ -730,7 +730,7 @@ bool vtkVP9VolumeCodec::vtkInternal::EncodeFrame(vtkImageData* inputImageData, v
   }
 
   this->VPXEncodeIter = NULL;
-  while ((this->VPXEncodePacket = vpx_codec_get_cx_data(this->VPXEncodeContext, &this->VPXDecodeIter)) != NULL)
+  while ((this->VPXEncodePacket = vpx_codec_get_cx_data(this->VPXEncodeContext, &this->VPXEncodeIter)) != NULL)
   {
     if (this->VPXEncodePacket->kind == VPX_CODEC_CX_FRAME_PKT)
     {
