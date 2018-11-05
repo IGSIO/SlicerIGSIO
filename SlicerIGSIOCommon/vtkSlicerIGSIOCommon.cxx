@@ -205,7 +205,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkTrackedFrameList
 
       std::string transformName;
       transformNameIt->GetTransformName(transformName);
-      if (transformName != "IJKToRAS")
+      if (transformName != name+"ToPhysical")
       {
         vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::New();
         transformNode->SetMatrixTransformToParent(transformMatrix);
