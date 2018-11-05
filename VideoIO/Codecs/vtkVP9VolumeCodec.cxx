@@ -323,8 +323,8 @@ vtkVP9VolumeCodec::vtkInternal::vtkInternal(vtkVP9VolumeCodec* external)
   this->Encoder = &VPXStaticCodecEncodeInterface[0];
   this->VPXEncodeContext = new vpx_codec_ctx_t();
   this->VPXEncodeBuffer = new vpx_fixed_buf_t();
-  this->VPXEncodeImage = new vpx_image_t(); 
-  
+  this->VPXEncodeImage = new vpx_image_t();
+
   if (vpx_codec_enc_config_default(this->Encoder->codec_interface(), &this->VPXEncodeConfiguration, 0))
   {
     vtkErrorWithObjectMacro(this->External, "Failed to get default codec config.");
@@ -471,9 +471,13 @@ bool vtkVP9VolumeCodec::vtkInternal::DecodeFrame(vtkStreamingVolumeFrame* inputF
     return false;
   }
 
-  if (!this->YUVImage)
+  int numberOfComponents = inputFrame->GetNumberOfComponents();
+  //if (numberOfComponents != 1 && numberOfComponents != 3) //TODO: For now, only support colour video
+  if (numberOfComponents != 3)
   {
-    this->YUVImage = vtkSmartPointer<vtkImageData>::New();
+    //vtkErrorWithObjectMacro(this->External, "Number of components must be 1 or 3");
+    vtkErrorWithObjectMacro(this->External, "Number of components must be 3");
+    return false;
   }
 
   int dimensions[3] = { 0,0,0 };
@@ -494,9 +498,22 @@ bool vtkVP9VolumeCodec::vtkInternal::DecodeFrame(vtkStreamingVolumeFrame* inputF
   }
   void* framePointer = frameData->GetPointer(0);
 
-  this->YUVImage->SetDimensions(dimensions[0], dimensions[1] * 3 / 2, 1); //TODO: ONLY VALID UNLESS GREYSCALE
-  this->YUVImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
-  void* yuvPointer = this->YUVImage->GetScalarPointer();
+  void* yuvPointer = NULL;
+  void* imagePointer = outputImageData->GetScalarPointer();
+  if (numberOfComponents == 1)
+  {
+    yuvPointer = imagePointer;
+  }
+  else if (numberOfComponents == 3)
+  {
+    if (!this->YUVImage)
+    {
+      this->YUVImage = vtkSmartPointer<vtkImageData>::New();
+    }
+    this->YUVImage->SetDimensions(dimensions[0], dimensions[1] * 3 / 2, 1);
+    this->YUVImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+    yuvPointer = this->YUVImage->GetScalarPointer();
+  }
 
   unsigned int size = frameData->GetSize() * frameData->GetElementComponentSize();
   int frameSize[3] = { dimensions[0], dimensions[1], dimensions[2] };
@@ -529,8 +546,11 @@ bool vtkVP9VolumeCodec::vtkInternal::DecodeFrame(vtkStreamingVolumeFrame* inputF
   // Convert YUV image to RGB image
   if (saveDecodedImage)
   {
-    void* imagePointer = outputImageData->GetScalarPointer();
-    this->ConvertYUVToRGB((unsigned char*)yuvPointer, (unsigned char*)imagePointer, dimensions[0], dimensions[1]);
+    if (numberOfComponents == 3)
+    {
+      this->ConvertYUVToRGB((unsigned char*)yuvPointer, (unsigned char*)imagePointer, dimensions[0], dimensions[1]);
+    }
+
   }
 
   return true;
@@ -687,21 +707,44 @@ bool vtkVP9VolumeCodec::vtkInternal::EncodeFrame(vtkImageData* inputImageData, v
     return false;
   }
 
+  int numberOfScalarComponents = inputImageData->GetNumberOfScalarComponents();
+  //if (numberOfScalarComponents != 1 && numberOfScalarComponents != 3)
+  if (numberOfScalarComponents != 3)
+  {
+    vtkErrorWithObjectMacro(this->External, "Number of components must be 3");
+    //vtkErrorWithObjectMacro(this->External, "Number of components must be 1 or 3");
+    return false;
+  }
+
   int dimensions[3] = { 0,0,0 };
   inputImageData->GetDimensions(dimensions);
   this->ImageWidth = dimensions[0];
   this->ImageHeight = dimensions[1];
-  this->InitializeEncoder();
-
-  if (!this->YUVImage)
+  if (!this->InitializeEncoder())
   {
-    this->YUVImage = vtkSmartPointer<vtkImageData>::New();
+    vtkErrorWithObjectMacro(this->External, "Could not initialize encoder");
+    return false;
   }
-  this->YUVImage->SetDimensions(dimensions[0], dimensions[1] * 3 / 2, 1); //TODO: ONLY VALID UNLESS GREYSCALE
-  this->YUVImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
-  unsigned char* rgbPointer = (unsigned char*)inputImageData->GetScalarPointer();
-  unsigned char* yuvPointer = (unsigned char*)this->YUVImage->GetScalarPointer();
-  this->ConvertRGBToYUV(rgbPointer, yuvPointer, this->ImageWidth, this->ImageHeight);
+
+  if (numberOfScalarComponents == 3)
+  {
+    if (!this->YUVImage)
+    {
+      this->YUVImage = vtkSmartPointer<vtkImageData>::New();
+    }
+    this->YUVImage->SetDimensions(dimensions[0], dimensions[1] * 3 / 2, 1); //TODO: ONLY VALID UNLESS GREYSCALE
+    this->YUVImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+    unsigned char* imagePointer = (unsigned char*)inputImageData->GetScalarPointer();
+    unsigned char* yuvPointer = (unsigned char*)this->YUVImage->GetScalarPointer();
+    this->ConvertRGBToYUV(imagePointer, yuvPointer, this->ImageWidth, this->ImageHeight);
+    this->ConvertToLocalImageFormat(this->YUVImage);
+  }
+  else if (numberOfScalarComponents == 1)
+  {
+    this->YUVImage->SetDimensions(dimensions[0], dimensions[1], 1); //TODO: ONLY VALID UNLESS GREYSCALE
+    this->YUVImage->AllocateScalars(VTK_UNSIGNED_CHAR, 1);
+    this->ConvertToLocalImageFormat(inputImageData);
+  }
 
   static int timestamp = 0;
 
@@ -710,8 +753,6 @@ bool vtkVP9VolumeCodec::vtkInternal::EncodeFrame(vtkImageData* inputImageData, v
   {
     flags |= VPX_EFLAG_FORCE_KF;
   }
-
-  this->ConvertToLocalImageFormat(this->YUVImage);
   vpx_codec_err_t errorCode = vpx_codec_encode(
     this->VPXEncodeContext,
     this->VPXEncodeImage,
@@ -756,7 +797,7 @@ bool vtkVP9VolumeCodec::vtkInternal::EncodeFrame(vtkImageData* inputImageData, v
 
   outputFrame->SetCodecFourCC(this->External->GetFourCC());
   outputFrame->SetDimensions(dimensions);
-  outputFrame->SetNumberOfComponents(3);
+  outputFrame->SetNumberOfComponents(numberOfScalarComponents);
   this->LastEncodedFrame = outputFrame;
 
   return true;

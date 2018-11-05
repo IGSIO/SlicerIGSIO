@@ -21,12 +21,14 @@ Care Ontario.
 // Slicer includes
 #include <vtkObjectFactory.h>
 #include <vtkMRMLScene.h>
+#include <vtkMRMLColorLogic.h>
 
 // MRML includes
 #include <vtkMRMLVolumeNode.h>
 #include <vtkMRMLStreamingVolumeNode.h>
 #include <vtkMRMLSelectionNode.h>
 #include <vtkMRMLLinearTransformNode.h>
+#include <vtkMRMLColorTableNode.h>
 
 // Volumes includes
 #include <vtkStreamingVolumeCodecFactory.h>
@@ -139,6 +141,57 @@ public:
       return;
     }
     node->SetAndObserveStorageNodeID(storageNode->GetID());
+  }
+
+  virtual void AddDefaultDisplayNodes(vtkMRMLNode* node)
+  {
+    if (node == NULL)
+    {
+      return;
+    }
+
+    vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(node);
+    if (streamingNode == NULL)
+    {
+      // not a streaming volume node, there is nothing to do
+      return;
+    }
+
+    if (streamingNode->GetDisplayNode())
+    {
+      return;
+    }
+
+    int numberOfComponents = 0;
+    vtkStreamingVolumeFrame* frame = streamingNode->GetFrame();
+    if (frame)
+    {
+      numberOfComponents = frame->GetNumberOfComponents();
+    }
+    else
+    {
+      vtkImageData* image = streamingNode->GetImageData();
+      numberOfComponents = image->GetNumberOfScalarComponents();
+    }
+
+    if (numberOfComponents == 1)
+    {
+      bool scalarDisplayNodeRequired = (numberOfComponents == 1);
+      vtkSmartPointer<vtkMRMLVolumeDisplayNode> displayNode;
+      displayNode = vtkSmartPointer<vtkMRMLScalarVolumeDisplayNode>::New();
+      if (node->GetScene())
+      {
+        node->GetScene()->AddNode(displayNode);
+      }
+
+      const char* colorTableId = vtkMRMLColorLogic::GetColorTableNodeID(vtkMRMLColorTableNode::Grey);
+      displayNode->SetAndObserveColorNodeID(colorTableId);
+      streamingNode->SetAndObserveDisplayNodeID(displayNode->GetID());
+    }
+    else
+    {
+      streamingNode->CreateDefaultDisplayNodes();
+    }
   }
 };
 
