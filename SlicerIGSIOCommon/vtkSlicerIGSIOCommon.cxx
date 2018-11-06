@@ -249,6 +249,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
 
   std::string codecFourCC;
   bool useTimestamp = sequenceNode->GetIndexName() == "time";
+  trackedFrameList->SetImageName(sequenceNode->GetName());
 
   int dimensions[3] = { 0,0,0 };
 
@@ -259,10 +260,6 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     if (!streamingVolumeNode)
     {
       continue;
-    }
-    if (i == 0)
-    {
-      trackedFrameList->SetImageName(streamingVolumeNode->GetName());
     }
 
     vtkStreamingVolumeFrame* frame = streamingVolumeNode->GetFrame();
