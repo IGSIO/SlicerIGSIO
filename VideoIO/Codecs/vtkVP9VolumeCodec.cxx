@@ -19,7 +19,7 @@ Version:   $Revision: 1.3 $
 #include <vtkMatrix4x4.h>
 
 // vtksys includes
-#include <vtksys\SystemTools.hxx>
+#include <vtksys/SystemTools.hxx>
 
 // libvpx includes
 #include <vp8cx.h>
