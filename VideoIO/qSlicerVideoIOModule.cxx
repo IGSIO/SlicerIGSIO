@@ -131,8 +131,8 @@ void qSlicerVideoIOModule::setup()
   app->coreIOManager()->registerIO(new qSlicerVideoReader(logic, this));
 
   // Register the codecs
-  //vtkStreamingVolumeCodecFactory* codecFactory = vtkStreamingVolumeCodecFactory::GetInstance();
-  //codecFactory->RegisterStreamingCodec(vtkSmartPointer<vtkVP9VolumeCodec>::New());
+  vtkStreamingVolumeCodecFactory* codecFactory = vtkStreamingVolumeCodecFactory::GetInstance();
+  codecFactory->RegisterStreamingCodec(vtkSmartPointer<vtkVP9VolumeCodec>::New());
 }
 
 //-----------------------------------------------------------------------------
