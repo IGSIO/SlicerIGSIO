@@ -91,10 +91,6 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
     std::stringstream frameNumberSS;
     frameNumberSS << std::setw(frameNumberMaxLength) << std::setfill('0') << i;
 
-    std::stringstream nameSS;
-    nameSS << trackedFrameName << "_" << frameNumberSS.str();
-    std::string name = nameSS.str();
-
     igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     std::stringstream timestampSS;
     timestampSS << trackedFrame->GetTimestamp();
@@ -135,7 +131,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
       }
     }
 
-    volumeNode->SetName(name.c_str());
+    volumeNode->SetName(trackedFrameName.c_str());
     sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
   }
 
@@ -249,7 +245,12 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
 
   std::string codecFourCC;
   bool useTimestamp = sequenceNode->GetIndexName() == "time";
-  trackedFrameList->SetImageName(sequenceNode->GetName());
+  std::string trackName = sequenceNode->GetName();
+  if (sequenceNode->GetNumberOfDataNodes() > 0)
+  {
+    trackName = sequenceNode->GetNthDataNode(0)->GetName();
+  }
+  trackedFrameList->SetImageName(trackName);
 
   int dimensions[3] = { 0,0,0 };
 
