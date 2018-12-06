@@ -31,12 +31,11 @@ Care Ontario.
 // SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
 
-// IGSIO VideoIO includes
-#include <vtkGenericVideoReader.h>
-#include <vtkGenericVideoWriter.h>
-
 // IGSIOCommon includes
-#include "vtkTrackedFrameList.h"
+#include <vtkIGSIOTrackedFrameList.h>
+
+// IGSIO vtkSequenceIO includes
+#include <vtkIGSIOSequenceIO.h>
 
 // VideoIO MRML includes
 #include "vtkMRMLStreamingVolumeSequenceStorageNode.h"
@@ -62,31 +61,15 @@ bool vtkMRMLStreamingVolumeSequenceStorageNode::CanReadInReferenceNode(vtkMRMLNo
 }
 
 //---------------------------------------------------------------------------
-bool vtkMRMLStreamingVolumeSequenceStorageNode::ReadVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList)
+bool vtkMRMLStreamingVolumeSequenceStorageNode::ReadVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
-  vtkSmartPointer<vtkGenericVideoReader> reader = vtkSlicerIGSIOCommon::CreateVideoReader(fileName);
-  if (!reader)
-  {
-    vtkErrorWithObjectMacro(trackedFrameList, "Cannot create reader for file: " << fileName);
-    return false;
-  }
-  reader->SetFilename(fileName);
-  reader->SetTrackedFrameList(trackedFrameList);
-  return reader->ReadFile();
+  return vtkIGSIOSequenceIO::Read(fileName, trackedFrameList) == IGSIO_SUCCESS;
 }
 
 //---------------------------------------------------------------------------
-bool vtkMRMLStreamingVolumeSequenceStorageNode::WriteVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList)
+bool vtkMRMLStreamingVolumeSequenceStorageNode::WriteVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList)
 {
-  vtkSmartPointer<vtkGenericVideoWriter> writer = vtkSlicerIGSIOCommon::CreateVideoWriter(fileName);
-  if (!writer)
-  {
-    vtkErrorWithObjectMacro(trackedFrameList, "Cannot create writer for file: " << fileName);
-    return false;
-  }
-  writer->SetFilename(fileName);
-  writer->SetTrackedFrameList(trackedFrameList);
-  return writer->WriteFile();
+  return vtkIGSIOSequenceIO::Write(fileName, trackedFrameList) == IGSIO_SUCCESS;
 }
 
 //----------------------------------------------------------------------------
@@ -99,10 +82,10 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::ReadDataInternal(vtkMRMLNode* ref
     return 0;
   }
 
-  vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   this->ReadVideo(this->FileName, trackedFrameList);
   vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, sequenceNode);
-  this->CodecFourCC = trackedFrameList->GetCodecFourCC();
+  trackedFrameList->GetEncodingFourCC(this->CodecFourCC);
 
   return 1;
 }
@@ -160,7 +143,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
 
   vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC, parameters, false, true);
 
-  vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkIGSIOTrackedFrameList>::New();
   vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(videoStreamSequenceNode, trackedFrameList);
   this->WriteVideo(this->GetFileName(), trackedFrameList);
 

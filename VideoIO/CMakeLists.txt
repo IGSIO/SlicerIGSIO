@@ -10,7 +10,6 @@ string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 #-----------------------------------------------------------------------------
 add_subdirectory(MRML)
 add_subdirectory(Logic)
-add_subdirectory(Codecs)
 
 #-----------------------------------------------------------------------------
 set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
@@ -19,8 +18,8 @@ set(MODULE_EXPORT_DIRECTIVE "Q_SLICER_QTMODULES_${MODULE_NAME_UPPER}_EXPORT")
 set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_SOURCE_DIR}/Logic
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
-  ${VTKVIDEOIO_INCLUDES}
-  ${vtkIGSIOCommon_INCLUDES}
+  ${VTKSEQUENCEIO_INCLUDES}
+  ${VTKIGSIOCOMMON_INCLUDES}
   ${vtkSlicerSequenceBrowserModuleMRML_INCLUDES}
   ${SlicerIGSIOCommon_INCLUDE_DIRS}
   )
@@ -47,9 +46,8 @@ set(MODULE_UI_SRCS
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
   ${MRML_LIBRARIES}
-  vtkVideoIO
-  vtkSlicerVideoIOCodecs
   vtkIGSIOCommon
+  vtkSequenceIO
   vtkSlicerIGSIOCommon
   vtkSlicerSequencesModuleMRML
   vtkSlicerSequenceBrowserModuleMRML

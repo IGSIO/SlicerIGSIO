@@ -27,7 +27,7 @@ Care Ontario.
 #include <qSlicerVideoIOModule.h>
 
 // IGSIO includes
-#include <vtkTrackedFrameList.h>
+#include <vtkIGSIOTrackedFrameList.h>
 
 // SlicerQt includes
 #include "qSlicerVideoReader.h"
@@ -89,7 +89,11 @@ qSlicerIO::IOFileType qSlicerVideoReader::fileType() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerVideoReader::extensions() const
 {
-  return QStringList() << "Matroska Video (*.mkv)" << "WebM (*.webm)";
+  QStringList supportedExtensions = QStringList();
+#ifdef IGSIO_SEQUENCEIO_ENABLE_MKV
+    supportedExtensions << "Matroska Video (*.mkv)" << "WebM (*.webm)";
+#endif
+  return supportedExtensions;
 }
 
 //-----------------------------------------------------------------------------
@@ -116,7 +120,7 @@ bool qSlicerVideoReader::load(const IOProperties& properties)
   }
   QString fileName = properties["fileName"].toString();
 
-  vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkTrackedFrameList>::New();
+  vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
   if (!vtkMRMLStreamingVolumeSequenceStorageNode::ReadVideo(fileName.toStdString(), trackedFrameList))
   {
     qCritical() << Q_FUNC_INFO << " error reading video: " << fileName;
@@ -154,7 +158,11 @@ bool qSlicerVideoReader::load(const IOProperties& properties)
     vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode> storageNode = vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode>::New();
     this->mrmlScene()->AddNode(storageNode.GetPointer());
     sequenceNode->SetAndObserveStorageNodeID(storageNode->GetID());
-    storageNode->SetCodecFourCC(trackedFrameList->GetCodecFourCC());
+    std::string encodingFourCC;
+    if (trackedFrameList->GetEncodingFourCC(encodingFourCC))
+    {
+      storageNode->SetCodecFourCC(encodingFourCC);
+    }
   }
 
   vtkSlicerApplicationLogic* appLogic = this->VideoIOLogic()->GetApplicationLogic();

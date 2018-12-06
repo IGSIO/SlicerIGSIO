@@ -19,21 +19,22 @@ Care Ontario.
 ==============================================================================*/
 
 /// Manages the logic associated with encoded video input/output.
-//TODO
-
 #ifndef __vtkSlicerVideoIOLogic_h
 #define __vtkSlicerVideoIOLogic_h
 
 #include "vtkSlicerVideoIOModuleLogicExport.h"
 
-#include "vtkSlicerBaseLogic.h"
-#include "vtkSlicerModuleLogic.h"
-#include "vtkCallbackCommand.h"
+// Slicer includes
+#include <vtkSlicerBaseLogic.h>
+#include <vtkSlicerModuleLogic.h>
 
-#include "vtkTrackedFrameList.h"
+// VTK includes
+#include <vtkCallbackCommand.h>
 
-#include <vtkGenericVideoReader.h>
+// IGSIO includes
+#include <vtkIGSIOTrackedFrameList.h>
 
+// Sequences MRML includes
 #include <vtkMRMLSequenceBrowserNode.h>
 
 class vtkMRMLIGTLConnectorNode;

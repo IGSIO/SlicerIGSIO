@@ -26,7 +26,7 @@ Care Ontario.
 #include "vtkMRMLStorageNode.h"
 #include <string>
 
-class vtkTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 class vtkGenericVideoReader;
 class vtkGenericVideoWriter;
 class vtkMRMLSequenceNode;
@@ -54,8 +54,8 @@ public:
   /// Return a default file extension for writting
   virtual const char* GetDefaultWriteFileExtension();
 
-  static bool ReadVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList);
-  static bool WriteVideo(std::string fileName, vtkTrackedFrameList* trackedFrameList);
+  static bool ReadVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
+  static bool WriteVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
 
   // FourCC code representing the codec that should be used to encode the video
   vtkSetMacro(CodecFourCC, std::string);
