@@ -6,7 +6,7 @@ set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_MRML_EXPORT"
 
 set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
-  ${VTKVIDEOIO_INCLUDE_DIRS}
+  ${VTKSEQUENCEIO_INCLUDE_DIRS}
   ${SlicerIGSIOCommon_INCLUDE_DIRS}
   )
 
@@ -19,7 +19,7 @@ set(${KIT}_TARGET_LIBRARIES
   vtkSlicerSequencesModuleMRML
   vtkSlicerVolumesModuleLogic
   vtkSlicerIGSIOCommon
-  ${VTKVIDEOIO_LIBRARIES}
+  ${VTKSEQUENCEIO_LIBRARIES}
   )
 
 #-----------------------------------------------------------------------------

@@ -16,8 +16,8 @@ SET (SlicerIGSIOCommon_INCLUDE_DIRS
   ${CMAKE_CURRENT_BINARY_DIR}
   ${Slicer_Libs_INCLUDE_DIRS}
   ${Slicer_Base_INCLUDE_DIRS}
-  ${vtkIGSIOCommon_INCLUDES}
-  ${VTKVIDEOIO_INCLUDES}
+  ${VTKIGSIOCOMMON_INCLUDE_DIRS}
+  ${VTKSEQUENCEIO_INCLUDE_DIRS}
   ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerVolumesModuleLogic_INCLUDE_DIRS}
@@ -32,12 +32,12 @@ SET (SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   ${VTK_LIBRARIES}
   MRMLCore
   vtkIGSIOCommon
-  vtkVideoIO
+  vtkSequenceIO
   vtkSlicerSequencesModuleMRML
   vtkSlicerSequenceBrowserModuleMRML
   vtkSlicerVolumesModuleLogic
   )
-
+  
 INCLUDE_DIRECTORIES( ${SlicerIGSIOCommon_INCLUDE_DIRS} )
 ADD_LIBRARY(${lib_name} ${SlicerIGSIOCommon_SRCS})
 TARGET_LINK_LIBRARIES( ${lib_name} ${SlicerIGSIOCommon_LIBS} )

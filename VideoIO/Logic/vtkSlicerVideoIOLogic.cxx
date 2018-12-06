@@ -46,10 +46,6 @@ Care Ontario.
 // VTK includes
 #include <vtkMatrix4x4.h>
 
-// vtkVideoIO includes
-#include <vtkMKVUtil.h>
-#include <vtkMKVReader.h>
-
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerVideoIOLogic);
 
@@ -115,7 +111,7 @@ public:
 
     target->EndModify(oldModified);
   }
-  
+
   virtual void AddDefaultDisplayNodes(vtkMRMLNode* node)
   {
     if (node == NULL)

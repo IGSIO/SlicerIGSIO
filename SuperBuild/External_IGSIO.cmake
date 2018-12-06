@@ -1,9 +1,6 @@
 
 set(proj IGSIO)
 
-# Set dependency list
-set(${proj}_DEPENDS libwebm)
-
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
 
@@ -12,20 +9,20 @@ if(${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 endif()
 
 # Sanity checks
-if(DEFINED Foo_DIR AND NOT EXISTS ${Foo_DIR})
-  message(FATAL_ERROR "Foo_DIR variable is defined but corresponds to nonexistent directory")
+if(DEFINED ${proj}_DIR AND NOT EXISTS ${${proj}_DIR})
+  message(FATAL_ERROR "${proj}_DIR variable is defined but corresponds to nonexistent directory")
 endif()
 
 if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "${EP_GIT_PROTOCOL}://github.com/IGSIO/IGSIO.git"
+    "${EP_GIT_PROTOCOL}://github.com/Sunderlandkyl/IGSIO.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    "tracked_frame"
+    "compressed_frame_trackedframe"
     QUIET
     )
 
@@ -34,9 +31,21 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
   set(BUILD_OPTIONS
     -DVTK_DIR:PATH=${VTK_DIR}
-    -DBUILD_VTKVIDEOIO:BOOL=ON
-    -DVTKVIDEOIO_ENABLE_MKV:BOOL=ON
-    -Dlibwebm_DIR:PATH=${libwebm_DIR}
+    -DUSE_SYSTEM_ZLIB:BOOL=ON
+    -DZLIB_INCLUDE_DIR:PATH=${ZLIB_INCLUDE_DIR}
+    -DZLIB_LIBRARY:PATH=${ZLIB_LIBRARY}
+    -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+    
+    -DIGSIO_SUPERBUILD:BOOL=ON
+    -DIGSIO_USE_3DSlicer:BOOL=ON
+    -DIGSIO_BUILD_SEQUENCEIO:BOOL=ON
+    -DIGSIO_SEQUENCEIO_ENABLE_MKV:BOOL=ON
+    -DIGSIO_USE_VP9:BOOL=ON
+    
+    -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
+    
+    -DBUILD_TESTING:BOOL=OFF
     )
 
   ExternalProject_Add(${proj}
@@ -67,7 +76,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     DEPENDS
       ${${proj}_DEPENDS}
     )
-  set(${proj}_DIR ${EP_BINARY_DIR})
+  set(${proj}_DIR ${EP_BINARY_DIR}/inner-build)
 
 else()
   ExternalProject_Add_Empty(${proj} DEPENDS ${${proj}_DEPENDS})

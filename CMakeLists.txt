@@ -16,9 +16,8 @@ set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer REQUIRED)
+find_package(Slicer COMPONENTS vtkAddon REQUIRED)
 include(${Slicer_USE_FILE})
-mark_as_superbuild(Slicer_DIR)
 
 mark_as_superbuild(IGSIO_DIR)
 
@@ -44,7 +43,7 @@ add_subdirectory(VideoIO)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
-list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkVideoIO;RuntimeLibraries;/")
+list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkSequenceIO;RuntimeLibraries;/")
 set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
 
 #-----------------------------------------------------------------------------

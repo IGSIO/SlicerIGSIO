@@ -32,7 +32,7 @@ Care Ontario.
 #endif
 
 class vtkMRMLScene;
-class vtkTrackedFrameList;
+class vtkIGSIOTrackedFrameList;
 class vtkMRMLSequenceNode;
 class vtkMRMLSequenceBrowserNode;
 class vtkGenericVideoReader;
@@ -40,6 +40,7 @@ class vtkGenericVideoWriter;
 
 #include <vtkSmartPointer.h>
 #include <map>
+#include <igsioVideoFrame.h>
 
 /// \ingroup SlicerIGSIO_vtkSlicerIGSIO
 /// Common utility functions for SlicerRT.
@@ -51,16 +52,13 @@ public:
   // Utility functions
   //----------------------------------------------------------------------------
 
-  static bool TrackedFrameListToVolumeSequence(vtkTrackedFrameList* trackedFrameList, vtkMRMLSequenceNode* sequenceNode);
+  static bool TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrameList* trackedFrameList, vtkMRMLSequenceNode* sequenceNode);
 
-  static bool TrackedFrameListToSequenceBrowser(vtkTrackedFrameList* trackedFrameList, vtkMRMLSequenceBrowserNode* sequenceBrowserNode);
+  static bool TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFrameList* trackedFrameList, vtkMRMLSequenceBrowserNode* sequenceBrowserNode);
 
-  static bool VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode* sequenceNode, vtkTrackedFrameList* trackedFrameList);
+  static bool VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode* sequenceNode, vtkIGSIOTrackedFrameList* trackedFrameList);
   
-  static bool SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* sequenceBrowserNode, vtkTrackedFrameList* trackedFrameList);
-
-  static vtkSmartPointer<vtkGenericVideoReader> CreateVideoReader(std::string fileName);
-  static vtkSmartPointer<vtkGenericVideoWriter> CreateVideoWriter(std::string fileName);
+  static bool SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* sequenceBrowserNode, vtkIGSIOTrackedFrameList* trackedFrameList);
 
   struct FrameBlock
   {
