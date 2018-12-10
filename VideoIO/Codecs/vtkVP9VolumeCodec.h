@@ -43,6 +43,7 @@ public:
   std::string GetMaximumKeyFrameDistanceParameter() { return "maximumKeyFrameDistance"; };
   std::string GetSpeedParameter() { return "encodingSpeed"; };
   std::string GetBitRateParameter() { return "bitRate"; };
+  std::string GetRateControlParameter() { return "rateControl"; };
 
   virtual std::string GetFourCC() { return "VP90"; };
 

@@ -53,7 +53,7 @@ extern "C" {
 } /* extern "C" */
 #endif
 
-static const VpxCodecInterface VPXStaticCodecInterface[] = { { &vpx_codec_vp9_dx } };
+static const VpxCodecInterface VPXStaticCodecDecodeInterface[] = { { &vpx_codec_vp9_dx } };
 static const VpxInterfaceEncoder VPXStaticCodecEncodeInterface[] = { { &vpx_codec_vp9_cx } };
 
 // -------------------------------------------------------------------------- -
@@ -85,11 +85,12 @@ public:
 
   // Encoder parameters
   bool Lossless;
-  unsigned int MinimumKeyFrameDistance;
-  unsigned int MaximumKeyFrameDistance;
+  int MinimumKeyFrameDistance;
+  int MaximumKeyFrameDistance;
   int BitRate;
   int Speed;
   int DeadlineMode;
+  int RateControl;
 
   // Common functions
   int vpx_img_plane_width(const vpx_image_t *img, int plane);
@@ -126,11 +127,11 @@ vtkVP9VolumeCodec::vtkVP9VolumeCodec()
   this->AvailiableParameterNames.push_back(this->GetMaximumKeyFrameDistanceParameter());
   this->AvailiableParameterNames.push_back(this->GetSpeedParameter());
   this->AvailiableParameterNames.push_back(this->GetBitRateParameter());
+  this->AvailiableParameterNames.push_back(this->GetRateControlParameter());
 
-  this->SetParameter(this->GetLosslessEncodingParameter(), "1");
-  this->SetParameter(this->GetMinimumKeyFrameDistanceParameter(), "10");
-  this->SetParameter(this->GetMaximumKeyFrameDistanceParameter(), "50");
+  this->SetParameter(this->GetLosslessEncodingParameter(), "0");
   this->SetParameter(this->GetSpeedParameter(), "8");
+  this->SetParameter(this->GetRateControlParameter(), "Q");
 }
 
 //---------------------------------------------------------------------------
@@ -166,6 +167,11 @@ std::string vtkVP9VolumeCodec::GetParameterDescription(std::string parameterName
   if (parameterName == this->GetLosslessEncodingParameter())
   {
     return "Lossless encoding flag";
+  }
+
+  if (parameterName == this->GetRateControlParameter())
+  {
+    return "Rate control: (\"CBR\" [Constant bit rate], \"VBR\" [Variable bit rate], \"CQ\" [Constrained quality], \"Q\" [Constant Quality])";
   }
 
   return "";
@@ -260,6 +266,32 @@ bool vtkVP9VolumeCodec::UpdateParameterInternal(std::string parameterName, std::
     }
     this->Internal->Speed = speed;
   }
+  else if (parameterName == this->GetRateControlParameter())
+  {
+    int rateControl = -1;
+    if (lowerParameterValue == "q")
+    {
+      rateControl = VPX_Q;
+    }
+    else if (lowerParameterValue == "cq")
+    {
+      rateControl = VPX_CQ;
+    }
+    else if (lowerParameterValue == "vbr")
+    {
+      rateControl = VPX_VBR;
+    }
+    else if (lowerParameterValue == "cbr")
+    {
+      rateControl = VPX_CBR;
+    }
+
+    if (rateControl == this->Internal->RateControl)
+    {
+      return true;
+    }
+    this->Internal->RateControl = rateControl;
+  }
   else
   {
     vtkErrorMacro("Unknown parameter!");
@@ -310,13 +342,14 @@ vtkVP9VolumeCodec::vtkInternal::vtkInternal(vtkVP9VolumeCodec* external)
   , LastEncodedFrame(NULL)
   , YUVImage(NULL)
   , Lossless(false)
-  , MinimumKeyFrameDistance(250)
-  , MaximumKeyFrameDistance(500)
+  , MinimumKeyFrameDistance(-1)
+  , MaximumKeyFrameDistance(-1)
   , BitRate(-1)
-  , DeadlineMode(VPX_DL_REALTIME)
+  , DeadlineMode(-1)
+  , RateControl(-1)
 {
   // Decode
-  this->Decoder = &VPXStaticCodecInterface[0];
+  this->Decoder = &VPXStaticCodecDecodeInterface[0];
   vpx_codec_dec_init(&this->VPXDecodeContext, this->Decoder->codec_interface(), NULL, 0);
 
   // Encode
@@ -335,7 +368,7 @@ vtkVP9VolumeCodec::vtkInternal::vtkInternal(vtkVP9VolumeCodec* external)
 vtkVP9VolumeCodec::vtkInternal::~vtkInternal()
 {
   vpx_codec_destroy(&this->VPXDecodeContext);
-  vpx_codec_encode(this->VPXEncodeContext, NULL, -1, 1, 0, 0); //Flush the codec
+  vpx_codec_encode(this->VPXEncodeContext, NULL, -1, 1, 0, this->DeadlineMode); //Flush the codec
   vpx_codec_destroy(this->VPXEncodeContext);
   if (this->VPXEncodeContext)
   {
@@ -385,6 +418,7 @@ bool vtkVP9VolumeCodec::vtkInternal::InitializeEncoder()
     return true;
   }
 
+  this->VPXEncodeConfiguration.g_error_resilient = true;
   this->VPXEncodeConfiguration.g_lag_in_frames = 0;
   this->VPXEncodeConfiguration.g_w = this->ImageWidth;
   this->VPXEncodeConfiguration.g_h = this->ImageHeight;
@@ -404,34 +438,63 @@ bool vtkVP9VolumeCodec::vtkInternal::InitializeEncoder()
 
   if (vpx_codec_enc_config_set(this->VPXEncodeContext, &this->VPXEncodeConfiguration))
   {
-    //vtkErrorMacro("Failed to set parameter: " << parameterName);
+    vtkErrorWithObjectMacro(this->External, "Failed to set set encoding configuration");
     return false;
   }
 
-  if (this->BitRate > 0)
+  // Set keyframe distance
+  if (this->MinimumKeyFrameDistance > 0)
   {
-    int bitRateInKilo = this->BitRate / 1000;
-    this->VPXEncodeConfiguration.rc_target_bitrate = bitRateInKilo;
-    this->VPXEncodeConfiguration.layer_target_bitrate[0] = bitRateInKilo;
-    for (unsigned int i = 0; i < this->VPXEncodeConfiguration.ss_number_layers; i++)
-    {
-      this->VPXEncodeConfiguration.ss_target_bitrate[i] =
-        bitRateInKilo / this->VPXEncodeConfiguration.ss_number_layers;
-    }
+    this->VPXEncodeConfiguration.kf_min_dist = this->MinimumKeyFrameDistance;
   }
-  this->VPXEncodeConfiguration.kf_min_dist = this->MinimumKeyFrameDistance;
-  this->VPXEncodeConfiguration.kf_max_dist = this->MaximumKeyFrameDistance;
-  this->VPXEncodeConfiguration.g_error_resilient = true;
-
-  if (vpx_codec_control(this->VPXEncodeContext, VP8E_SET_CPUUSED, this->Speed))
+  
+  if (this->MaximumKeyFrameDistance > 0)
   {
-    vtkErrorWithObjectMacro(this->External, "Failed to set lossless mode");
-    return false;
+    this->VPXEncodeConfiguration.kf_max_dist = this->MaximumKeyFrameDistance;
   }
 
+  // Set lossless mode
   if (vpx_codec_control_(this->VPXEncodeContext, VP9E_SET_LOSSLESS, this->Lossless))
   {
     vtkErrorWithObjectMacro(this->External, "Failed to set lossless mode");
+    return false;
+  }
+
+  // Lossless encoding. No other parameters need to be set
+  if (!this->Lossless)
+  {
+
+    // Set bit rate
+    if (this->BitRate > 0)
+    {
+      int bitRateInKilo = this->BitRate / 1000;
+      this->VPXEncodeConfiguration.rc_target_bitrate = bitRateInKilo;
+      this->VPXEncodeConfiguration.layer_target_bitrate[0] = bitRateInKilo;
+      for (unsigned int i = 0; i < this->VPXEncodeConfiguration.ss_number_layers; i++)
+      {
+        this->VPXEncodeConfiguration.ss_target_bitrate[i] =
+          bitRateInKilo / this->VPXEncodeConfiguration.ss_number_layers;
+      }
+    }
+
+    // Set codec speed
+    if (vpx_codec_control(this->VPXEncodeContext, VP8E_SET_CPUUSED, this->Speed))
+    {
+      vtkErrorWithObjectMacro(this->External, "Failed to set lossless mode");
+      return false;
+    }
+
+    // Set rate control mode
+    if (this->RateControl > 0)
+    {
+      this->VPXEncodeConfiguration.rc_end_usage = (vpx_rc_mode)this->RateControl;
+    }
+  }
+
+  int error = vpx_codec_enc_config_set(this->VPXEncodeContext, &this->VPXEncodeConfiguration);
+  if (error)
+  {
+    vtkErrorWithObjectMacro(this->External, "Failed to set set encoding configuration");
     return false;
   }
 
@@ -449,10 +512,6 @@ bool vtkVP9VolumeCodec::vtkInternal::InitializeDecoder()
 //---------------------------------------------------------------------------
 bool vtkVP9VolumeCodec::vtkInternal::SetSpeed(int speed)
 {
-  //this->SetDeadlineMode(VPX_DL_REALTIME);
-  //this->codecSpeed = speed;
-  //if (speed >= SlowestSpeed && speed <= FastestSpeed)
-  //{
   if (vpx_codec_control(this->VPXEncodeContext, VP8E_SET_CPUUSED, speed))
   {
     error_output(this->VPXEncodeContext, "Failed to set Speed"); //TODO
@@ -515,10 +574,8 @@ bool vtkVP9VolumeCodec::vtkInternal::DecodeFrame(vtkStreamingVolumeFrame* inputF
     yuvPointer = this->YUVImage->GetScalarPointer();
   }
 
-  unsigned int size = frameData->GetSize() * frameData->GetElementComponentSize();
-  int frameSize[3] = { dimensions[0], dimensions[1], dimensions[2] };
-
   // Convert compressed frame to YUV image
+  unsigned int size = frameData->GetSize() * frameData->GetElementComponentSize();
   if (!vpx_codec_decode(&this->VPXDecodeContext, (unsigned char*)framePointer, (unsigned int)size, NULL, 0))
   {
     if (!saveDecodedImage)
@@ -530,10 +587,9 @@ bool vtkVP9VolumeCodec::vtkInternal::DecodeFrame(vtkStreamingVolumeFrame* inputF
     if ((this->VPXDecodeImage = vpx_codec_get_frame(&this->VPXDecodeContext, &this->VPXDecodeIter)) != NULL)
     {
       int stride[3] = { this->VPXDecodeImage->stride[0], this->VPXDecodeImage->stride[1], this->VPXDecodeImage->stride[2] };
-
       int convertedDimensions[2] = { this->vpx_img_plane_width(this->VPXDecodeImage, 0) *
         ((this->VPXDecodeImage->fmt & VPX_IMG_FMT_HIGHBITDEPTH) ? 2 : 1), this->vpx_img_plane_height(this->VPXDecodeImage, 0) };
-      this->ComposeByteSteam(this->VPXDecodeImage->planes, dimensions, stride, (unsigned char*)yuvPointer);
+      this->ComposeByteSteam(this->VPXDecodeImage->planes, convertedDimensions, stride, (unsigned char*)yuvPointer);
     }
   }
   else

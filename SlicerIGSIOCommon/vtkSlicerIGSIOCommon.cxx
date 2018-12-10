@@ -389,25 +389,28 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
       }
 
       vtkStreamingVolumeFrame* currentFrame = streamingNode->GetFrame();
-      if (i == 0 && !streamingNode->IsKeyFrame())
+      if (currentFrameBlock.ReEncodingRequired == false)
       {
-        currentFrameBlock.ReEncodingRequired = true;
-      }
-      else if (!currentFrame)
-      {
-        currentFrameBlock.ReEncodingRequired = true;
-      }
-      else if (codecFourCC == "")
-      {
-        currentFrameBlock.ReEncodingRequired = true;
-      }
-      else if (codecFourCC != streamingNode->GetCodecFourCC())
-      {
-        currentFrameBlock.ReEncodingRequired = true;
-      }
-      else if (currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
-      {
-        currentFrameBlock.ReEncodingRequired = true;
+        if (i == 0 && !streamingNode->IsKeyFrame())
+        {
+          currentFrameBlock.ReEncodingRequired = true;
+        }
+        else if (!currentFrame)
+        {
+          currentFrameBlock.ReEncodingRequired = true;
+        }
+        else if (codecFourCC == "")
+        {
+          currentFrameBlock.ReEncodingRequired = true;
+        }
+        else if (codecFourCC != streamingNode->GetCodecFourCC())
+        {
+          currentFrameBlock.ReEncodingRequired = true;
+        }
+        else if (currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
+        {
+          currentFrameBlock.ReEncodingRequired = true;
+        }
       }
 
       if (currentFrame && // Current frame exists
