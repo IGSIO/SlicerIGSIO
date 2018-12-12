@@ -43,6 +43,10 @@ Care Ontario.
 #include <vtkMKVReader.h>
 #include <vtkMKVWriter.h>
 
+#include <stack>
+
+std::string SLICERIGSIO_DATA_NODE = "SlicerIGSIO_SequenceDataNode";
+
 //----------------------------------------------------------------------------
 // Utility functions
 //----------------------------------------------------------------------------
@@ -132,7 +136,12 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
     }
 
     volumeNode->SetName(trackedFrameName.c_str());
-    sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
+    
+    const char* sequenceDataNode = trackedFrame->GetCustomFrameField(SLICERIGSIO_DATA_NODE);
+    if (!sequenceDataNode || STRCASECMP(sequenceDataNode, "TRUE") == 0)
+    {
+      sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
+    }
   }
 
   return true;
@@ -253,8 +262,9 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
   trackedFrameList->SetImageName(trackName);
 
   int dimensions[3] = { 0,0,0 };
-
+  vtkSmartPointer<vtkStreamingVolumeFrame> lastFrame = NULL;
   double timestamp = 0.0;
+  double lastTimestamp = 0.0;
   for (int i = 0; i < sequenceNode->GetNumberOfDataNodes(); ++i)
   {
     vtkMRMLStreamingVolumeNode* streamingVolumeNode = vtkMRMLStreamingVolumeNode::SafeDownCast(sequenceNode->GetNthDataNode(i));
@@ -289,14 +299,36 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     igsioTransformName imageToPhysicalName;
     imageToPhysicalName.SetTransformName(std::string(streamingVolumeNode->GetName())+"ToPhysical");
 
-    igsioTrackedFrame trackedFrame;
-    igsioVideoFrame videoFrame;
-    videoFrame.SetCompressedFrameData(frame->GetFrameData());
-    videoFrame.SetFrameType(frame->GetFrameType());
-    trackedFrame.SetImageData(videoFrame);
-    trackedFrame.SetTimestamp(timestamp);
-    trackedFrame.SetCustomFrameTransform(imageToPhysicalName, ijkToRASTransform);
-    trackedFrameList->AddTrackedFrame(&trackedFrame);
+    std::stack<vtkSmartPointer<vtkStreamingVolumeFrame> > frameStack;
+    frameStack.push(frame);
+    if (!frame->IsKeyFrame())
+    {
+      vtkStreamingVolumeFrame* currentFrame = frame->GetPreviousFrame();
+      while (currentFrame && currentFrame != lastFrame)
+      {
+        frameStack.push(currentFrame);
+        currentFrame = currentFrame->GetPreviousFrame();
+      }
+    }
+    lastFrame = frame;
+
+    int initialStackSize = frameStack.size();
+    while (frameStack.size() > 0)
+    {
+      vtkStreamingVolumeFrame* currentFrame = frameStack.top();
+      igsioTrackedFrame trackedFrame;
+      igsioVideoFrame videoFrame;
+      videoFrame.SetCompressedFrameData(currentFrame->GetFrameData());
+      videoFrame.SetFrameType(currentFrame->GetFrameType());
+      trackedFrame.SetImageData(videoFrame);
+      double currentTimestamp = lastTimestamp + (timestamp-lastTimestamp)*((double)(initialStackSize - frameStack.size() + 1.0) / initialStackSize);
+      trackedFrame.SetTimestamp(currentTimestamp);
+      trackedFrame.SetCustomFrameTransform(imageToPhysicalName, ijkToRASTransform);
+      trackedFrame.SetCustomFrameField(SLICERIGSIO_DATA_NODE, frameStack.size() == 1 ? "TRUE" : "FALSE");
+      trackedFrameList->AddTrackedFrame(&trackedFrame);
+      frameStack.pop();
+    }
+    lastTimestamp = timestamp;
   }
   trackedFrameList->SetCodecFourCC(codecFourCC);
   trackedFrameList->SetUseCompression(true);
@@ -340,7 +372,7 @@ vtkSmartPointer<vtkGenericVideoWriter> vtkSlicerIGSIOCommon::CreateVideoWriter(s
 }
 
 //----------------------------------------------------------------------------
-bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode, int startIndex, int endIndex, std::string codecFourCC, std::map<std::string, std::string> codecParameters, bool forceReEncoding)
+bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode, int startIndex, int endIndex, std::string codecFourCC, std::map<std::string, std::string> codecParameters, bool forceReEncoding, bool minimalReEncoding)
 {
   if (!videoStreamSequenceNode)
   {
@@ -407,7 +439,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
         {
           currentFrameBlock.ReEncodingRequired = true;
         }
-        else if (currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
+        else if (!minimalReEncoding && currentFrame && !currentFrame->IsKeyFrame() && previousFrame != currentFrame->GetPreviousFrame())
         {
           currentFrameBlock.ReEncodingRequired = true;
         }

@@ -124,7 +124,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
     return 0;
   }
 
-  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC);
+  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC,std::map<std::string, std::string>(), false, true);
 
   vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkTrackedFrameList>::New();
   vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(videoStreamSequenceNode, trackedFrameList);

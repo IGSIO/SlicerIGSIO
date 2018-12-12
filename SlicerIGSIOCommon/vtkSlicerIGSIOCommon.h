@@ -85,7 +85,7 @@ public:
     int startIndex, int endIndex,
     std::string codecFourCC,
     std::map<std::string, std::string> codecParameters,
-    bool forceReEncoding = false);
+    bool forceReEncoding = false, bool minimalReEncoding = false);
 };
 
 #endif
