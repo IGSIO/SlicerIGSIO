@@ -79,6 +79,7 @@ public:
     this->SupportedNodeParentClassNames.push_back("vtkMRMLTransformableNode");
     this->SupportedNodeParentClassNames.push_back("vtkMRMLStorableNode");
     this->SupportedNodeParentClassNames.push_back("vtkMRMLNode");
+    this->DefaultSequenceStorageNodeClassName = "vtkMRMLStreamingVolumeSequenceStorageNode";
   }
 
   virtual void CopyNode(vtkMRMLNode* source, vtkMRMLNode* target, bool shallowCopy /* =false */)
@@ -114,35 +115,7 @@ public:
 
     target->EndModify(oldModified);
   }
-
-  virtual void AddDefaultSequenceStorageNode(vtkMRMLSequenceNode* node)
-  {
-    if (node == NULL)
-    {
-      // not a sequence node, there is nothing to do
-      return;
-    }
-
-    vtkMRMLScene* scene = node->GetScene();
-    if (scene == NULL)
-    {
-      return;
-    }
-
-    if (node->GetStorageNode())
-    {
-      // Storage node already exists
-      return;
-    }
-
-    vtkMRMLNode* storageNode = scene->AddNewNodeByClass("vtkMRMLStreamingVolumeSequenceStorageNode");
-    if (storageNode == NULL)
-    {
-      return;
-    }
-    node->SetAndObserveStorageNodeID(storageNode->GetID());
-  }
-
+  
   virtual void AddDefaultDisplayNodes(vtkMRMLNode* node)
   {
     if (node == NULL)
