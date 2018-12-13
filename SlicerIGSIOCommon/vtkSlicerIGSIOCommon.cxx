@@ -45,7 +45,13 @@ Care Ontario.
 
 #include <stack>
 
-std::string SLICERIGSIO_DATA_NODE = "SlicerIGSIO_SequenceDataNode";
+std::string FRAME_STATUS_TRACKNAME = "FrameStatus";
+enum FrameStatus
+{
+  Frame_OK,
+  Frame_Invalid,
+  Frame_Skip,
+};
 
 //----------------------------------------------------------------------------
 // Utility functions
@@ -137,8 +143,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkTrackedFrameList*
 
     volumeNode->SetName(trackedFrameName.c_str());
     
-    const char* sequenceDataNode = trackedFrame->GetCustomFrameField(SLICERIGSIO_DATA_NODE);
-    if (!sequenceDataNode || STRCASECMP(sequenceDataNode, "TRUE") == 0)
+    const char* frameStatus = trackedFrame->GetCustomFrameField(FRAME_STATUS_TRACKNAME);
+    if (!frameStatus || vtkVariant(frameStatus).ToInt() != Frame_Skip)
     {
       sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
     }
@@ -324,7 +330,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
       double currentTimestamp = lastTimestamp + (timestamp-lastTimestamp)*((double)(initialStackSize - frameStack.size() + 1.0) / initialStackSize);
       trackedFrame.SetTimestamp(currentTimestamp);
       trackedFrame.SetCustomFrameTransform(imageToPhysicalName, ijkToRASTransform);
-      trackedFrame.SetCustomFrameField(SLICERIGSIO_DATA_NODE, frameStack.size() == 1 ? "TRUE" : "FALSE");
+      trackedFrame.SetCustomFrameField(FRAME_STATUS_TRACKNAME, vtkVariant(frameStack.size() == 1 ? Frame_OK : Frame_Skip).ToString());
       trackedFrameList->AddTrackedFrame(&trackedFrame);
       frameStack.pop();
     }
