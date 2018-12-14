@@ -154,6 +154,7 @@ bool qSlicerVideoReader::load(const IOProperties& properties)
     vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode> storageNode = vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode>::New();
     this->mrmlScene()->AddNode(storageNode.GetPointer());
     sequenceNode->SetAndObserveStorageNodeID(storageNode->GetID());
+    storageNode->SetCodecFourCC(trackedFrameList->GetCodecFourCC());
   }
 
   vtkSlicerApplicationLogic* appLogic = this->VideoIOLogic()->GetApplicationLogic();

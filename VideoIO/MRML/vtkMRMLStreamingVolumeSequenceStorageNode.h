@@ -90,7 +90,8 @@ protected:
   /// Initialize all the supported write file types
   virtual void InitializeSupportedWriteFileTypes();
 
-protected:
+  /// Update the supported compression presets
+  virtual void UpdateCompressionPresets();
 
   std::string CodecFourCC;
 };

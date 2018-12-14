@@ -124,7 +124,41 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
     return 0;
   }
 
-  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC,std::map<std::string, std::string>(), false, true);
+  this->UpdateCompressionPresets();
+  if (this->CompressionParameter.empty())
+  {
+    vtkErrorMacro(<< "WriteData: Could not determine which encoding to use for node " << refNode->GetID()
+                  << ". Select a codec or compression parameter and try again");
+    return 0;
+  }
+
+  vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
+    vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
+
+  std::vector<std::string> parameterNames;
+  if (codec)
+  {
+    codec->SetParametersFromPreset(this->CompressionParameter);
+    parameterNames = codec->GetAvailiableParameterNames();
+  }
+  
+
+  std::map<std::string, std::string> parameters;
+  std::vector<std::string>::iterator parameterNameIt;
+  for (parameterNameIt = parameterNames.begin(); parameterNameIt != parameterNames.end(); ++parameterNameIt)
+  {
+    if ((*parameterNameIt).empty())
+    {
+      continue;
+    }
+    std::string parameterValue;
+    if (codec->GetParameter(*parameterNameIt, parameterValue))
+    {
+      parameters[*parameterNameIt] = parameterValue;
+    }
+  }
+
+  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC, parameters);
 
   vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkTrackedFrameList>::New();
   vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(videoStreamSequenceNode, trackedFrameList);
@@ -143,6 +177,78 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::InitializeSupportedReadFileTypes
 void vtkMRMLStreamingVolumeSequenceStorageNode::InitializeSupportedWriteFileTypes()
 {
   this->SupportedWriteFileTypes->InsertNextValue("Matroska Video (.mkv)");
+}
+
+//----------------------------------------------------------------------------
+void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
+{
+  this->CompressionPresets.clear();
+
+  std::map<std::string, std::string> codecPresetFourCCs;
+  std::vector<std::string> fourCCs = vtkStreamingVolumeCodecFactory::GetInstance()->GetStreamingCodecFourCCs();
+  for (std::vector<std::string>::iterator fourCCIt = fourCCs.begin(); fourCCIt != fourCCs.end(); ++fourCCIt)
+  {
+    vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(*fourCCIt));
+    std::vector<vtkStreamingVolumeCodec::ParameterPreset> presets = codec->GetParameterPresets();
+    for (std::vector<vtkStreamingVolumeCodec::ParameterPreset>::iterator presetIt = presets.begin(); presetIt != presets.end(); ++presetIt)
+    {
+      codecPresetFourCCs[presetIt->Parameter] = codec->GetFourCC();
+      CompressionPreset preset;
+      preset.DisplayName = presetIt->Name;
+      preset.CompressionParameter = presetIt->Parameter;
+      this->CompressionPresets.push_back(preset);
+    }
+  }
+
+  // FourCC not specified
+  if (this->CodecFourCC.empty())
+  {
+    // Compression parameter is not specified
+    if (!this->CompressionParameter.empty())
+    {
+      // Compression parameter is specified, we can determine codec FourCC from that
+      std::map<std::string, std::string>::iterator codecPresetIt =
+        codecPresetFourCCs.find(this->CompressionParameter);
+      if (codecPresetIt != codecPresetFourCCs.end())
+      {
+        this->CodecFourCC = codecPresetIt->second;
+      }
+    }
+    else
+    {
+      vtkSmartPointer<vtkMRMLSequenceNode> sequenceNode = vtkMRMLSequenceNode::SafeDownCast(this->GetStorableNode());
+      if (sequenceNode)
+      {
+        // Find the first specified codec in the sequence node
+        for (int i = 0; i < sequenceNode->GetNumberOfDataNodes(); ++i)
+        {
+          vtkMRMLStreamingVolumeNode* streamingVolume = vtkMRMLStreamingVolumeNode::SafeDownCast(
+            sequenceNode->GetNthDataNode(i));
+          if (!streamingVolume)
+          {
+            continue;
+          }
+
+          std::string streamingCodec = streamingVolume->GetCodecFourCC();
+          if (!streamingCodec.empty())
+          {
+            this->CodecFourCC = streamingCodec;
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // Codec is specified but compression paramter is not.
+  if (!this->CodecFourCC.empty() && this->CompressionParameter.empty())
+  {
+    vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
+      vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
+
+    // Find the default compression parameter for the matching codec
+    this->CompressionParameter = codec->GetDefaultParameterPreset();
+  }
 }
 
 //----------------------------------------------------------------------------
