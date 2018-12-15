@@ -49,6 +49,8 @@ public:
 
   virtual std::string GetParameterDescription(std::string parameterName);
 
+  virtual void SetParametersFromPreset(std::string preset);
+
 protected:
   vtkVP9VolumeCodec();
   ~vtkVP9VolumeCodec();
