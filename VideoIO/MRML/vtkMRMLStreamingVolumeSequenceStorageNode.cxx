@@ -138,7 +138,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
   std::vector<std::string> parameterNames;
   if (codec)
   {
-    codec->SetParametersFromPreset(this->CompressionParameter);
+    codec->SetParametersFromPresetValue(this->CompressionParameter);
     parameterNames = codec->GetAvailiableParameterNames();
   }
   
@@ -158,7 +158,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
     }
   }
 
-  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC, parameters);
+  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, 0, -1, this->CodecFourCC, parameters, false, true);
 
   vtkSmartPointer<vtkTrackedFrameList> trackedFrameList = vtkSmartPointer <vtkTrackedFrameList>::New();
   vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(videoStreamSequenceNode, trackedFrameList);
@@ -192,10 +192,10 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
     std::vector<vtkStreamingVolumeCodec::ParameterPreset> presets = codec->GetParameterPresets();
     for (std::vector<vtkStreamingVolumeCodec::ParameterPreset>::iterator presetIt = presets.begin(); presetIt != presets.end(); ++presetIt)
     {
-      codecPresetFourCCs[presetIt->Parameter] = codec->GetFourCC();
+      codecPresetFourCCs[presetIt->Value] = codec->GetFourCC();
       CompressionPreset preset;
       preset.DisplayName = presetIt->Name;
-      preset.CompressionParameter = presetIt->Parameter;
+      preset.CompressionParameter = presetIt->Value;
       this->CompressionPresets.push_back(preset);
     }
   }
@@ -247,7 +247,7 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
       vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
 
     // Find the default compression parameter for the matching codec
-    this->CompressionParameter = codec->GetDefaultParameterPreset();
+    this->CompressionParameter = codec->GetDefaultParameterPresetValue();
   }
 }
 

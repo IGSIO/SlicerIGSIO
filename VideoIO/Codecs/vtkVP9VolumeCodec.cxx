@@ -134,17 +134,22 @@ vtkVP9VolumeCodec::vtkVP9VolumeCodec()
   this->SetParameter(this->GetRateControlParameter(), "Q");
 
   ParameterPreset losslessPreset;
-  losslessPreset.Name = "VP9 Lossless";
-  losslessPreset.Parameter = "VP90_LL_KF_10_50";
+  losslessPreset.Name = "VP9 lossless";
+  losslessPreset.Value = "VP90_LL_KF_10_50";
   this->ParameterPresets.push_back(losslessPreset);
 
   ParameterPreset lossyPreset;
-  lossyPreset.Name = "VP9 Lossy";
-  lossyPreset.Parameter = "VP90_LO_KF_10_50";
+  lossyPreset.Name = "VP9 minimum size lossy";
+  lossyPreset.Value = "VP90_LO_KF_10_50";
   this->ParameterPresets.push_back(lossyPreset);
 
+  ParameterPreset constantQualityPreset;
+  constantQualityPreset.Name = "VP9 constant quality";
+  constantQualityPreset.Value = "VP90_LO_S8_RCQ";
+  this->ParameterPresets.push_back(constantQualityPreset);
+
   // Default preset is lossless
-  this->DefaultParameterPreset = losslessPreset.Parameter;
+  this->DefaultParameterPresetValue = constantQualityPreset.Value;
 }
 
 //---------------------------------------------------------------------------
@@ -204,6 +209,12 @@ void vtkVP9VolumeCodec::SetParametersFromPreset(std::string preset)
     this->SetParameter(this->GetLosslessEncodingParameter(), "0");
     this->SetParameter(this->GetMinimumKeyFrameDistanceParameter(), "10");
     this->SetParameter(this->GetMinimumKeyFrameDistanceParameter(), "50");
+  }
+  else if (preset == "VP90_LO_S8_RCQ")
+  {
+    this->SetParameter(this->GetLosslessEncodingParameter(), "0");
+    this->SetParameter(this->GetSpeedParameter(), "8");
+    this->SetParameter(this->GetRateControlParameter(), "Q");
   }
 }
 
