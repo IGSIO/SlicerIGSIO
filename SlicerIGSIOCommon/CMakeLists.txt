@@ -9,6 +9,8 @@ find_package(IGSIO REQUIRED)
 SET (SlicerIGSIOCommon_SRCS
   vtkSlicerIGSIOCommon.cxx
   vtkSlicerIGSIOCommon.h
+  vtkSlicerIGSIOLogger.cxx
+  vtkSlicerIGSIOLogger.h
   )
 
 SET (SlicerIGSIOCommon_INCLUDE_DIRS
@@ -37,7 +39,7 @@ SET (SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   vtkSlicerSequenceBrowserModuleMRML
   vtkSlicerVolumesModuleLogic
   )
-  
+
 INCLUDE_DIRECTORIES( ${SlicerIGSIOCommon_INCLUDE_DIRS} )
 ADD_LIBRARY(${lib_name} ${SlicerIGSIOCommon_SRCS})
 TARGET_LINK_LIBRARIES( ${lib_name} ${SlicerIGSIOCommon_LIBS} )

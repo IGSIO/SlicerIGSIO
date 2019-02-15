@@ -22,21 +22,24 @@ Care Ontario.
 
 // VideoIO module includes
 #include "qSlicerVideoIOModule.h"
+#include "qSlicerVideoIOModuleWidget.h"
 #include "qSlicerVideoReader.h"
 
 // VideoIO Logic includes
-#include <vtkSlicerVideoIOLogic.h>
+#include "vtkSlicerVideoIOLogic.h"
 
-#include <qSlicerVideoIOModuleWidget.h>
-
+// Slicer includes
 #include <qSlicerCoreApplication.h>
 #include <qSlicerCoreIOManager.h>
-
 #include <qSlicerNodeWriter.h>
 
-#include "vtkVP9VolumeCodec.h"
+// IGSIO codec includes
+#include <vtkVP9VolumeCodec.h>
 
-//
+// vtkSlicerIGSIOCommon includes
+#include <vtkSlicerIGSIOLogger.h>
+
+// vtkAddon include
 #include <vtkStreamingVolumeCodecFactory.h>
 
 //-----------------------------------------------------------------------------
@@ -125,6 +128,9 @@ void qSlicerVideoIOModule::setup()
   this->Superclass::setup();
 
   qSlicerCoreApplication* app = qSlicerCoreApplication::application();
+
+  // Create logger instance
+  vtkSlicerIGSIOLogger::Instance();
 
   // Register the IO
   vtkSlicerVideoIOLogic* logic = vtkSlicerVideoIOLogic::SafeDownCast(this->logic());
