@@ -52,6 +52,10 @@ vtkIGSIOLogger* vtkSlicerIGSIOLogger::Instance()
     }
 
     vtkSlicerIGSIOLogger* newLoggerInstance = new vtkSlicerIGSIOLogger;
+#ifdef VTK_HAS_INITIALIZE_OBJECT_BASE
+    newLoggerInstance->InitializeObjectBase();
+#endif
+
     // lock the instance even before making it available to make sure the instance is fully
     // initialized before anybody uses it
     igsioLockGuard<vtkIGSIORecursiveCriticalSection> critSectionGuard(newLoggerInstance->m_CriticalSection);
