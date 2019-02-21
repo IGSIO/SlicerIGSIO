@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5)
+
+#-----------------------------------------------------------------------------
 set(EXTENSION_NAME SlicerIGSIO)
-project(${EXTENSION_NAME})
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
@@ -16,8 +17,11 @@ set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer COMPONENTS vtkAddon REQUIRED)
+find_package(Slicer COMPONENTS ConfigurePrerequisites REQUIRED)
+project(${EXTENSION_NAME})
+find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
+mark_as_superbuild(Slicer_DIR)
 
 mark_as_superbuild(IGSIO_DIR)
 
