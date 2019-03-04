@@ -39,20 +39,20 @@ public:
   static vtkMRMLStreamingVolumeSequenceStorageNode *New();
   vtkTypeMacro(vtkMRMLStreamingVolumeSequenceStorageNode,vtkMRMLStorageNode);
 
-  virtual vtkMRMLNode* CreateNodeInstance();
+  virtual vtkMRMLNode* CreateNodeInstance() VTK_OVERRIDE;
 
   ///
   /// Get node XML tag name (like Storage, Model)
-  virtual const char* GetNodeTagName()  {return "VideoStorage";};
+  virtual const char* GetNodeTagName() VTK_OVERRIDE {return "VideoStorage";};
 
   /// Return true if the node can be read in.
-  virtual bool CanReadInReferenceNode(vtkMRMLNode *refNode);
+  virtual bool CanReadInReferenceNode(vtkMRMLNode *refNode) VTK_OVERRIDE;
 
   /// Return true if the node can be written by using thie writer.
-  virtual bool CanWriteFromReferenceNode(vtkMRMLNode* refNode);
+  virtual bool CanWriteFromReferenceNode(vtkMRMLNode* refNode) VTK_OVERRIDE;
 
   /// Return a default file extension for writting
-  virtual const char* GetDefaultWriteFileExtension();
+  virtual const char* GetDefaultWriteFileExtension() VTK_OVERRIDE;
 
   static bool ReadVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
   static bool WriteVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
@@ -76,22 +76,22 @@ protected:
   vtkMRMLStreamingVolumeSequenceStorageNode(const vtkMRMLStreamingVolumeSequenceStorageNode&);
   void operator=(const vtkMRMLStreamingVolumeSequenceStorageNode&);
 
-  virtual int WriteDataInternal(vtkMRMLNode *refNode);
+  virtual int WriteDataInternal(vtkMRMLNode *refNode) VTK_OVERRIDE;
 
   /// Does the actual reading. Returns 1 on success, 0 otherwise.
   /// Returns 0 by default (read not supported).
   /// This implementation delegates most everything to the superclass
   /// but it has an early exit if the file to be read is incompatible.
-  virtual int ReadDataInternal(vtkMRMLNode* refNode);
+  virtual int ReadDataInternal(vtkMRMLNode* refNode) VTK_OVERRIDE;
 
   /// Initialize all the supported write file types
-  virtual void InitializeSupportedReadFileTypes();
+  virtual void InitializeSupportedReadFileTypes() VTK_OVERRIDE;
 
   /// Initialize all the supported write file types
-  virtual void InitializeSupportedWriteFileTypes();
+  virtual void InitializeSupportedWriteFileTypes() VTK_OVERRIDE;
 
   /// Update the supported compression presets
-  virtual void UpdateCompressionPresets();
+  virtual void UpdateCompressionPresets() VTK_OVERRIDE;
 
   std::string CodecFourCC;
 };

@@ -47,7 +47,7 @@ class VTK_SLICER_VIDEOIO_MODULE_LOGIC_EXPORT vtkSlicerVideoIOLogic : public vtkS
   vtkTypeMacro(vtkSlicerVideoIOLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream&, vtkIndent) VTK_OVERRIDE;
 
-  void RegisterNodes();
+  void RegisterNodes() VTK_OVERRIDE;
 
   //----------------------------------------------------------------
   // Events
