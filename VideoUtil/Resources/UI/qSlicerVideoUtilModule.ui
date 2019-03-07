@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>qSlicerVideoIOModule</class>
- <widget class="qSlicerWidget" name="qSlicerVideoIOModule">
+ <class>qSlicerVideoUtilModule</class>
+ <widget class="qSlicerWidget" name="qSlicerVideoUtilModule">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -101,11 +101,11 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../qSlicerVideoIOModule.qrc"/>
+  <include location="../qSlicerVideoUtilModule.qrc"/>
  </resources>
  <connections>
   <connection>
-   <sender>qSlicerVideoIOModule</sender>
+   <sender>qSlicerVideoUtilModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
    <receiver>VideoNodeSelector</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>

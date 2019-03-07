@@ -18,19 +18,19 @@ Care Ontario.
 
 ==============================================================================*/
 
-#ifndef __qSlicerVideoIOModule_h
-#define __qSlicerVideoIOModule_h
+#ifndef __qSlicerVideoUtilModule_h
+#define __qSlicerVideoUtilModule_h
 
 // SlicerQt includes
 #include "qSlicerLoadableModule.h"
-#include "qSlicerVideoIOModuleExport.h"
+#include "qSlicerVideoUtilModuleExport.h"
 #include "qSlicerApplication.h"
 
-class qSlicerVideoIOModulePrivate;
+class qSlicerVideoUtilModulePrivate;
 class vtkObject;
 
-/// \ingroup Slicer_QtModules_VideoIO
-class Q_SLICER_QTMODULES_VIDEOIO_EXPORT qSlicerVideoIOModule :
+/// \ingroup Slicer_QtModules_VideoUtil
+class Q_SLICER_QTMODULES_VIDEOUTIL_EXPORT qSlicerVideoUtilModule :
   public qSlicerLoadableModule
 {
   Q_OBJECT;
@@ -43,8 +43,8 @@ class Q_SLICER_QTMODULES_VIDEOIO_EXPORT qSlicerVideoIOModule :
 public:
 
   typedef qSlicerLoadableModule Superclass;
-  explicit qSlicerVideoIOModule(QObject *parent=0);
-  virtual ~qSlicerVideoIOModule();
+  explicit qSlicerVideoUtilModule(QObject *parent=0);
+  virtual ~qSlicerVideoUtilModule();
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);
 
@@ -81,11 +81,11 @@ public slots:
   virtual void setMRMLScene(vtkMRMLScene*);
 
 protected:
-  QScopedPointer<qSlicerVideoIOModulePrivate> d_ptr;
+  QScopedPointer<qSlicerVideoUtilModulePrivate> d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerVideoIOModule);
-  Q_DISABLE_COPY(qSlicerVideoIOModule);
+  Q_DECLARE_PRIVATE(qSlicerVideoUtilModule);
+  Q_DISABLE_COPY(qSlicerVideoUtilModule);
 
 };
 

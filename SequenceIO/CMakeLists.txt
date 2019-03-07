@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.8)
 
 find_package(IGSIO REQUIRED)
 
-set(MODULE_NAME "VideoIO")
-set(MODULE_TITLE "VideoIO")
+set(MODULE_NAME "SequenceIO")
+set(MODULE_TITLE "SequenceIO")
 
 string(TOUPPER ${MODULE_NAME} MODULE_NAME_UPPER)
 
@@ -27,21 +27,14 @@ set(MODULE_INCLUDE_DIRECTORIES
 set(MODULE_SRCS
   qSlicer${MODULE_NAME}Module.cxx
   qSlicer${MODULE_NAME}Module.h
-  qSlicer${MODULE_NAME}ModuleWidget.cxx
-  qSlicer${MODULE_NAME}ModuleWidget.h
-  qSlicerVideoReader.cxx
-  qSlicerVideoReader.h
+  qSlicer${MODULE_NAME}Reader.cxx
+  qSlicer${MODULE_NAME}Reader.h
   )
 
 set(MODULE_MOC_SRCS
   qSlicer${MODULE_NAME}Module.h
-  qSlicer${MODULE_NAME}ModuleWidget.h
-  qSlicerVideoReader.h
+  qSlicer${MODULE_NAME}Reader.h
   )
-
-set(MODULE_UI_SRCS
-  Resources/UI/qSlicerVideoIOModule.ui
-)
 
 set(MODULE_TARGET_LIBRARIES
   vtkSlicer${MODULE_NAME}ModuleLogic
@@ -53,10 +46,6 @@ set(MODULE_TARGET_LIBRARIES
   vtkSlicerSequenceBrowserModuleMRML
   )
 
-set(MODULE_RESOURCES
-  Resources/qSlicer${MODULE_NAME}Module.qrc
-  )
-
 #-----------------------------------------------------------------------------
 slicerMacroBuildLoadableModule(
   NAME ${MODULE_NAME}
@@ -65,11 +54,5 @@ slicerMacroBuildLoadableModule(
   INCLUDE_DIRECTORIES ${MODULE_INCLUDE_DIRECTORIES}
   SRCS ${MODULE_SRCS}
   MOC_SRCS ${MODULE_MOC_SRCS}
-  UI_SRCS ${MODULE_UI_SRCS}
   TARGET_LIBRARIES ${MODULE_TARGET_LIBRARIES}
-  RESOURCES ${MODULE_RESOURCES}
   )
-
-if(BUILD_TESTING)
-  add_subdirectory(Testing)
-endif()

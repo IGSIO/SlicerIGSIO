@@ -43,7 +43,8 @@ endif()
 #-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(SlicerIGSIOCommon)
-add_subdirectory(VideoIO)
+add_subdirectory(SequenceIO)
+add_subdirectory(VideoUtil)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)

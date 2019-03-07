@@ -20,13 +20,12 @@ Care Ontario.
 
 #include "qSlicerCoreApplication.h"
 
-// VideoIO module includes
-#include "qSlicerVideoIOModule.h"
-#include "qSlicerVideoIOModuleWidget.h"
-#include "qSlicerVideoReader.h"
+// SequenceIO module includes
+#include "qSlicerSequenceIOModule.h"
+#include "qSlicerSequenceIOReader.h"
 
-// VideoIO Logic includes
-#include "vtkSlicerVideoIOLogic.h"
+// SequenceIO Logic includes
+#include "vtkSlicerSequenceIOLogic.h"
 
 // Slicer includes
 #include <qSlicerCoreApplication.h>
@@ -46,49 +45,49 @@ Care Ontario.
 #include <QtGlobal>
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
 #include <QtPlugin>
-Q_EXPORT_PLUGIN2(qSlicerVideoIOModule, qSlicerVideoIOModule);
+Q_EXPORT_PLUGIN2(qSlicerSequenceIOModule, qSlicerSequenceIOModule);
 #endif
 //-----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_VideoIO
-class qSlicerVideoIOModulePrivate
+/// \ingroup Slicer_QtModules_SequenceIO
+class qSlicerSequenceIOModulePrivate
 {
 public:
-  qSlicerVideoIOModulePrivate();
+  qSlicerSequenceIOModulePrivate();
 
 };
 
 //-----------------------------------------------------------------------------
-// qSlicerVideoIOModulePrivate methods
+// qSlicerSequenceIOModulePrivate methods
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModulePrivate::qSlicerVideoIOModulePrivate()
+qSlicerSequenceIOModulePrivate::qSlicerSequenceIOModulePrivate()
 {
 }
 
 //-----------------------------------------------------------------------------
-// qSlicerVideoIOModule methods
+// qSlicerSequenceIOModule methods
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModule::qSlicerVideoIOModule(QObject* _parent)
+qSlicerSequenceIOModule::qSlicerSequenceIOModule(QObject* _parent)
   : Superclass(_parent)
-  , d_ptr(new qSlicerVideoIOModulePrivate)
+  , d_ptr(new qSlicerSequenceIOModulePrivate)
 {
-  Q_D(qSlicerVideoIOModule);
+  Q_D(qSlicerSequenceIOModule);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModule::~qSlicerVideoIOModule()
+qSlicerSequenceIOModule::~qSlicerSequenceIOModule()
 {
 }
 
 //-----------------------------------------------------------------------------
-QString qSlicerVideoIOModule::helpText()const
+QString qSlicerSequenceIOModule::helpText()const
 {
   return "This is a module for reading, writing, and re-encoding video sequences. If you have questions, or encounter an problem, submit an issue on the <a href=\"https://github.com/IGSIO/SlicerIGSIO\">GitHub page</a>.";
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerVideoIOModule::contributors()const
+QStringList qSlicerSequenceIOModule::contributors()const
 {
   QStringList moduleContributors;
   moduleContributors << QString("Kyle Sunderland (PerkLab, Queen's University)");
@@ -98,32 +97,32 @@ QStringList qSlicerVideoIOModule::contributors()const
 
 
 //-----------------------------------------------------------------------------
-QString qSlicerVideoIOModule::acknowledgementText()const
+QString qSlicerSequenceIOModule::acknowledgementText()const
 {
   return "This module was developed through support from CANARIE's Research Software Program, and Cancer Care Ontario.";
 }
 
 //-----------------------------------------------------------------------------
-QIcon qSlicerVideoIOModule::icon()const
+QIcon qSlicerSequenceIOModule::icon()const
 {
-  return QIcon(":/Icons/VideoIO.png");
+  return QIcon(":/Icons/SequenceIO.png");
 }
 
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerVideoIOModule::categories() const
+QStringList qSlicerSequenceIOModule::categories() const
 {
   return QStringList() << "IO";
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerVideoIOModule::dependencies() const
+QStringList qSlicerSequenceIOModule::dependencies() const
 {
   return QStringList() << "Sequences" << "SequenceBrowser";
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModule::setup()
+void qSlicerSequenceIOModule::setup()
 {
   this->Superclass::setup();
 
@@ -133,29 +132,25 @@ void qSlicerVideoIOModule::setup()
   vtkSlicerIGSIOLogger::Instance();
 
   // Register the IO
-  vtkSlicerVideoIOLogic* logic = vtkSlicerVideoIOLogic::SafeDownCast(this->logic());
-  app->coreIOManager()->registerIO(new qSlicerVideoReader(logic, this));
-
-  // Register the codecs
-  vtkStreamingVolumeCodecFactory* codecFactory = vtkStreamingVolumeCodecFactory::GetInstance();
-  codecFactory->RegisterStreamingCodec(vtkSmartPointer<vtkVP9VolumeCodec>::New());
+  vtkSlicerSequenceIOLogic* logic = vtkSlicerSequenceIOLogic::SafeDownCast(this->logic());
+  app->coreIOManager()->registerIO(new qSlicerSequenceIOReader(logic, this));
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModule::setMRMLScene(vtkMRMLScene* scene)
+void qSlicerSequenceIOModule::setMRMLScene(vtkMRMLScene* scene)
 {
   vtkMRMLScene* oldScene = this->mrmlScene();
   this->Superclass::setMRMLScene(scene);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerAbstractModuleRepresentation * qSlicerVideoIOModule::createWidgetRepresentation()
+qSlicerAbstractModuleRepresentation * qSlicerSequenceIOModule::createWidgetRepresentation()
 {
-  return new qSlicerVideoIOModuleWidget;
+  return nullptr;
 }
 
 //-----------------------------------------------------------------------------
-vtkMRMLAbstractLogic* qSlicerVideoIOModule::createLogic()
+vtkMRMLAbstractLogic* qSlicerSequenceIOModule::createLogic()
 {
-  return vtkSlicerVideoIOLogic::New();
+  return vtkSlicerSequenceIOLogic::New();
 }

@@ -35,6 +35,9 @@ Care Ontario.
 #include <vtkMRMLStreamingVolumeNode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLSelectionNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+
+#include <vtkMRMLSequenceStorageNode.h>
 
 // VTK includes
 #include <vtkMatrix4x4.h>
@@ -92,10 +95,6 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
 
   for (int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-    // Convert frame to a string with the a maximum number of digits (frameNumberMaxLength)
-    // ex. 0, 1, 2, 3 or 0000, 0001, 0002, 0003 etc.
-    std::stringstream frameNumberSS;
-    frameNumberSS << std::setw(frameNumberMaxLength) << std::setfill('0') << i;
 
     igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     std::stringstream timestampSS;
@@ -104,7 +103,15 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     vtkSmartPointer<vtkMRMLVolumeNode> volumeNode;
     if (!trackedFrame->GetImageData()->IsFrameEncoded())
     {
-      volumeNode = vtkSmartPointer<vtkMRMLVectorVolumeNode>::New();
+      unsigned int numberOfScalarComponents = 0;
+      if (trackedFrame->GetNumberOfScalarComponents(numberOfScalarComponents) && numberOfScalarComponents > 1)
+      {
+        volumeNode = vtkSmartPointer<vtkMRMLVectorVolumeNode>::New();
+      }
+      else
+      {
+        volumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+      }
       volumeNode->SetAndObserveImageData(trackedFrame->GetImageData()->GetImage());
     }
     else
@@ -136,7 +143,16 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
       }
     }
 
-    volumeNode->SetName(trackedFrameName.c_str());
+    // Convert frame to a string with the a maximum number of digits (frameNumberMaxLength)
+    // ex. 0, 1, 2, 3 or 0000, 0001, 0002, 0003 etc.
+    std::stringstream frameNumberSS;
+    frameNumberSS << std::setw(frameNumberMaxLength) << std::setfill('0') << i;
+
+    // Generating a unique name is important because that will be used to generate the filename by default
+    std::ostringstream nameStr;
+    nameStr << "Image_" << frameNumberSS.str() << std::ends;
+    std::string volumeName = nameStr.str();
+    volumeNode->SetName(volumeName.c_str());
 
     const char* frameStatus = trackedFrame->GetFrameField(FRAME_STATUS_TRACKNAME);
     if (!frameStatus || vtkVariant(frameStatus).ToInt() != Frame_Skip)
@@ -144,6 +160,15 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
       sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
     }
   }
+
+  /*for (std::map< std::string, std::string >::iterator imageMetaDataIt = imageMetaData.begin(); imageMetaDataIt != imageMetaData.end(); ++imageMetaDataIt)
+  {
+    std::string attributeName = "Sequences.";
+    attributeName += imageMetaDataIt->first;
+    createdImageNode->SetAttribute(attributeName.c_str(), imageMetaDataIt->second.c_str());
+  }
+  createdImageNode->SetAttribute("Sequences.Source", IMAGE_NODE_BASE_NAME);*/
+  sequenceNode->SetAttribute("Sequences.Source", "Image");
 
   return true;
 }
@@ -170,17 +195,20 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
     trackedFrameName = trackedFrameList->GetCustomString(TRACKNAME_FIELD_NAME);
   }
 
-  vtkSmartPointer<vtkMRMLSequenceNode> videoSequenceNode = vtkSmartPointer <vtkMRMLSequenceNode>::New();
-  videoSequenceNode->SetName(scene->GetUniqueNameByString(trackedFrameName.c_str()));
+  std::string imagesSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, "Image");
+  vtkSmartPointer<vtkMRMLSequenceNode> videoSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
+    scene->AddNewNodeByClass("vtkMRMLSequenceNode", imagesSequenceName.c_str()));
   vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, videoSequenceNode);
-  scene->AddNode(videoSequenceNode);
 
   if (videoSequenceNode->GetNumberOfDataNodes() < 1)
   {
-    vtkErrorWithObjectMacro(trackedFrameList, "No frames in trackedframelist!");
-    return false;
+    // No images in tracked frame list
+    scene->RemoveNode(videoSequenceNode);
   }
-  sequenceBrowserNode->AddSynchronizedSequenceNode(videoSequenceNode);
+  else
+  {
+    sequenceBrowserNode->AddSynchronizedSequenceNode(videoSequenceNode);
+  }
 
   FrameSizeType frameSize = { 0,0,0 };
   trackedFrameList->GetFrameSize(frameSize);
@@ -213,14 +241,27 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
         vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::New();
         transformNode->SetMatrixTransformToParent(transformMatrix);
 
-        std::string transformName = transformNameIt->GetTransformName();
+        // Convert frame to a string with the a maximum number of digits (frameNumberMaxLength)
+        // ex. 0, 1, 2, 3 or 0000, 0001, 0002, 0003 etc.
+        std::stringstream frameNumberSS;
+        frameNumberSS << std::setw(frameNumberMaxLength) << std::setfill('0') << i;
+
+        // Generating a unique name is important because that will be used to generate the filename by default
+        std::ostringstream nameStr;
+        nameStr << transformName << "Transform_" << frameNumberSS.str() << std::ends;
+        std::string transformNodeName = nameStr.str();
+        transformNode->SetName(transformNodeName.c_str());
+
         if (transformSequenceNodes.find(transformName) == transformSequenceNodes.end())
         {
+          std::string transformSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, transformName);
           vtkSmartPointer<vtkMRMLSequenceNode> transformSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
-            scene->AddNewNodeByClass("vtkMRMLSequenceNode"));
-          transformSequenceNode->SetName(transformName.c_str());
+            scene->AddNewNodeByClass("vtkMRMLSequenceNode", transformSequenceName.c_str()));
           transformSequenceNode->SetIndexName("time");
           transformSequenceNode->SetIndexUnit("s");
+          // Save transform name to Sequences.Source attribute so that modules can
+          // find a transform by matching the original the transform name.
+          transformSequenceNode->SetAttribute("Sequences.Source", transformName.c_str());
           sequenceBrowserNode->AddSynchronizedSequenceNode(transformSequenceNode);
           transformSequenceNodes[transformName] = transformSequenceNode;
         }
@@ -229,7 +270,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
     }
 
   }
-
+  sequenceBrowserNode->Modified();
   return true;
 }
 

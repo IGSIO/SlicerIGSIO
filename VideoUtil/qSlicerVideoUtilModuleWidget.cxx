@@ -25,8 +25,8 @@ Care Ontario.
 #include <QTextEdit>
 
 // SlicerQt includes
-#include "qSlicerVideoIOModuleWidget.h"
-#include "ui_qSlicerVideoIOModule.h"
+#include "qSlicerVideoUtilModuleWidget.h"
+#include "ui_qSlicerVideoUtilModule.h"
 
 // vtkAddon includes
 #include <vtkStreamingVolumeCodecFactory.h>
@@ -47,51 +47,51 @@ enum
 };
 
 //-----------------------------------------------------------------------------
-/// \ingroup Slicer_QtModules_VideoIO
-class qSlicerVideoIOModuleWidgetPrivate: public Ui_qSlicerVideoIOModule
+/// \ingroup Slicer_QtModules_VideoUtil
+class qSlicerVideoUtilModuleWidgetPrivate: public Ui_qSlicerVideoUtilModule
 {
-  Q_DECLARE_PUBLIC(qSlicerVideoIOModuleWidget);
+  Q_DECLARE_PUBLIC(qSlicerVideoUtilModuleWidget);
 protected:
-  qSlicerVideoIOModuleWidget* const q_ptr;
+  qSlicerVideoUtilModuleWidget* const q_ptr;
 public:
-  qSlicerVideoIOModuleWidgetPrivate(qSlicerVideoIOModuleWidget& object);
-  ~qSlicerVideoIOModuleWidgetPrivate();
+  qSlicerVideoUtilModuleWidgetPrivate(qSlicerVideoUtilModuleWidget& object);
+  ~qSlicerVideoUtilModuleWidgetPrivate();
 
 };
 
 //-----------------------------------------------------------------------------
-// qSlicerVideoIOModuleWidgetPrivate methods
+// qSlicerVideoUtilModuleWidgetPrivate methods
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModuleWidgetPrivate::qSlicerVideoIOModuleWidgetPrivate(qSlicerVideoIOModuleWidget& object)
+qSlicerVideoUtilModuleWidgetPrivate::qSlicerVideoUtilModuleWidgetPrivate(qSlicerVideoUtilModuleWidget& object)
  : q_ptr(&object)
 {
 }
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModuleWidgetPrivate::~qSlicerVideoIOModuleWidgetPrivate()
+qSlicerVideoUtilModuleWidgetPrivate::~qSlicerVideoUtilModuleWidgetPrivate()
 {
 }
 
 //-----------------------------------------------------------------------------
-// qSlicerVideoIOModuleWidget methods
+// qSlicerVideoUtilModuleWidget methods
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModuleWidget::qSlicerVideoIOModuleWidget(QWidget* _parent)
+qSlicerVideoUtilModuleWidget::qSlicerVideoUtilModuleWidget(QWidget* _parent)
   : Superclass( _parent )
-  , d_ptr( new qSlicerVideoIOModuleWidgetPrivate(*this) )
+  , d_ptr( new qSlicerVideoUtilModuleWidgetPrivate(*this) )
 {
 }
 
 //-----------------------------------------------------------------------------
-qSlicerVideoIOModuleWidget::~qSlicerVideoIOModuleWidget()
+qSlicerVideoUtilModuleWidget::~qSlicerVideoUtilModuleWidget()
 {
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModuleWidget::setup()
+void qSlicerVideoUtilModuleWidget::setup()
 {
-  Q_D(qSlicerVideoIOModuleWidget);
+  Q_D(qSlicerVideoUtilModuleWidget);
   d->setupUi(this);
   this->Superclass::setup();
 
@@ -108,9 +108,9 @@ void qSlicerVideoIOModuleWidget::setup()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModuleWidget::onCodecChanged(const QString &codecFourCC)
+void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString &codecFourCC)
 {
-  Q_D(qSlicerVideoIOModuleWidget);
+  Q_D(qSlicerVideoUtilModuleWidget);
   d->EncodingParameterTable->setRowCount(0);
 
   vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec> ::Take(
@@ -148,9 +148,9 @@ void qSlicerVideoIOModuleWidget::onCodecChanged(const QString &codecFourCC)
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModuleWidget::encodeVideo()
+void qSlicerVideoUtilModuleWidget::encodeVideo()
 {
-  Q_D(qSlicerVideoIOModuleWidget);
+  Q_D(qSlicerVideoUtilModuleWidget);
   vtkMRMLSequenceNode* sequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->VideoNodeSelector->currentNode());
   if (!sequenceNode)
   {
@@ -177,9 +177,9 @@ void qSlicerVideoIOModuleWidget::encodeVideo()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoIOModuleWidget::setMRMLScene(vtkMRMLScene* scene)
+void qSlicerVideoUtilModuleWidget::setMRMLScene(vtkMRMLScene* scene)
 {
-  Q_D(qSlicerVideoIOModuleWidget);
+  Q_D(qSlicerVideoUtilModuleWidget);
 
   this->Superclass::setMRMLScene(scene);
   if (scene == NULL)

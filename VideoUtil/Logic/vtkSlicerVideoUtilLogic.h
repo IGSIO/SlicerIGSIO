@@ -19,10 +19,10 @@ Care Ontario.
 ==============================================================================*/
 
 /// Manages the logic associated with encoded video input/output.
-#ifndef __vtkSlicerVideoIOLogic_h
-#define __vtkSlicerVideoIOLogic_h
+#ifndef __vtkSlicerVideoUtilLogic_h
+#define __vtkSlicerVideoUtilLogic_h
 
-#include "vtkSlicerVideoIOModuleLogicExport.h"
+#include "vtkSlicerVideoUtilModuleLogicExport.h"
 
 // Slicer includes
 #include <vtkSlicerBaseLogic.h>
@@ -31,20 +31,17 @@ Care Ontario.
 // VTK includes
 #include <vtkCallbackCommand.h>
 
-// IGSIO includes
-#include <vtkIGSIOTrackedFrameList.h>
-
 // Sequences MRML includes
 #include <vtkMRMLSequenceBrowserNode.h>
 
 class vtkMRMLIGTLConnectorNode;
 
-/// \ingroup Slicer_QtModules_VideoIO
-class VTK_SLICER_VIDEOIO_MODULE_LOGIC_EXPORT vtkSlicerVideoIOLogic : public vtkSlicerModuleLogic
+/// \ingroup Slicer_QtModules_VideoUtil
+class VTK_SLICER_VIDEOUTIL_MODULE_LOGIC_EXPORT vtkSlicerVideoUtilLogic : public vtkSlicerModuleLogic
 {
  public:
-  static vtkSlicerVideoIOLogic *New();
-  vtkTypeMacro(vtkSlicerVideoIOLogic, vtkSlicerModuleLogic);
+  static vtkSlicerVideoUtilLogic *New();
+  vtkTypeMacro(vtkSlicerVideoUtilLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream&, vtkIndent) VTK_OVERRIDE;
 
   void RegisterNodes() VTK_OVERRIDE;
@@ -67,17 +64,17 @@ class VTK_SLICER_VIDEOIO_MODULE_LOGIC_EXPORT vtkSlicerVideoIOLogic : public vtkS
   // Constructor, destructor etc.
   //----------------------------------------------------------------
 
-  vtkSlicerVideoIOLogic();
-  virtual ~vtkSlicerVideoIOLogic();
+  vtkSlicerVideoUtilLogic();
+  virtual ~vtkSlicerVideoUtilLogic();
 
  private:
-  
+
 private:
   class vtkInternal;
   vtkInternal * Internal;
 
-  vtkSlicerVideoIOLogic(const vtkSlicerVideoIOLogic&); // Not implemented
-  void operator=(const vtkSlicerVideoIOLogic&);               // Not implemented
+  vtkSlicerVideoUtilLogic(const vtkSlicerVideoUtilLogic&); // Not implemented
+  void operator=(const vtkSlicerVideoUtilLogic&);               // Not implemented
 };
 
 #endif

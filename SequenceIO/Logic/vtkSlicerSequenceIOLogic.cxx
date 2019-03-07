@@ -33,31 +33,31 @@ Care Ontario.
 // Volumes includes
 #include <vtkStreamingVolumeCodecFactory.h>
 
-// VideoIO includes
-#include "vtkSlicerVideoIOLogic.h"
+// SequenceIO includes
+#include "vtkSlicerSequenceIOLogic.h"
 
 // Sequences includes
 #include <vtkMRMLNodeSequencer.h>
 #include <vtkMRMLSequenceNode.h>
 
-// vtkVideoIOMRML includes
+// vtkSequenceIOMRML includes
 #include "vtkMRMLStreamingVolumeSequenceStorageNode.h"
 
 // VTK includes
 #include <vtkMatrix4x4.h>
 
 //---------------------------------------------------------------------------
-vtkStandardNewMacro(vtkSlicerVideoIOLogic);
+vtkStandardNewMacro(vtkSlicerSequenceIOLogic);
 
 //---------------------------------------------------------------------------
-class vtkSlicerVideoIOLogic::vtkInternal
+class vtkSlicerSequenceIOLogic::vtkInternal
 {
 public:
   //---------------------------------------------------------------------------
-  vtkInternal(vtkSlicerVideoIOLogic* external);
+  vtkInternal(vtkSlicerSequenceIOLogic* external);
   ~vtkInternal();
 
-  vtkSlicerVideoIOLogic* External;
+  vtkSlicerSequenceIOLogic* External;
 };
 
 //----------------------------------------------------------------------------
@@ -169,32 +169,32 @@ public:
 // vtkInternal methods
 
 //---------------------------------------------------------------------------
-vtkSlicerVideoIOLogic::vtkInternal::vtkInternal(vtkSlicerVideoIOLogic* external)
+vtkSlicerSequenceIOLogic::vtkInternal::vtkInternal(vtkSlicerSequenceIOLogic* external)
   : External(external)
 {
 }
 
 //---------------------------------------------------------------------------
-vtkSlicerVideoIOLogic::vtkInternal::~vtkInternal()
+vtkSlicerSequenceIOLogic::vtkInternal::~vtkInternal()
 {
 }
 
 //----------------------------------------------------------------------------
-// vtkSlicerVideoIOLogic methods
+// vtkSlicerSequenceIOLogic methods
 
 //---------------------------------------------------------------------------
-vtkSlicerVideoIOLogic::vtkSlicerVideoIOLogic()
+vtkSlicerSequenceIOLogic::vtkSlicerSequenceIOLogic()
 {
   this->Internal = new vtkInternal(this);
 }
 
 //---------------------------------------------------------------------------
-vtkSlicerVideoIOLogic::~vtkSlicerVideoIOLogic()
+vtkSlicerSequenceIOLogic::~vtkSlicerSequenceIOLogic()
 {
 }
 
 //-----------------------------------------------------------------------------
-void vtkSlicerVideoIOLogic::RegisterNodes()
+void vtkSlicerSequenceIOLogic::RegisterNodes()
 {
   if (this->GetMRMLScene() == NULL)
   {
@@ -207,8 +207,8 @@ void vtkSlicerVideoIOLogic::RegisterNodes()
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerVideoIOLogic::PrintSelf(ostream& os, vtkIndent indent)
+void vtkSlicerSequenceIOLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
   this->vtkObject::PrintSelf(os, indent);
-  os << indent << "vtkSlicerVideoIOLogic:             " << this->GetClassName() << "\n";
+  os << indent << "vtkSlicerSequenceIOLogic:             " << this->GetClassName() << "\n";
 }

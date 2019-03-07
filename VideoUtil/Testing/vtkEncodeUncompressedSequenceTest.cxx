@@ -69,7 +69,7 @@ int vtkEncodeUncompressedSequenceTest(int argc, char* argv[])
   int numFrames = 25;
 
   vtkSmartPointer<vtkStreamingVolumeCodecFactory> factory = vtkStreamingVolumeCodecFactory::GetInstance();
-  
+
   vtkNew<vtkMRMLScene> scene;
   vtkNew<vtkMRMLSequenceNode> sequenceNode;
   scene->AddNode(sequenceNode);

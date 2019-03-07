@@ -21,7 +21,7 @@ Care Ontario.
 #ifndef __vtkMRMLStreamingVolumeSequenceStorageNode_h
 #define __vtkMRMLStreamingVolumeSequenceStorageNode_h
 
-#include "vtkSlicerVideoIOModuleMRMLExport.h"
+#include "vtkSlicerSequenceIOModuleMRMLExport.h"
 
 #include "vtkMRMLStorageNode.h"
 #include <string>
@@ -32,7 +32,7 @@ class vtkGenericVideoWriter;
 class vtkMRMLSequenceNode;
 
 /// \ingroup Slicer_QtModules_Sequences
-class VTK_SLICER_VIDEOIO_MODULE_MRML_EXPORT vtkMRMLStreamingVolumeSequenceStorageNode : public vtkMRMLStorageNode
+class VTK_SLICER_SEQUENCEIO_MODULE_MRML_EXPORT vtkMRMLStreamingVolumeSequenceStorageNode : public vtkMRMLStorageNode
 {
 public:
 

@@ -37,7 +37,7 @@ Care Ontario.
 // IGSIO vtkSequenceIO includes
 #include <vtkIGSIOSequenceIO.h>
 
-// VideoIO MRML includes
+// SequenceIO MRML includes
 #include "vtkMRMLStreamingVolumeSequenceStorageNode.h"
 
 //----------------------------------------------------------------------------
@@ -83,9 +83,16 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::ReadDataInternal(vtkMRMLNode* ref
   }
 
   vtkSmartPointer<vtkIGSIOTrackedFrameList> trackedFrameList = vtkSmartPointer<vtkIGSIOTrackedFrameList>::New();
-  this->ReadVideo(this->FileName, trackedFrameList);
-  vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, sequenceNode);
-  trackedFrameList->GetEncodingFourCC(this->CodecFourCC);
+  if (vtkIGSIOSequenceIO::Read(this->FileName, trackedFrameList) == IGSIO_SUCCESS)
+  {
+    vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, sequenceNode);
+    trackedFrameList->GetEncodingFourCC(this->CodecFourCC);
+  }
+  else
+  {
+    vtkErrorMacro("Error reading " << this->Name);
+    return 0;
+  }
 
   return 1;
 }
@@ -124,7 +131,7 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
     codec->SetParametersFromPresetValue(this->CompressionParameter);
     parameterNames = codec->GetAvailiableParameterNames();
   }
-  
+
 
   std::map<std::string, std::string> parameters;
   std::vector<std::string>::iterator parameterNameIt;

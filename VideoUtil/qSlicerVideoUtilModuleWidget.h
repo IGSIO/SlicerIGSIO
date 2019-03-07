@@ -18,22 +18,22 @@ Care Ontario.
 
 ==============================================================================*/
 
-#ifndef __qSlicerVideoIOModuleWidget_h
-#define __qSlicerVideoIOModuleWidget_h
+#ifndef __qSlicerVideoUtilModuleWidget_h
+#define __qSlicerVideoUtilModuleWidget_h
 
 // SlicerQt includes
 #include "qSlicerAbstractModuleWidget.h"
 
-#include "qSlicerVideoIOModuleExport.h"
+#include "qSlicerVideoUtilModuleExport.h"
 
 #include <QObject>
 #include <QtGui>
 
-class qSlicerVideoIOModuleWidgetPrivate;
+class qSlicerVideoUtilModuleWidgetPrivate;
 class vtkMRMLNode;
 
-/// \ingroup Slicer_QtModules_VideoIO
-class Q_SLICER_QTMODULES_VIDEOIO_EXPORT qSlicerVideoIOModuleWidget :
+/// \ingroup Slicer_QtModules_VideoUtil
+class Q_SLICER_QTMODULES_VIDEOUTIL_EXPORT qSlicerVideoUtilModuleWidget :
   public qSlicerAbstractModuleWidget
 {
   Q_OBJECT
@@ -41,8 +41,8 @@ class Q_SLICER_QTMODULES_VIDEOIO_EXPORT qSlicerVideoIOModuleWidget :
 public:
 
   typedef qSlicerAbstractModuleWidget Superclass;
-  qSlicerVideoIOModuleWidget(QWidget *parent=0);
-  virtual ~qSlicerVideoIOModuleWidget();
+  qSlicerVideoUtilModuleWidget(QWidget *parent=0);
+  virtual ~qSlicerVideoUtilModuleWidget();
 
 public slots:
 
@@ -50,14 +50,14 @@ public slots:
   void encodeVideo();
 
 protected:
-  QScopedPointer<qSlicerVideoIOModuleWidgetPrivate> d_ptr;
+  QScopedPointer<qSlicerVideoUtilModuleWidgetPrivate> d_ptr;
 
   virtual void setup();
   virtual void setMRMLScene(vtkMRMLScene*);
 
 private:
-  Q_DECLARE_PRIVATE(qSlicerVideoIOModuleWidget);
-  Q_DISABLE_COPY(qSlicerVideoIOModuleWidget);
+  Q_DECLARE_PRIVATE(qSlicerVideoUtilModuleWidget);
+  Q_DISABLE_COPY(qSlicerVideoUtilModuleWidget);
 
 };
 

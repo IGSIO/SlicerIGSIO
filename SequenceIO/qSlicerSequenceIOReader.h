@@ -18,41 +18,41 @@ Care Ontario.
 
 ==============================================================================*/
 
-#ifndef __qSlicerVideoReader_h
-#define __qSlicerVideoReader_h
+#ifndef __qSlicerSequenceIOReader_h
+#define __qSlicerSequenceIOReader_h
 
 // SlicerQt includes
 #include "qSlicerFileReader.h"
-class qSlicerVideoReaderPrivate;
+class qSlicerSequenceIOReaderPrivate;
 
 // Slicer includes
-class vtkSlicerVideoIOLogic;
+class vtkSlicerSequenceIOLogic;
 
 //-----------------------------------------------------------------------------
-class qSlicerVideoReader
+class qSlicerSequenceIOReader
   : public qSlicerFileReader
 {
   Q_OBJECT
 public:
   typedef qSlicerFileReader Superclass;
-  qSlicerVideoReader(vtkSlicerVideoIOLogic* logic, QObject* parent = 0 );
-  virtual ~qSlicerVideoReader();
+  qSlicerSequenceIOReader(vtkSlicerSequenceIOLogic* logic, QObject* parent = 0 );
+  virtual ~qSlicerSequenceIOReader();
 
   virtual QString description() const;
   virtual IOFileType fileType() const;
   virtual QStringList extensions() const;
 
   virtual bool load( const IOProperties& properties );
-  
-  void setVideoIOLogic(vtkSlicerVideoIOLogic* newVideoIOLogic);
-  vtkSlicerVideoIOLogic* VideoIOLogic() const;
+
+  void setSequenceIOLogic(vtkSlicerSequenceIOLogic* newSequenceIOLogic);
+  vtkSlicerSequenceIOLogic* SequenceIOLogic() const;
 
 protected:
-  QScopedPointer< qSlicerVideoReaderPrivate > d_ptr;
+  QScopedPointer< qSlicerSequenceIOReaderPrivate > d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE( qSlicerVideoReader );
-  Q_DISABLE_COPY( qSlicerVideoReader );
+  Q_DECLARE_PRIVATE( qSlicerSequenceIOReader );
+  Q_DISABLE_COPY( qSlicerSequenceIOReader );
 };
 
 #endif

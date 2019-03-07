@@ -22,15 +22,15 @@ Care Ontario.
 #include <QDebug>
 
 // SlicerIGSIO include
-#include <vtkSlicerVideoIOLogic.h>
+#include <vtkSlicerVideoUtilLogic.h>
 
-#include <qSlicerVideoIOModule.h>
+#include <qSlicerVideoUtilModule.h>
 
 // IGSIO includes
 #include <vtkIGSIOTrackedFrameList.h>
 
 // SlicerQt includes
-#include "qSlicerVideoReader.h"
+#include "qSlicerVideoUtilReader.h"
 
 #include "vtkSlicerIGSIOCommon.h"
 
@@ -55,65 +55,66 @@ Care Ontario.
 
 
 //-----------------------------------------------------------------------------
-class qSlicerVideoReaderPrivate
+class qSlicerVideoUtilReaderPrivate
 {
 public:
-  vtkSlicerVideoIOLogic* VideoIOLogic;
+  vtkSlicerVideoUtilLogic* VideoUtilLogic;
 };
 
 //-----------------------------------------------------------------------------
-qSlicerVideoReader::qSlicerVideoReader(vtkSlicerVideoIOLogic* newVideoIOLogic, QObject* _parent)
+qSlicerVideoUtilReader::qSlicerVideoUtilReader(vtkSlicerVideoUtilLogic* newVideoUtilLogic, QObject* _parent)
   : Superclass(_parent)
-  , d_ptr(new qSlicerVideoReaderPrivate)
+  , d_ptr(new qSlicerVideoUtilReaderPrivate)
 {
-  this->setVideoIOLogic(newVideoIOLogic);
+  this->setVideoUtilLogic(newVideoUtilLogic);
 }
 
 //-----------------------------------------------------------------------------
-qSlicerVideoReader::~qSlicerVideoReader()
+qSlicerVideoUtilReader::~qSlicerVideoUtilReader()
 {
 }
 
 //-----------------------------------------------------------------------------
-QString qSlicerVideoReader::description() const
-{
-  return "Video Container";
-}
-
-//-----------------------------------------------------------------------------
-qSlicerIO::IOFileType qSlicerVideoReader::fileType() const
+QString qSlicerVideoUtilReader::description() const
 {
   return "Video Container";
 }
 
 //-----------------------------------------------------------------------------
-QStringList qSlicerVideoReader::extensions() const
+qSlicerIO::IOFileType qSlicerVideoUtilReader::fileType() const
+{
+  return "Video Container";
+}
+
+//-----------------------------------------------------------------------------
+QStringList qSlicerVideoUtilReader::extensions() const
 {
   QStringList supportedExtensions = QStringList();
 #ifdef IGSIO_SEQUENCEIO_ENABLE_MKV
-    supportedExtensions << "Matroska Video (*.mkv)" << "WebM (*.webm)";
+  supportedExtensions << "Matroska Video (*.mkv)";
+  supportedExtensions << "WebM (*.webm)";
 #endif
   return supportedExtensions;
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoReader::setVideoIOLogic(vtkSlicerVideoIOLogic* newVideoIOLogic)
+void qSlicerVideoUtilReader::setVideoUtilLogic(vtkSlicerVideoUtilLogic* newVideoUtilLogic)
 {
-  Q_D(qSlicerVideoReader);
-  d->VideoIOLogic = newVideoIOLogic;
+  Q_D(qSlicerVideoUtilReader);
+  d->VideoUtilLogic = newVideoUtilLogic;
 }
 
 //-----------------------------------------------------------------------------
-vtkSlicerVideoIOLogic* qSlicerVideoReader::VideoIOLogic() const
+vtkSlicerVideoUtilLogic* qSlicerVideoUtilReader::VideoUtilLogic() const
 {
-  Q_D(const qSlicerVideoReader);
-  return d->VideoIOLogic;
+  Q_D(const qSlicerVideoUtilReader);
+  return d->VideoUtilLogic;
 }
 
 //-----------------------------------------------------------------------------
-bool qSlicerVideoReader::load(const IOProperties& properties)
+bool qSlicerVideoUtilReader::load(const IOProperties& properties)
 {
-  Q_D(qSlicerVideoReader);
+  Q_D(qSlicerVideoUtilReader);
   if (!properties.contains("fileName"))
   {
     qCritical() << Q_FUNC_INFO << " did not receive fileName property";
@@ -165,7 +166,7 @@ bool qSlicerVideoReader::load(const IOProperties& properties)
     }
   }
 
-  vtkSlicerApplicationLogic* appLogic = this->VideoIOLogic()->GetApplicationLogic();
+  vtkSlicerApplicationLogic* appLogic = this->VideoUtilLogic()->GetApplicationLogic();
   vtkMRMLSelectionNode* selectionNode = appLogic ? appLogic->GetSelectionNode() : 0;
   if (appLogic && selectionNode)
   {
