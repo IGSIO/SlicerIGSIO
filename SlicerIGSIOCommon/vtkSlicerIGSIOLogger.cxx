@@ -82,24 +82,24 @@ void vtkSlicerIGSIOLogger::LogMessage(LogLevelType level, const char* msg, const
   std::ostringstream log;
   switch (level)
   {
-  case LOG_LEVEL_ERROR:
-    log << "ERROR: ";
-    break;
-  case LOG_LEVEL_WARNING:
-    log << "WARNING: ";
-    break;
-  case LOG_LEVEL_INFO:
-    log << "INFO: ";
-    break;
-  case LOG_LEVEL_DEBUG:
-    log << "DEBUG: ";
-    break;
-  case LOG_LEVEL_TRACE:
-    log << "TRACE: ";
-    break;
-  default:
-    log << "UNKNOWN: ";
-    break;
+    case LOG_LEVEL_ERROR:
+      log << "ERROR: ";
+      break;
+    case LOG_LEVEL_WARNING:
+      log << "WARNING: ";
+      break;
+    case LOG_LEVEL_INFO:
+      log << "INFO: ";
+      break;
+    case LOG_LEVEL_DEBUG:
+      log << "DEBUG: ";
+      break;
+    case LOG_LEVEL_TRACE:
+      log << "TRACE: ";
+      break;
+    default:
+      log << "UNKNOWN: ";
+      break;
   }
 
   // Either pad out the log or add the optional prefix and pad
@@ -131,24 +131,24 @@ void vtkSlicerIGSIOLogger::LogMessage(LogLevelType level, const char* msg, const
       // Set the text color to highlight error and warning messages (supported only on windows)
       switch (level)
       {
-      case LOG_LEVEL_ERROR:
-      {
-        HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_INTENSITY);
-      }
-      break;
-      case LOG_LEVEL_WARNING:
-      {
-        HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-      }
-      break;
-      default:
-      {
-        HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-      }
-      break;
+        case LOG_LEVEL_ERROR:
+        {
+          HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        }
+        break;
+        case LOG_LEVEL_WARNING:
+        {
+          HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        }
+        break;
+        default:
+        {
+          HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        break;
       }
 #endif
 
@@ -221,24 +221,24 @@ void vtkSlicerIGSIOLogger::LogMessage(LogLevelType level, const wchar_t* msg, co
   std::wostringstream log;
   switch (level)
   {
-  case LOG_LEVEL_ERROR:
-    log << "ERROR: ";
-    break;
-  case LOG_LEVEL_WARNING:
-    log << "WARNING: ";
-    break;
-  case LOG_LEVEL_INFO:
-    log << "INFO: ";
-    break;
-  case LOG_LEVEL_DEBUG:
-    log << "DEBUG: ";
-    break;
-  case LOG_LEVEL_TRACE:
-    log << "TRACE: ";
-    break;
-  default:
-    log << "UNKNOWN: ";
-    break;
+    case LOG_LEVEL_ERROR:
+      log << "ERROR: ";
+      break;
+    case LOG_LEVEL_WARNING:
+      log << "WARNING: ";
+      break;
+    case LOG_LEVEL_INFO:
+      log << "INFO: ";
+      break;
+    case LOG_LEVEL_DEBUG:
+      log << "DEBUG: ";
+      break;
+    case LOG_LEVEL_TRACE:
+      log << "TRACE: ";
+      break;
+    default:
+      log << "UNKNOWN: ";
+      break;
   }
 
   // Either pad out the log or add the optional prefix and pad
@@ -268,24 +268,24 @@ void vtkSlicerIGSIOLogger::LogMessage(LogLevelType level, const wchar_t* msg, co
       // Set the text color to highlight error and warning messages (supported only on windows)
       switch (level)
       {
-      case LOG_LEVEL_ERROR:
-      {
-        HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_INTENSITY);
-      }
-      break;
-      case LOG_LEVEL_WARNING:
-      {
-        HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-      }
-      break;
-      default:
-      {
-        HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
-        SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-      }
-      break;
+        case LOG_LEVEL_ERROR:
+        {
+          HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        }
+        break;
+        case LOG_LEVEL_WARNING:
+        {
+          HANDLE hStdout = GetStdHandle(STD_ERROR_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        }
+        break;
+        default:
+        {
+          HANDLE hStdout = GetStdHandle(STD_OUTPUT_HANDLE);
+          SetConsoleTextAttribute(hStdout, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        }
+        break;
       }
 #endif
 

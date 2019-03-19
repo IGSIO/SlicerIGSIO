@@ -39,8 +39,8 @@ class vtkMRMLIGTLConnectorNode;
 /// \ingroup Slicer_QtModules_VideoUtil
 class VTK_SLICER_VIDEOUTIL_MODULE_LOGIC_EXPORT vtkSlicerVideoUtilLogic : public vtkSlicerModuleLogic
 {
- public:
-  static vtkSlicerVideoUtilLogic *New();
+public:
+  static vtkSlicerVideoUtilLogic* New();
   vtkTypeMacro(vtkSlicerVideoUtilLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream&, vtkIndent) override;
 
@@ -58,7 +58,7 @@ class VTK_SLICER_VIDEOUTIL_MODULE_LOGIC_EXPORT vtkSlicerVideoUtilLogic : public 
   // MRML Management
   //----------------------------------------------------------------
 
- protected:
+protected:
 
   //----------------------------------------------------------------
   // Constructor, destructor etc.
@@ -67,11 +67,11 @@ class VTK_SLICER_VIDEOUTIL_MODULE_LOGIC_EXPORT vtkSlicerVideoUtilLogic : public 
   vtkSlicerVideoUtilLogic();
   virtual ~vtkSlicerVideoUtilLogic();
 
- private:
+private:
 
 private:
   class vtkInternal;
-  vtkInternal * Internal;
+  vtkInternal* Internal;
 
   vtkSlicerVideoUtilLogic(const vtkSlicerVideoUtilLogic&); // Not implemented
   void operator=(const vtkSlicerVideoUtilLogic&);               // Not implemented

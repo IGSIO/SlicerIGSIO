@@ -35,14 +35,14 @@ class qSlicerVideoUtilReader
   Q_OBJECT
 public:
   typedef qSlicerFileReader Superclass;
-  qSlicerVideoUtilReader(vtkSlicerVideoUtilLogic* logic, QObject* parent = 0 );
+  qSlicerVideoUtilReader(vtkSlicerVideoUtilLogic* logic, QObject* parent = 0);
   virtual ~qSlicerVideoUtilReader();
 
   virtual QString description() const;
   virtual IOFileType fileType() const;
   virtual QStringList extensions() const;
 
-  virtual bool load( const IOProperties& properties );
+  virtual bool load(const IOProperties& properties);
 
   void setVideoUtilLogic(vtkSlicerVideoUtilLogic* newVideoUtilLogic);
   vtkSlicerVideoUtilLogic* VideoUtilLogic() const;
@@ -51,8 +51,8 @@ protected:
   QScopedPointer< qSlicerVideoUtilReaderPrivate > d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE( qSlicerVideoUtilReader );
-  Q_DISABLE_COPY( qSlicerVideoUtilReader );
+  Q_DECLARE_PRIVATE(qSlicerVideoUtilReader);
+  Q_DISABLE_COPY(qSlicerVideoUtilReader);
 };
 
 #endif

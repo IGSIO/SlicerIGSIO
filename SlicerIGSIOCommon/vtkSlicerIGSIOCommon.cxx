@@ -74,13 +74,13 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
   sequenceNode->SetIndexName("time");
   sequenceNode->SetIndexUnit("s");
 
-  FrameSizeType frameSize = { 0,0,0 };
+  FrameSizeType frameSize = { 0, 0, 0 };
   std::string encodingFourCC;
   trackedFrameList->GetEncodingFourCC(encodingFourCC);
   if (!encodingFourCC.empty())
   {
     vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-      vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(encodingFourCC));
+          vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(encodingFourCC));
     if (!codec)
     {
       vtkErrorWithObjectMacro(sequenceNode, "Could not find codec: " << encodingFourCC);
@@ -131,8 +131,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
 
     vtkSmartPointer<vtkMatrix4x4> ijkToRASTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     igsioTransformName imageToPhysicalTransformName;
-    imageToPhysicalTransformName.SetTransformName(trackedFrameName+"ToPhysical");
-    if (trackedFrame->GetFrameField(imageToPhysicalTransformName.GetTransformName()+"Transform"))
+    imageToPhysicalTransformName.SetTransformName(trackedFrameName + "ToPhysical");
+    if (trackedFrame->GetFrameField(imageToPhysicalTransformName.GetTransformName() + "Transform"))
     {
       if (trackedFrame->GetFrameTransform(imageToPhysicalTransformName, ijkToRASTransformMatrix) == IGSIO_SUCCESS)
       {
@@ -197,7 +197,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
 
   std::string imagesSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, "Image");
   vtkSmartPointer<vtkMRMLSequenceNode> videoSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
-    scene->AddNewNodeByClass("vtkMRMLSequenceNode", imagesSequenceName.c_str()));
+        scene->AddNewNodeByClass("vtkMRMLSequenceNode", imagesSequenceName.c_str()));
   vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, videoSequenceNode);
 
   if (videoSequenceNode->GetNumberOfDataNodes() < 1)
@@ -210,10 +210,10 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
     sequenceBrowserNode->AddSynchronizedSequenceNode(videoSequenceNode);
   }
 
-  FrameSizeType frameSize = { 0,0,0 };
+  FrameSizeType frameSize = { 0, 0, 0 };
   trackedFrameList->GetFrameSize(frameSize);
 
-  int dimensions[3] = { 0,0,0 };
+  int dimensions[3] = { 0, 0, 0 };
   dimensions[0] = frameSize[0];
   dimensions[1] = frameSize[1];
   dimensions[2] = frameSize[2];
@@ -236,7 +236,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
 
       std::string transformName;
       transformNameIt->GetTransformName(transformName);
-      if (transformName != trackedFrameName+"ToPhysical")
+      if (transformName != trackedFrameName + "ToPhysical")
       {
         vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::New();
         transformNode->SetMatrixTransformToParent(transformMatrix);
@@ -256,7 +256,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
         {
           std::string transformSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, transformName);
           vtkSmartPointer<vtkMRMLSequenceNode> transformSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
-            scene->AddNewNodeByClass("vtkMRMLSequenceNode", transformSequenceName.c_str()));
+                scene->AddNewNodeByClass("vtkMRMLSequenceNode", transformSequenceName.c_str()));
           transformSequenceNode->SetIndexName("time");
           transformSequenceNode->SetIndexUnit("s");
           // Save transform name to Sequences.Source attribute so that modules can
@@ -299,11 +299,11 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
   if (trackedFrameList->SetCustomString(TRACKNAME_FIELD_NAME, trackName) == IGSIO_FAIL)
   {
     vtkErrorWithObjectMacro(sequenceNode, "Could not set track name!")
-      return false;
+    return false;
   }
 
 
-  int dimensions[3] = { 0,0,0 };
+  int dimensions[3] = { 0, 0, 0 };
   vtkSmartPointer<vtkStreamingVolumeFrame> lastFrame = NULL;
   double timestamp = 0;
   double lastTimestamp = 0.0;
@@ -339,7 +339,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     streamingVolumeNode->GetIJKToRASMatrix(ijkToRASTransform);
 
     igsioTransformName imageToPhysicalName;
-    imageToPhysicalName.SetTransformName(trackName+"ToPhysical");
+    imageToPhysicalName.SetTransformName(trackName + "ToPhysical");
 
     std::stack<vtkSmartPointer<vtkStreamingVolumeFrame> > frameStack;
     frameStack.push(frame);
@@ -362,7 +362,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
       igsioVideoFrame videoFrame;
       videoFrame.SetEncodedFrame(currentFrame);
       trackedFrame.SetImageData(videoFrame);
-      double currentTimestamp = lastTimestamp + (timestamp-lastTimestamp)*((double)(initialStackSize - frameStack.size() + 1.0) / initialStackSize);
+      double currentTimestamp = lastTimestamp + (timestamp - lastTimestamp) * ((double)(initialStackSize - frameStack.size() + 1.0) / initialStackSize);
       trackedFrame.SetTimestamp(currentTimestamp);
       trackedFrame.SetFrameTransform(imageToPhysicalName, ijkToRASTransform);
       trackedFrame.SetFrameField(FRAME_STATUS_TRACKNAME, vtkVariant(frameStack.size() == 1 ? Frame_OK : Frame_Skip).ToString());
@@ -373,8 +373,8 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
   }
   trackedFrameList->GetEncodingFourCC(codecFourCC);
 
-  FrameSizeType frameSize = { 0,0,0 };
-  for (int i=0; i<3; ++i)
+  FrameSizeType frameSize = { 0, 0, 0 };
+  for (int i = 0; i < 3; ++i)
   {
     frameSize[i] = (unsigned int)dimensions[i];
   }
@@ -398,7 +398,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
     return false;
   }
 
-  int dimensions[3] = { 0,0,0 };
+  int dimensions[3] = { 0, 0, 0 };
   int numberOfFrames = videoStreamSequenceNode->GetNumberOfDataNodes();
 
   if (endIndex < 0)
@@ -407,7 +407,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
   }
 
   if (startIndex < 0 || startIndex >= numberOfFrames || startIndex > endIndex
-    || endIndex >= numberOfFrames)
+      || endIndex >= numberOfFrames)
   {
     vtkErrorWithObjectMacro(videoStreamSequenceNode, "Invalid start and end indices!");
     return false;
@@ -464,9 +464,9 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
       }
 
       if (currentFrame && // Current frame exists
-        previousFrame && // Current frame is not the initial frame
-        currentFrame->IsKeyFrame() && // Current frame is a keyframe
-        !previousFrame->IsKeyFrame()) // Previous frame was not also a keyframe
+          previousFrame && // Current frame is not the initial frame
+          currentFrame->IsKeyFrame() && // Current frame is a keyframe
+          !previousFrame->IsKeyFrame()) // Previous frame was not also a keyframe
       {
         frameBlocks.push_back(currentFrameBlock);
         currentFrameBlock = FrameBlock();
@@ -510,7 +510,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
     {
       vtkNew<vtkMRMLStreamingVolumeNode> decodingProxyNode;
       vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC));
+            vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC));
       if (!codec)
       {
         vtkErrorWithObjectMacro(videoStreamSequenceNode, "Could not find codec: " << codecFourCC);

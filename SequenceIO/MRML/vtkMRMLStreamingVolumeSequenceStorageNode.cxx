@@ -55,7 +55,7 @@ vtkMRMLStreamingVolumeSequenceStorageNode::~vtkMRMLStreamingVolumeSequenceStorag
 }
 
 //----------------------------------------------------------------------------
-bool vtkMRMLStreamingVolumeSequenceStorageNode::CanReadInReferenceNode(vtkMRMLNode *refNode)
+bool vtkMRMLStreamingVolumeSequenceStorageNode::CanReadInReferenceNode(vtkMRMLNode* refNode)
 {
   return refNode->IsA("vtkMRMLSequenceNode");
 }
@@ -98,14 +98,14 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::ReadDataInternal(vtkMRMLNode* ref
 }
 
 //----------------------------------------------------------------------------
-bool vtkMRMLStreamingVolumeSequenceStorageNode::CanWriteFromReferenceNode(vtkMRMLNode *refNode)
+bool vtkMRMLStreamingVolumeSequenceStorageNode::CanWriteFromReferenceNode(vtkMRMLNode* refNode)
 {
 
   return true;
 }
 
 //----------------------------------------------------------------------------
-int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *refNode)
+int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode* refNode)
 {
   vtkMRMLSequenceNode* videoStreamSequenceNode = vtkMRMLSequenceNode::SafeDownCast(refNode);
   if (!videoStreamSequenceNode)
@@ -117,13 +117,13 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::WriteDataInternal(vtkMRMLNode *re
   this->UpdateCompressionPresets();
   if (this->CompressionParameter.empty())
   {
-    vtkErrorMacro(<< "WriteData: Could not determine which encoding to use for node " << refNode->GetID()
-                  << ". Select a codec or compression parameter and try again");
+    vtkErrorMacro( << "WriteData: Could not determine which encoding to use for node " << refNode->GetID()
+                   << ". Select a codec or compression parameter and try again");
     return 0;
   }
 
   vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-    vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
+        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
 
   std::vector<std::string> parameterNames;
   if (codec)
@@ -213,7 +213,7 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
         for (int i = 0; i < sequenceNode->GetNumberOfDataNodes(); ++i)
         {
           vtkMRMLStreamingVolumeNode* streamingVolume = vtkMRMLStreamingVolumeNode::SafeDownCast(
-            sequenceNode->GetNthDataNode(i));
+                sequenceNode->GetNthDataNode(i));
           if (!streamingVolume)
           {
             continue;
@@ -234,7 +234,7 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
   if (!this->CodecFourCC.empty() && this->CompressionParameter.empty())
   {
     vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-      vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
+          vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(this->CodecFourCC));
 
     // Find the default compression parameter for the matching codec
     this->CompressionParameter = codec->GetDefaultParameterPresetValue();
@@ -266,7 +266,7 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::WriteXML(ostream& of, int indent
 }
 
 //----------------------------------------------------------------------------
-void vtkMRMLStreamingVolumeSequenceStorageNode::Copy(vtkMRMLNode *node)
+void vtkMRMLStreamingVolumeSequenceStorageNode::Copy(vtkMRMLNode* node)
 {
   Superclass::Copy(node);
   vtkMRMLCopyBeginMacro(node);

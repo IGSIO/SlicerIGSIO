@@ -43,7 +43,7 @@ Care Ontario.
 //---------------------------------------------------------------------------
 void SetTestingImageDataForValue(vtkImageData* image, unsigned char value)
 {
-  int dimensions[3] = { 0,0,0 };
+  int dimensions[3] = { 0, 0, 0 };
   image->GetDimensions(dimensions);
 
   unsigned char* imageDataScalars = (unsigned char*)image->GetScalarPointer();

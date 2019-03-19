@@ -134,7 +134,7 @@ bool qSlicerSequenceIOReader::load(const IOProperties& properties)
   }
 
   vtkSmartPointer<vtkMRMLSequenceBrowserNode> sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(
-    this->mrmlScene()->AddNewNodeByClass("vtkMRMLSequenceBrowserNode", fileNameNoExtension));
+        this->mrmlScene()->AddNewNodeByClass("vtkMRMLSequenceBrowserNode", fileNameNoExtension));
   if (!vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(trackedFrameList, sequenceBrowserNode))
   {
     this->mrmlScene()->RemoveNode(sequenceBrowserNode);

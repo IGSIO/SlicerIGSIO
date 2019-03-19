@@ -43,7 +43,7 @@ class Q_SLICER_QTMODULES_SEQUENCEIO_EXPORT qSlicerSequenceIOModule :
 public:
 
   typedef qSlicerLoadableModule Superclass;
-  explicit qSlicerSequenceIOModule(QObject *parent=0);
+  explicit qSlicerSequenceIOModule(QObject* parent = 0);
   virtual ~qSlicerSequenceIOModule();
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);
@@ -72,7 +72,7 @@ protected:
   virtual void setup();
 
   /// Create and return the widget representation associated to this module
-  virtual qSlicerAbstractModuleRepresentation * createWidgetRepresentation();
+  virtual qSlicerAbstractModuleRepresentation* createWidgetRepresentation();
 
   /// Create and return the logic associated to this module
   virtual vtkMRMLAbstractLogic* createLogic();

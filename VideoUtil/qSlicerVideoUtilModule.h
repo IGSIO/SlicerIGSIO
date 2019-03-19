@@ -43,7 +43,7 @@ class Q_SLICER_QTMODULES_VIDEOUTIL_EXPORT qSlicerVideoUtilModule :
 public:
 
   typedef qSlicerLoadableModule Superclass;
-  explicit qSlicerVideoUtilModule(QObject *parent=0);
+  explicit qSlicerVideoUtilModule(QObject* parent = 0);
   virtual ~qSlicerVideoUtilModule();
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);
@@ -72,7 +72,7 @@ protected:
   virtual void setup();
 
   /// Create and return the widget representation associated to this module
-  virtual qSlicerAbstractModuleRepresentation * createWidgetRepresentation();
+  virtual qSlicerAbstractModuleRepresentation* createWidgetRepresentation();
 
   /// Create and return the logic associated to this module
   virtual vtkMRMLAbstractLogic* createLogic();

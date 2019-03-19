@@ -42,8 +42,8 @@ class vtkMRMLIGTLConnectorNode;
 /// \ingroup Slicer_QtModules_SequenceIO
 class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT vtkSlicerSequenceIOLogic : public vtkSlicerModuleLogic
 {
- public:
-  static vtkSlicerSequenceIOLogic *New();
+public:
+  static vtkSlicerSequenceIOLogic* New();
   vtkTypeMacro(vtkSlicerSequenceIOLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream&, vtkIndent) override;
 
@@ -61,7 +61,7 @@ class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT vtkSlicerSequenceIOLogic : publi
   // MRML Management
   //----------------------------------------------------------------
 
- protected:
+protected:
 
   //----------------------------------------------------------------
   // Constructor, destructor etc.
@@ -70,11 +70,11 @@ class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT vtkSlicerSequenceIOLogic : publi
   vtkSlicerSequenceIOLogic();
   virtual ~vtkSlicerSequenceIOLogic();
 
- private:
+private:
 
 private:
   class vtkInternal;
-  vtkInternal * Internal;
+  vtkInternal* Internal;
 
   vtkSlicerSequenceIOLogic(const vtkSlicerSequenceIOLogic&); // Not implemented
   void operator=(const vtkSlicerSequenceIOLogic&);               // Not implemented

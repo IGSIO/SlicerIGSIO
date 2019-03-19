@@ -45,8 +45,8 @@ Care Ontario.
 //-----------------------------------------------------------------------------
 #include <QtGlobal>
 #if (QT_VERSION < QT_VERSION_CHECK(5, 0, 0))
-#include <QtPlugin>
-Q_EXPORT_PLUGIN2(qSlicerVideoUtilModule, qSlicerVideoUtilModule);
+  #include <QtPlugin>
+  Q_EXPORT_PLUGIN2(qSlicerVideoUtilModule, qSlicerVideoUtilModule);
 #endif
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_VideoUtil
@@ -149,7 +149,7 @@ void qSlicerVideoUtilModule::setMRMLScene(vtkMRMLScene* scene)
 }
 
 //-----------------------------------------------------------------------------
-qSlicerAbstractModuleRepresentation * qSlicerVideoUtilModule::createWidgetRepresentation()
+qSlicerAbstractModuleRepresentation* qSlicerVideoUtilModule::createWidgetRepresentation()
 {
   return new qSlicerVideoUtilModuleWidget;
 }

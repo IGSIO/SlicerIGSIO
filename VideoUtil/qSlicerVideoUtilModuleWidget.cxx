@@ -42,7 +42,7 @@ Care Ontario.
 
 enum
 {
-  PARAMETER_VALUE_COLUMN=0,
+  PARAMETER_VALUE_COLUMN = 0,
   PARAMETER_DESCRIPTION_COLUMN,
 };
 
@@ -64,7 +64,7 @@ public:
 
 //-----------------------------------------------------------------------------
 qSlicerVideoUtilModuleWidgetPrivate::qSlicerVideoUtilModuleWidgetPrivate(qSlicerVideoUtilModuleWidget& object)
- : q_ptr(&object)
+  : q_ptr(&object)
 {
 }
 
@@ -78,8 +78,8 @@ qSlicerVideoUtilModuleWidgetPrivate::~qSlicerVideoUtilModuleWidgetPrivate()
 
 //-----------------------------------------------------------------------------
 qSlicerVideoUtilModuleWidget::qSlicerVideoUtilModuleWidget(QWidget* _parent)
-  : Superclass( _parent )
-  , d_ptr( new qSlicerVideoUtilModuleWidgetPrivate(*this) )
+  : Superclass(_parent)
+  , d_ptr(new qSlicerVideoUtilModuleWidgetPrivate(*this))
 {
 }
 
@@ -96,7 +96,7 @@ void qSlicerVideoUtilModuleWidget::setup()
   this->Superclass::setup();
 
   connect(d->EncodeButton, SIGNAL(clicked()), this, SLOT(encodeVideo()));
-  connect(d->CodecSelector, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(onCodecChanged(QString)));
+  connect(d->CodecSelector, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onCodecChanged(QString)));
 
   std::vector<std::string> codecFourCCs = vtkStreamingVolumeCodecFactory::GetInstance()->GetStreamingCodecFourCCs();
   QStringList codecs;
@@ -108,13 +108,13 @@ void qSlicerVideoUtilModuleWidget::setup()
 }
 
 //-----------------------------------------------------------------------------
-void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString &codecFourCC)
+void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
 {
   Q_D(qSlicerVideoUtilModuleWidget);
   d->EncodingParameterTable->setRowCount(0);
 
   vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec> ::Take(
-    vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC.toStdString()));
+        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC.toStdString()));
   if (!codec)
   {
     return;
@@ -183,7 +183,7 @@ void qSlicerVideoUtilModuleWidget::setMRMLScene(vtkMRMLScene* scene)
 
   this->Superclass::setMRMLScene(scene);
   if (scene == NULL)
-    {
+  {
     return;
-    }
+  }
 }

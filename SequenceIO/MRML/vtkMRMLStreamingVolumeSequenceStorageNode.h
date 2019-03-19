@@ -36,8 +36,8 @@ class VTK_SLICER_SEQUENCEIO_MODULE_MRML_EXPORT vtkMRMLStreamingVolumeSequenceSto
 {
 public:
 
-  static vtkMRMLStreamingVolumeSequenceStorageNode *New();
-  vtkTypeMacro(vtkMRMLStreamingVolumeSequenceStorageNode,vtkMRMLStorageNode);
+  static vtkMRMLStreamingVolumeSequenceStorageNode* New();
+  vtkTypeMacro(vtkMRMLStreamingVolumeSequenceStorageNode, vtkMRMLStorageNode);
 
   virtual vtkMRMLNode* CreateNodeInstance() override;
 
@@ -46,7 +46,7 @@ public:
   virtual const char* GetNodeTagName() override {return "VideoStorage";};
 
   /// Return true if the node can be read in.
-  virtual bool CanReadInReferenceNode(vtkMRMLNode *refNode) override;
+  virtual bool CanReadInReferenceNode(vtkMRMLNode* refNode) override;
 
   /// Return true if the node can be written by using thie writer.
   virtual bool CanWriteFromReferenceNode(vtkMRMLNode* refNode) override;
@@ -66,7 +66,7 @@ public:
   /// Write this node's information to a MRML file in XML format.
   virtual void WriteXML(ostream& of, int indent) override;
   /// Copy the node's attributes to this object
-  virtual void Copy(vtkMRMLNode *node) override;
+  virtual void Copy(vtkMRMLNode* node) override;
   /// Print the contents of the node
   virtual void PrintSelf(ostream& os, vtkIndent indent) override;
 
@@ -76,7 +76,7 @@ protected:
   vtkMRMLStreamingVolumeSequenceStorageNode(const vtkMRMLStreamingVolumeSequenceStorageNode&);
   void operator=(const vtkMRMLStreamingVolumeSequenceStorageNode&);
 
-  virtual int WriteDataInternal(vtkMRMLNode *refNode) override;
+  virtual int WriteDataInternal(vtkMRMLNode* refNode) override;
 
   /// Does the actual reading. Returns 1 on success, 0 otherwise.
   /// Returns 0 by default (read not supported).

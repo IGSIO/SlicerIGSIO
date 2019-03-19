@@ -35,14 +35,14 @@ class qSlicerSequenceIOReader
   Q_OBJECT
 public:
   typedef qSlicerFileReader Superclass;
-  qSlicerSequenceIOReader(vtkSlicerSequenceIOLogic* logic, QObject* parent = 0 );
+  qSlicerSequenceIOReader(vtkSlicerSequenceIOLogic* logic, QObject* parent = 0);
   virtual ~qSlicerSequenceIOReader();
 
   virtual QString description() const;
   virtual IOFileType fileType() const;
   virtual QStringList extensions() const;
 
-  virtual bool load( const IOProperties& properties );
+  virtual bool load(const IOProperties& properties);
 
   void setSequenceIOLogic(vtkSlicerSequenceIOLogic* newSequenceIOLogic);
   vtkSlicerSequenceIOLogic* SequenceIOLogic() const;
@@ -51,8 +51,8 @@ protected:
   QScopedPointer< qSlicerSequenceIOReaderPrivate > d_ptr;
 
 private:
-  Q_DECLARE_PRIVATE( qSlicerSequenceIOReader );
-  Q_DISABLE_COPY( qSlicerSequenceIOReader );
+  Q_DECLARE_PRIVATE(qSlicerSequenceIOReader);
+  Q_DISABLE_COPY(qSlicerSequenceIOReader);
 };
 
 #endif

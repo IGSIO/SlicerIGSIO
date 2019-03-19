@@ -6,14 +6,14 @@ project(vtkSlicerIGSIOCommon)
 
 find_package(IGSIO REQUIRED)
 
-SET (SlicerIGSIOCommon_SRCS
+set(SlicerIGSIOCommon_SRCS
   vtkSlicerIGSIOCommon.cxx
   vtkSlicerIGSIOCommon.h
   vtkSlicerIGSIOLogger.cxx
   vtkSlicerIGSIOLogger.h
   )
 
-SET (SlicerIGSIOCommon_INCLUDE_DIRS
+set(SlicerIGSIOCommon_INCLUDE_DIRS
   ${CMAKE_CURRENT_SOURCE_DIR}
   ${CMAKE_CURRENT_BINARY_DIR}
   ${Slicer_Libs_INCLUDE_DIRS}
@@ -30,7 +30,7 @@ SET (SlicerIGSIOCommon_INCLUDE_DIRS
 # --------------------------------------------------------------------------
 
 set(lib_name ${PROJECT_NAME})
-SET (SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
+set(SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   ${VTK_LIBRARIES}
   MRMLCore
   vtkIGSIOCommon
@@ -40,9 +40,9 @@ SET (SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   vtkSlicerVolumesModuleLogic
   )
 
-INCLUDE_DIRECTORIES( ${SlicerIGSIOCommon_INCLUDE_DIRS} )
-ADD_LIBRARY(${lib_name} ${SlicerIGSIOCommon_SRCS})
-TARGET_LINK_LIBRARIES( ${lib_name} ${SlicerIGSIOCommon_LIBS} )
+include_directories( ${SlicerIGSIOCommon_INCLUDE_DIRS} )
+add_library(${lib_name} ${SlicerIGSIOCommon_SRCS})
+target_link_libraries( ${lib_name} ${SlicerIGSIOCommon_LIBS} )
 
 # Set loadable modules output
 set_target_properties(${lib_name} PROPERTIES
@@ -51,9 +51,9 @@ set_target_properties(${lib_name} PROPERTIES
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}"
   )
 
-IF (CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND NOT WIN32)
-  SET_TARGET_PROPERTIES(${lib_name} PROPERTIES COMPILE_FLAGS "-fPIC")
-ENDIF()
+if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND NOT WIN32)
+  set_target_properties(${lib_name} PROPERTIES COMPILE_FLAGS "-fPIC")
+endif()
 
 set_property(GLOBAL APPEND PROPERTY Slicer_TARGETS ${lib_name})
 

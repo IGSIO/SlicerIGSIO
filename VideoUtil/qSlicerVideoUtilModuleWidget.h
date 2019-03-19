@@ -41,7 +41,7 @@ class Q_SLICER_QTMODULES_VIDEOUTIL_EXPORT qSlicerVideoUtilModuleWidget :
 public:
 
   typedef qSlicerAbstractModuleWidget Superclass;
-  qSlicerVideoUtilModuleWidget(QWidget *parent=0);
+  qSlicerVideoUtilModuleWidget(QWidget* parent = 0);
   virtual ~qSlicerVideoUtilModuleWidget();
 
 public slots:

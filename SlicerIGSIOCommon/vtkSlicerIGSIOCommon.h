@@ -22,13 +22,13 @@ Care Ontario.
 #define __vtkSlicerIGSIO_h
 
 #if defined(WIN32) && !defined(vtkSlicerIGSIOCommon_STATIC)
-#if defined(vtkSlicerIGSIOCommon_EXPORTS)
-#define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllexport ) 
+  #if defined(vtkSlicerIGSIOCommon_EXPORTS)
+    #define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllexport )
+  #else
+    #define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllimport )
+  #endif
 #else
-#define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllimport )
-#endif
-#else
-#define VTK_SLICERIGSIOCOMMON_EXPORT
+  #define VTK_SLICERIGSIOCOMMON_EXPORT
 #endif
 
 class vtkMRMLScene;
@@ -57,7 +57,7 @@ public:
   static bool TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFrameList* trackedFrameList, vtkMRMLSequenceBrowserNode* sequenceBrowserNode);
 
   static bool VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode* sequenceNode, vtkIGSIOTrackedFrameList* trackedFrameList);
-  
+
   static bool SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* sequenceBrowserNode, vtkIGSIOTrackedFrameList* trackedFrameList);
 
   struct FrameBlock
@@ -75,15 +75,16 @@ public:
 
   // Python wrapped function for ReEncodeVideoSequence
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
-    int startIndex = 0, int endIndex = -1, std::string codecFourCC = "") {
+                                    int startIndex = 0, int endIndex = -1, std::string codecFourCC = "")
+  {
     return vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, startIndex, endIndex, codecFourCC, std::map<std::string, std::string>());
   }
 
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
-    int startIndex, int endIndex,
-    std::string codecFourCC,
-    std::map<std::string, std::string> codecParameters,
-    bool forceReEncoding = false, bool minimalReEncoding = false);
+                                    int startIndex, int endIndex,
+                                    std::string codecFourCC,
+                                    std::map<std::string, std::string> codecParameters,
+                                    bool forceReEncoding = false, bool minimalReEncoding = false);
 };
 
 #endif
