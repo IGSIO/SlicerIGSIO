@@ -36,13 +36,6 @@ Care Ontario.
 // VideoUtil includes
 #include "vtkSlicerVideoUtilLogic.h"
 
-// Sequences includes
-#include <vtkMRMLNodeSequencer.h>
-#include <vtkMRMLSequenceNode.h>
-
-// vtkVideoUtilMRML includes
-#include "vtkMRMLStreamingVolumeSequenceStorageNode.h"
-
 // VTK includes
 #include <vtkMatrix4x4.h>
 
@@ -59,111 +52,6 @@ public:
 
   vtkSlicerVideoUtilLogic* External;
 };
-
-//----------------------------------------------------------------------------
-class StreamingVolumeNodeSequencer : public vtkMRMLNodeSequencer::NodeSequencer
-{
-public:
-  StreamingVolumeNodeSequencer()
-  {
-    this->SupportedNodeClassName = "vtkMRMLStreamingVolumeNode";
-    this->RecordingEvents->InsertNextValue(vtkMRMLVolumeNode::ImageDataModifiedEvent);
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLVectorVolumeNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLScalarVolumeNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLDisplayableNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLVolumeNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLTransformableNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLStorableNode");
-    this->SupportedNodeParentClassNames.push_back("vtkMRMLNode");
-    this->DefaultSequenceStorageNodeClassName = "vtkMRMLStreamingVolumeSequenceStorageNode";
-  }
-
-  virtual void CopyNode(vtkMRMLNode* source, vtkMRMLNode* target, bool shallowCopy /* =false */)
-  {
-    int oldModified = target->StartModify();
-    vtkSmartPointer<vtkMRMLStreamingVolumeNode> targetStreamNode = vtkMRMLStreamingVolumeNode::SafeDownCast(target);
-    vtkSmartPointer<vtkMRMLStreamingVolumeNode> sourceStreamNode = vtkMRMLStreamingVolumeNode::SafeDownCast(source);
-    if (targetStreamNode && sourceStreamNode)
-    {
-      vtkStreamingVolumeFrame* frame = sourceStreamNode->GetFrame();
-      if (frame)
-      {
-        targetStreamNode->SetAndObserveFrame(sourceStreamNode->GetFrame());
-      }
-      else
-      {
-        if (shallowCopy)
-        {
-          targetStreamNode->SetAndObserveImageData(sourceStreamNode->GetImageData());
-        }
-        else
-        {
-          vtkSmartPointer<vtkImageData> newImage = vtkSmartPointer<vtkImageData>::New();
-          newImage->DeepCopy(sourceStreamNode->GetImageData());
-          targetStreamNode->SetAndObserveImageData(newImage);
-        }
-      }
-
-      vtkSmartPointer<vtkMatrix4x4> ijkToRASMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
-      sourceStreamNode->GetIJKToRASMatrix(ijkToRASMatrix);
-      targetStreamNode->SetIJKToRASMatrix(ijkToRASMatrix);
-    }
-
-    target->EndModify(oldModified);
-  }
-
-  virtual void AddDefaultDisplayNodes(vtkMRMLNode* node)
-  {
-    if (node == NULL)
-    {
-      return;
-    }
-
-    vtkMRMLStreamingVolumeNode* streamingNode = vtkMRMLStreamingVolumeNode::SafeDownCast(node);
-    if (streamingNode == NULL)
-    {
-      // not a streaming volume node, there is nothing to do
-      return;
-    }
-
-    if (streamingNode->GetDisplayNode())
-    {
-      return;
-    }
-
-    int numberOfComponents = 0;
-    vtkStreamingVolumeFrame* frame = streamingNode->GetFrame();
-    if (frame)
-    {
-      numberOfComponents = frame->GetNumberOfComponents();
-    }
-    else
-    {
-      vtkImageData* image = streamingNode->GetImageData();
-      numberOfComponents = image->GetNumberOfScalarComponents();
-    }
-
-    if (numberOfComponents == 1)
-    {
-      bool scalarDisplayNodeRequired = (numberOfComponents == 1);
-      vtkSmartPointer<vtkMRMLVolumeDisplayNode> displayNode;
-      displayNode = vtkSmartPointer<vtkMRMLScalarVolumeDisplayNode>::New();
-      if (node->GetScene())
-      {
-        node->GetScene()->AddNode(displayNode);
-      }
-
-      const char* colorTableId = vtkMRMLColorLogic::GetColorTableNodeID(vtkMRMLColorTableNode::Grey);
-      displayNode->SetAndObserveColorNodeID(colorTableId);
-      streamingNode->SetAndObserveDisplayNodeID(displayNode->GetID());
-    }
-    else
-    {
-      streamingNode->CreateDefaultDisplayNodes();
-    }
-  }
-};
-
 
 //----------------------------------------------------------------------------
 // vtkInternal methods
@@ -201,9 +89,6 @@ void vtkSlicerVideoUtilLogic::RegisterNodes()
     vtkErrorMacro("Scene is invalid");
     return;
   }
-
-  this->GetMRMLScene()->RegisterNodeClass(vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode>::New());
-  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
 }
 
 //---------------------------------------------------------------------------
