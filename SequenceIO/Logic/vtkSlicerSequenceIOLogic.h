@@ -45,9 +45,9 @@ class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT vtkSlicerSequenceIOLogic : publi
  public:
   static vtkSlicerSequenceIOLogic *New();
   vtkTypeMacro(vtkSlicerSequenceIOLogic, vtkSlicerModuleLogic);
-  void PrintSelf(ostream&, vtkIndent) VTK_OVERRIDE;
+  void PrintSelf(ostream&, vtkIndent) override;
 
-  void RegisterNodes() VTK_OVERRIDE;
+  void RegisterNodes() override;
 
   //----------------------------------------------------------------
   // Events

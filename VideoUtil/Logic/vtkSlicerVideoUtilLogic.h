@@ -42,9 +42,9 @@ class VTK_SLICER_VIDEOUTIL_MODULE_LOGIC_EXPORT vtkSlicerVideoUtilLogic : public 
  public:
   static vtkSlicerVideoUtilLogic *New();
   vtkTypeMacro(vtkSlicerVideoUtilLogic, vtkSlicerModuleLogic);
-  void PrintSelf(ostream&, vtkIndent) VTK_OVERRIDE;
+  void PrintSelf(ostream&, vtkIndent) override;
 
-  void RegisterNodes() VTK_OVERRIDE;
+  void RegisterNodes() override;
 
   //----------------------------------------------------------------
   // Events
