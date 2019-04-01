@@ -1,6 +1,10 @@
 
 set(proj IGSIO)
 
+set(${proj}_DEPENDS
+  VP9
+  )
+
 # Include dependent projects if any
 ExternalProject_Include_Dependencies(${proj} PROJECT_VAR proj)
 
@@ -44,7 +48,8 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     
     -DSlicer_DIR:PATH=${Slicer_DIR}
     -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
-    
+    -DVP9_DIR:PATH=${VP9_DIR}
+
     -DBUILD_TESTING:BOOL=OFF
     )
 

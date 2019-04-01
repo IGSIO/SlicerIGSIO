@@ -18,6 +18,7 @@ set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 
 # Project dependencies
 set(${proj}_DEPENDS
+   VP9
    IGSIO
    )
 
@@ -51,8 +52,9 @@ ExternalProject_Add(${proj}
     # Superbuild
     -D${EXTENSION_NAME}_SUPERBUILD:BOOL=OFF
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
-    
+    # External libray directoriesp
     -DSlicer_DIR:PATH=${Slicer_DIR}
+    -DVP9_DIR:PATH=${VP9_DIR}
   DEPENDS
     ${${proj}_DEPENDS}
   )

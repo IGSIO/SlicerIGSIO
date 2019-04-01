@@ -22,7 +22,7 @@ project(${EXTENSION_NAME})
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 mark_as_superbuild(Slicer_DIR)
-
+mark_as_superbuild(VP9_DIR)
 mark_as_superbuild(IGSIO_DIR)
 
 find_package(Sequences REQUIRED)
