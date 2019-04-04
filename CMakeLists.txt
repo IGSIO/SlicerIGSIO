@@ -47,12 +47,6 @@ add_subdirectory(SequenceIO)
 add_subdirectory(VideoUtil)
 
 #-----------------------------------------------------------------------------
-set(EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS)
-list(APPEND EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkSequenceIO;RuntimeLibraries;/")
-set(${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS "${EXTENSION_CPACK_INSTALL_CMAKE_PROJECTS}" CACHE STRING "List of external projects to install" FORCE)
-
-#-----------------------------------------------------------------------------
-list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
-list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${${EXTENSION_NAME}_CPACK_INSTALL_CMAKE_PROJECTS}")
+set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
 include(${Slicer_EXTENSION_CPACK})
