@@ -48,5 +48,8 @@ add_subdirectory(VideoUtil)
 
 #-----------------------------------------------------------------------------
 set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")
+list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkIGSIOCommon;RuntimeLibraries;/")
+list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkIGSIOCodecs;RuntimeLibraries;/")
+list(APPEND CPACK_INSTALL_CMAKE_PROJECTS "${IGSIO_DIR};vtkSequenceIO;RuntimeLibraries;/")
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
 include(${Slicer_EXTENSION_CPACK})
