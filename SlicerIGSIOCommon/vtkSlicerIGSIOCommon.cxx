@@ -132,7 +132,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     vtkSmartPointer<vtkMatrix4x4> ijkToRASTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
     igsioTransformName imageToPhysicalTransformName;
     imageToPhysicalTransformName.SetTransformName(trackedFrameName + "ToPhysical");
-    if (trackedFrame->GetFrameField(imageToPhysicalTransformName.GetTransformName() + "Transform"))
+    if (!trackedFrame->GetFrameField(imageToPhysicalTransformName.GetTransformName() + "Transform").empty())
     {
       if (trackedFrame->GetFrameTransform(imageToPhysicalTransformName, ijkToRASTransformMatrix) == IGSIO_SUCCESS)
       {
@@ -154,8 +154,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     std::string volumeName = nameStr.str();
     volumeNode->SetName(volumeName.c_str());
 
-    const char* frameStatus = trackedFrame->GetFrameField(FRAME_STATUS_TRACKNAME);
-    if (!frameStatus || vtkVariant(frameStatus).ToInt() != Frame_Skip)
+    std::string frameStatus = trackedFrame->GetFrameField(FRAME_STATUS_TRACKNAME);
+    if (!frameStatus.empty() || vtkVariant(frameStatus).ToInt() != Frame_Skip)
     {
       sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
     }
