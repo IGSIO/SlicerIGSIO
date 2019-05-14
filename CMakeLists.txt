@@ -45,6 +45,7 @@ endif()
 add_subdirectory(SlicerIGSIOCommon)
 add_subdirectory(SequenceIO)
 add_subdirectory(VideoUtil)
+add_subdirectory(VolumeReconstruction)
 
 #-----------------------------------------------------------------------------
 set(CPACK_INSTALL_CMAKE_PROJECTS "${CPACK_INSTALL_CMAKE_PROJECTS};${CMAKE_BINARY_DIR};${EXTENSION_NAME};ALL;/")

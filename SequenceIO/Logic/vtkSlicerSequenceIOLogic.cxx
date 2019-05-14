@@ -191,6 +191,10 @@ vtkSlicerSequenceIOLogic::vtkSlicerSequenceIOLogic()
 //---------------------------------------------------------------------------
 vtkSlicerSequenceIOLogic::~vtkSlicerSequenceIOLogic()
 {
+  if (this->Internal)
+  {
+    delete this->Internal;
+  }
 }
 
 //-----------------------------------------------------------------------------

@@ -79,6 +79,10 @@ vtkSlicerVideoUtilLogic::vtkSlicerVideoUtilLogic()
 //---------------------------------------------------------------------------
 vtkSlicerVideoUtilLogic::~vtkSlicerVideoUtilLogic()
 {
+  if (this->Internal)
+  {
+    delete this->Internal;
+  }
 }
 
 //-----------------------------------------------------------------------------

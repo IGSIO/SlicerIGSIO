@@ -18,12 +18,15 @@ Care Ontario.
 
 ==============================================================================*/
 
-// SlicerIGSIOCommon includes
+// IGSIOCommon includes
 #include <igsioTrackedFrame.h>
 #include <igsioVideoFrame.h>
+#include <vtkIGSIOTrackedFrameList.h>
+#include <vtkIGSIOTransformRepository.h>
+
+// SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
 #include "vtkStreamingVolumeCodec.h"
-#include <vtkIGSIOTrackedFrameList.h>
 
 // vtkAddon includes
 #include <vtkStreamingVolumeCodecFactory.h>
@@ -41,6 +44,7 @@ Care Ontario.
 
 // VTK includes
 #include <vtkMatrix4x4.h>
+#include <vtkTransform.h>
 
 // vtkSequenceIO includes
 #include <vtkIGSIOMkvSequenceIO.h>
@@ -80,7 +84,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
   if (!encodingFourCC.empty())
   {
     vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-          vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(encodingFourCC));
+      vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(encodingFourCC));
     if (!codec)
     {
       vtkErrorWithObjectMacro(sequenceNode, "Could not find codec: " << encodingFourCC);
@@ -197,7 +201,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
 
   std::string imagesSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, "Image");
   vtkSmartPointer<vtkMRMLSequenceNode> videoSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
-        scene->AddNewNodeByClass("vtkMRMLSequenceNode", imagesSequenceName.c_str()));
+    scene->AddNewNodeByClass("vtkMRMLSequenceNode", imagesSequenceName.c_str()));
   vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(trackedFrameList, videoSequenceNode);
 
   if (videoSequenceNode->GetNumberOfDataNodes() < 1)
@@ -256,7 +260,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
         {
           std::string transformSequenceName = vtkMRMLSequenceStorageNode::GetSequenceNodeName(trackedFrameName, transformName);
           vtkSmartPointer<vtkMRMLSequenceNode> transformSequenceNode = vtkMRMLSequenceNode::SafeDownCast(
-                scene->AddNewNodeByClass("vtkMRMLSequenceNode", transformSequenceName.c_str()));
+            scene->AddNewNodeByClass("vtkMRMLSequenceNode", transformSequenceName.c_str()));
           transformSequenceNode->SetIndexName("time");
           transformSequenceNode->SetIndexUnit("s");
           // Save transform name to Sequences.Source attribute so that modules can
@@ -299,7 +303,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
   if (trackedFrameList->SetCustomString(TRACKNAME_FIELD_NAME, trackName) == IGSIO_FAIL)
   {
     vtkErrorWithObjectMacro(sequenceNode, "Could not set track name!")
-    return false;
+      return false;
   }
 
 
@@ -383,10 +387,90 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
 }
 
 //----------------------------------------------------------------------------
-bool vtkSlicerIGSIOCommon::SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* sequenceBrowserNode, vtkIGSIOTrackedFrameList* trackedFrameList)
+bool vtkSlicerIGSIOCommon::SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* inputSequenceBrowserNode,
+  vtkIGSIOTrackedFrameList* outputTrackedFrameList)
 {
-  // TODO: Not implemented yet
-  return false;
+  if (!inputSequenceBrowserNode)
+  {
+    LOG_ERROR("Invalid input sequence browser!");
+  }
+
+  if (!outputTrackedFrameList)
+  {
+    LOG_ERROR("Invalid output volume node!");
+  }
+
+
+  vtkMRMLSequenceNode* masterSequenceNode = inputSequenceBrowserNode->GetMasterSequenceNode();
+  if (!masterSequenceNode || masterSequenceNode->GetNumberOfDataNodes() <= 0 || !masterSequenceNode->GetNthDataNode(0)->IsA("vtkMRMLVolumeNode"))
+  {
+    LOG_ERROR("Invalid master sequence node!");
+  }
+  int numberOfDataNodes = masterSequenceNode->GetNumberOfDataNodes();
+
+  std::vector<vtkMRMLSequenceNode*> sequenceNodes;
+  inputSequenceBrowserNode->GetSynchronizedSequenceNodes(sequenceNodes, true);
+  for (int i = 0; i < masterSequenceNode->GetNumberOfDataNodes(); ++i)
+  {
+    igsioTrackedFrame emptyFrame;
+    outputTrackedFrameList->AddTrackedFrame(&emptyFrame, vtkIGSIOTrackedFrameList::ADD_INVALID_FRAME);
+  }
+
+  int selectedItemNumber = inputSequenceBrowserNode->GetSelectedItemNumber();
+  for (int i = 0; i < numberOfDataNodes; ++i)
+  {
+    igsioTrackedFrame* trackedFrame = outputTrackedFrameList->GetTrackedFrame(i);
+    inputSequenceBrowserNode->SetSelectedItemNumber(i);
+
+    for (vtkMRMLSequenceNode* sequenceNode : sequenceNodes)
+    {
+      vtkMRMLNode* proxyNode = inputSequenceBrowserNode->GetProxyNode(sequenceNode);
+      vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(proxyNode);
+      vtkMRMLTransformNode* transformNode = vtkMRMLTransformNode::SafeDownCast(proxyNode);
+
+      if (volumeNode)
+      {
+        trackedFrame->GetImageData()->SetImageOrientation(US_IMG_ORIENT_MF); // TODO: save orientation and type
+        //trackedFrame->GetImageData()->SetImageType(US_IMG_RGB_COLOR);
+        trackedFrame->SetTimestamp(i);
+        trackedFrame->GetImageData()->DeepCopyFrom(volumeNode->GetImageData());
+
+        vtkNew<vtkTransform> imageToWorldTransform;
+        imageToWorldTransform->Identity();
+        imageToWorldTransform->PreMultiply();
+        vtkNew<vtkMatrix4x4> ijkToRASMatrix;
+        volumeNode->GetIJKToRASMatrix(ijkToRASMatrix);
+        imageToWorldTransform->Concatenate(ijkToRASMatrix);
+
+        vtkNew<vtkMatrix4x4> parentToWorldMatrix;
+        vtkMRMLTransformNode* transformNode = volumeNode->GetParentTransformNode();
+        if (transformNode)
+        {
+          transformNode->GetMatrixTransformToWorld(parentToWorldMatrix);
+          imageToWorldTransform->Concatenate(parentToWorldMatrix);
+        }
+
+        vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
+        imageToWorldTransform->GetMatrix(matrix);
+        igsioTransformName transformName("ImageToWorld");
+        trackedFrame->SetFrameTransform(transformName, matrix);
+        trackedFrame->SetFrameTransformStatus(transformName, ToolStatus::TOOL_OK); //TODO: Attribute to status
+      }
+
+      if (transformNode)
+      {
+        vtkSmartPointer<vtkMatrix4x4> matrix = vtkSmartPointer<vtkMatrix4x4>::New();
+        transformNode->GetMatrixTransformToParent(matrix);
+
+        igsioTransformName transformName(transformNode->GetName());
+        trackedFrame->SetFrameTransform(transformName, matrix);
+        trackedFrame->SetFrameTransformStatus(transformName, ToolStatus::TOOL_OK); //TODO: Attribute to status
+      }
+    }
+  }
+  inputSequenceBrowserNode->SetSelectedItemNumber(selectedItemNumber);
+
+  return true;
 }
 
 //----------------------------------------------------------------------------
@@ -407,7 +491,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
   }
 
   if (startIndex < 0 || startIndex >= numberOfFrames || startIndex > endIndex
-      || endIndex >= numberOfFrames)
+    || endIndex >= numberOfFrames)
   {
     vtkErrorWithObjectMacro(videoStreamSequenceNode, "Invalid start and end indices!");
     return false;
@@ -464,9 +548,9 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
       }
 
       if (currentFrame && // Current frame exists
-          previousFrame && // Current frame is not the initial frame
-          currentFrame->IsKeyFrame() && // Current frame is a keyframe
-          !previousFrame->IsKeyFrame()) // Previous frame was not also a keyframe
+        previousFrame && // Current frame is not the initial frame
+        currentFrame->IsKeyFrame() && // Current frame is a keyframe
+        !previousFrame->IsKeyFrame()) // Previous frame was not also a keyframe
       {
         frameBlocks.push_back(currentFrameBlock);
         currentFrameBlock = FrameBlock();
@@ -510,7 +594,7 @@ bool vtkSlicerIGSIOCommon::ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStrea
     {
       vtkNew<vtkMRMLStreamingVolumeNode> decodingProxyNode;
       vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
-            vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC));
+        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC));
       if (!codec)
       {
         vtkErrorWithObjectMacro(videoStreamSequenceNode, "Could not find codec: " << codecFourCC);
