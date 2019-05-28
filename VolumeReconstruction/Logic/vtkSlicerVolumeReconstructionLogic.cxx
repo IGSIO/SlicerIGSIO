@@ -206,9 +206,9 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
     double bounds[6];
     roiNode->GetBounds(bounds);
     int extent[6] = {
-      0, std::ceil((bounds[1] - bounds[0]) / outputSpacing[0]),
-      0, std::ceil((bounds[3] - bounds[2]) / outputSpacing[1]),
-      0, std::ceil((bounds[5] - bounds[4]) / outputSpacing[2])
+      0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
+      0, static_cast<int>(std::ceil((bounds[3] - bounds[2]) / outputSpacing[1])),
+      0, static_cast<int>(std::ceil((bounds[5] - bounds[4]) / outputSpacing[2]))
     };
     this->Internal->Reconstructor->SetOutputExtent(extent);
     double outputOrigin[3] = { bounds[0], bounds[2], bounds[4] };
