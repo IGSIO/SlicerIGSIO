@@ -9,11 +9,14 @@ SlicerIGSIO is a utility extension for [3D Slicer](http://slicer.org) designed t
 ## Modules
 
 - ### SequenceIO
-This module provides access to classes for reading, writing, editing, re-encoding, and playback of video container files.
-Users can drag and drop video files into Slicer, allowing playback using Sequences (https://github.com/SlicerRt/Sequences), provided that the video container is one of the supported file types (see below), and that the video track encoding matches one of the registered vtkStreamingVolumeCodecs within Slicer.
+  This module provides access to classes for reading, writing, editing, re-encoding, and playback of video container files.
+  Users can drag and drop video files into Slicer, allowing playback using Sequences (https://github.com/SlicerRt/Sequences), provided that the video container is one of the supported file types (see below), and that the video track encoding matches one of the registered vtkStreamingVolumeCodecs within Slicer.
 
-- Supported file types:
-  - MKV (Matroska Multimedia Container)
+  - Supported file types:
+    - MKV (Matroska Multimedia Container)
+  
+- ### Volume Reconstructor
+  This module can perform volume reconstruction from tracked volume sequences.
   
 ![alt text](Images/SlicerIGSIOScreenshot1.png)
 
