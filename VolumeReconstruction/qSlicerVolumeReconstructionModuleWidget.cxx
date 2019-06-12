@@ -20,13 +20,18 @@ Care Ontario.
 
 // Qt includes
 #include <QDebug>
+#include <QProgressDialog>
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <QTextEdit>
 
+#include <qSlicerApplication.h>
+#include <qSlicerModuleManager.h>
+
 // SlicerQt includes
 #include "qSlicerVolumeReconstructionModuleWidget.h"
 #include "ui_qSlicerVolumeReconstructionModule.h"
+#include "qSlicerVolumeReconstructionModule.h"
 
 // SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
@@ -64,7 +69,7 @@ public:
   ~qSlicerVolumeReconstructionModuleWidgetPrivate();
 
   vtkSlicerVolumeReconstructionLogic* logic() const;
-
+  QProgressDialog* ReconstructionProgressDialog;
 };
 
 //-----------------------------------------------------------------------------
@@ -73,6 +78,7 @@ public:
 //-----------------------------------------------------------------------------
 qSlicerVolumeReconstructionModuleWidgetPrivate::qSlicerVolumeReconstructionModuleWidgetPrivate(qSlicerVolumeReconstructionModuleWidget& object)
   : q_ptr(&object)
+  , ReconstructionProgressDialog(nullptr)
 {
 }
 
@@ -87,7 +93,6 @@ vtkSlicerVolumeReconstructionLogic* qSlicerVolumeReconstructionModuleWidgetPriva
   Q_Q(const qSlicerVolumeReconstructionModuleWidget);
   return vtkSlicerVolumeReconstructionLogic::SafeDownCast(q->logic());
 }
-
 
 //-----------------------------------------------------------------------------
 // qSlicerVolumeReconstructionModuleWidget methods
@@ -128,6 +133,53 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   connect(d->ReconstructionROISelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateWidgetFromMRML()));
   connect(d->ROIVisibilityButton, SIGNAL(clicked()), this, SLOT(onToggleROIVisible()));
   connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(onApply()));
+
+  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeReconstructionStarted, this, SLOT(startProgressDialog()));
+  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeAddedToReconstruction, this, SLOT(updateReconstructionProgress()));
+  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeReconstructionFinished, this, SLOT(stopProgressDialog()));
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::startProgressDialog()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (d->ReconstructionProgressDialog)
+  {
+    delete d->ReconstructionProgressDialog;
+    d->ReconstructionProgressDialog = nullptr;
+  }
+
+  d->ReconstructionProgressDialog = new QProgressDialog("Volume reconstruction", "",
+    0, d->logic()->GetNumberOfVolumeNodesForReconstructionInInput(), this);
+  d->ReconstructionProgressDialog->setWindowTitle(QString("Reconstructing volume..."));
+  d->ReconstructionProgressDialog->setCancelButton(nullptr);
+  d->ReconstructionProgressDialog->setWindowFlags(d->ReconstructionProgressDialog->windowFlags()
+    & ~Qt::WindowCloseButtonHint & ~Qt::WindowContextHelpButtonHint);
+  d->ReconstructionProgressDialog->setFixedSize(d->ReconstructionProgressDialog->sizeHint());
+  d->ReconstructionProgressDialog->setWindowModality(Qt::WindowModal);
+  this->updateReconstructionProgress();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::stopProgressDialog()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (d->ReconstructionProgressDialog)
+  {
+    delete d->ReconstructionProgressDialog;
+    d->ReconstructionProgressDialog = nullptr;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::updateReconstructionProgress()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (!d->ReconstructionProgressDialog)
+  {
+    return;
+  }
+  d->ReconstructionProgressDialog->setValue(d->logic()->GetVolumeNodesAddedToReconstruction());
 }
 
 //-----------------------------------------------------------------------------

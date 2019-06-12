@@ -91,8 +91,10 @@ vtkSlicerVolumeReconstructionLogic::vtkInternal::~vtkInternal()
 
 //---------------------------------------------------------------------------
 vtkSlicerVolumeReconstructionLogic::vtkSlicerVolumeReconstructionLogic()
+  : NumberOfVolumeNodesForReconstructionInInput(0)
+  , VolumeNodesAddedToReconstruction(0)
+  , Internal(new vtkInternal(this))
 {
-  this->Internal = new vtkInternal(this);
 }
 
 //---------------------------------------------------------------------------
@@ -156,6 +158,8 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     return false;
   }
 
+  this->SetVolumeNodesAddedToReconstruction(this->GetVolumeNodesAddedToReconstruction() + 1);
+  this->InvokeEvent(vtkSlicerVolumeReconstructionLogic::VolumeAddedToReconstruction);
   return  true;
 }
 
@@ -185,6 +189,12 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
     vtkErrorMacro("Invalid output volume node!");
     return;
   }
+
+  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode(); // TODO: for now assume image is master
+  const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
+  this->SetNumberOfVolumeNodesForReconstructionInInput(numberOfFrames);
+  this->SetVolumeNodesAddedToReconstruction(0);
+  this->InvokeEvent(VolumeReconstructionStarted);
 
   this->Internal->Reconstructor->SetOutputSpacing(outputSpacing);
   this->Internal->Reconstructor->SetCompoundingMode(vtkIGSIOPasteSliceIntoVolume::CompoundingType(compoundingMode));
@@ -225,8 +235,8 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
 
   this->Internal->Reconstructor->Reset();
-  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode(); // TODO: for now assume image is master
-  const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
+
+  
   for (int i = 0; i < numberOfFrames; ++i)
   {
     vtkMRMLSequenceNode* imageSequence = masterSequence;
@@ -258,6 +268,8 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   outputVolumeNode->SetOrigin(origin);
 
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
+
+  this->InvokeEvent(VolumeReconstructionFinished);
 }
 
 //---------------------------------------------------------------------------

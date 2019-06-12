@@ -29,6 +29,7 @@ Care Ontario.
 #include <vtkSlicerModuleLogic.h>
 
 // VTK includes
+#include <vtkCommand.h>
 #include <vtkCallbackCommand.h>
 
 // Sequences MRML includes
@@ -72,6 +73,13 @@ public:
   // Events
   //----------------------------------------------------------------
 
+  enum
+  {
+    VolumeReconstructionStarted = 56000,
+    VolumeAddedToReconstruction,
+    VolumeReconstructionFinished,
+  };
+
   //----------------------------------------------------------------
   // Connector and device Management
   //----------------------------------------------------------------
@@ -79,6 +87,14 @@ public:
   //----------------------------------------------------------------
   // MRML Management
   //----------------------------------------------------------------
+
+  //----------------------------------------------------------------
+  // Properties
+  //----------------------------------------------------------------
+  vtkSetMacro(NumberOfVolumeNodesForReconstructionInInput, int);
+  vtkGetMacro(NumberOfVolumeNodesForReconstructionInInput, int);
+  vtkSetMacro(VolumeNodesAddedToReconstruction, int);
+  vtkGetMacro(VolumeNodesAddedToReconstruction, int);
 
 protected:
 
@@ -89,12 +105,15 @@ protected:
   vtkSlicerVolumeReconstructionLogic();
   virtual ~vtkSlicerVolumeReconstructionLogic();
 
-private:
+protected:
+  int NumberOfVolumeNodesForReconstructionInInput;
+  int VolumeNodesAddedToReconstruction;
 
 private:
   class vtkInternal;
   vtkInternal* Internal;
 
+private:
   vtkSlicerVolumeReconstructionLogic(const vtkSlicerVolumeReconstructionLogic&); // Not implemented
   void operator=(const vtkSlicerVolumeReconstructionLogic&);               // Not implemented
 };

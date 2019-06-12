@@ -55,6 +55,11 @@ protected:
 
 protected slots:
   virtual void updateWidgetFromMRML();
+
+  virtual void startProgressDialog();
+  virtual void updateReconstructionProgress();
+  virtual void stopProgressDialog();
+
   virtual void setMRMLScene(vtkMRMLScene*);
 
 private:
