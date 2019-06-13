@@ -6,6 +6,8 @@ SlicerIGSIO is developed as part of the [IGSIO (Image Guided Surgery InterOperab
 
 SlicerIGSIO is a utility extension for [3D Slicer](http://slicer.org) designed to provide access to [IGSIO tools and algorithms](https://github.com/IGSIO/IGSIO)  within 3D Slicer. It should not be installed directly by end users.
 
+![Screenshot of SlicerIGSIO extension](Images/SlicerIGSIOScreenshot1.png)
+
 ## Modules
 
 - ### SequenceIO
@@ -17,9 +19,6 @@ SlicerIGSIO is a utility extension for [3D Slicer](http://slicer.org) designed t
   
 - ### Volume Reconstructor
   This module can perform volume reconstruction from tracked volume sequences.
-  
-![alt text](Images/SlicerIGSIOScreenshot1.png)
-
 
 ## User guides
 
