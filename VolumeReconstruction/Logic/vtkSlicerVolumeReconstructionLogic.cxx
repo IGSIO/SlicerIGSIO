@@ -236,7 +236,6 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
 
   this->Internal->Reconstructor->Reset();
 
-  
   for (int i = 0; i < numberOfFrames; ++i)
   {
     vtkMRMLSequenceNode* imageSequence = masterSequence;

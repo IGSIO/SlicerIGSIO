@@ -94,6 +94,9 @@
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="label_2">
+       <property name="toolTip">
+        <string>Output image spacing for each dimension of the reconstructed volume.</string>
+       </property>
        <property name="text">
         <string>Output spacing:</string>
        </property>
@@ -103,6 +106,9 @@
       <layout class="QHBoxLayout" name="horizontalLayout_3">
        <item>
         <widget class="QDoubleSpinBox" name="XSpacingSpinbox">
+         <property name="toolTip">
+          <string>Output image spacing for &quot;I&quot; dimension of the reconstructed volume.</string>
+         </property>
          <property name="minimum">
           <double>0.000000000000000</double>
          </property>
@@ -116,6 +122,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="YSpacingSpinbox">
+         <property name="toolTip">
+          <string>Output image spacing for &quot;J&quot; dimension of the reconstructed volume.</string>
+         </property>
          <property name="minimum">
           <double>0.000000000000000</double>
          </property>
@@ -129,6 +138,9 @@
        </item>
        <item>
         <widget class="QDoubleSpinBox" name="ZSpacingSpinbox">
+         <property name="toolTip">
+          <string>Output image spacing for &quot;K&quot; dimension of the reconstructed volume.</string>
+         </property>
          <property name="minimum">
           <double>0.000000000000000</double>
          </property>
@@ -142,45 +154,17 @@
        </item>
       </layout>
      </item>
-     <item row="4" column="0">
-      <widget class="QLabel" name="label_10">
-       <property name="text">
-        <string>Clip rectangle enabled:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="4" column="1">
-      <widget class="QCheckBox" name="ClipRectangleEnabledCheckBox">
-       <property name="text">
-        <string/>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
-      <widget class="QLabel" name="label_11">
-       <property name="text">
-        <string>Clip rectangle origin:</string>
-       </property>
-      </widget>
-     </item>
      <item row="6" column="0">
-      <widget class="QLabel" name="label_9">
-       <property name="text">
-        <string>Clip rectangle size:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="7" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Interpolation mode:</string>
        </property>
       </widget>
      </item>
-     <item row="7" column="1">
+     <item row="6" column="1">
       <widget class="QComboBox" name="InterpolationModeComboBox"/>
      </item>
-     <item row="8" column="0">
+     <item row="7" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Optimization mode:</string>
@@ -190,117 +174,207 @@
        </property>
       </widget>
      </item>
-     <item row="8" column="1">
+     <item row="7" column="1">
       <widget class="QComboBox" name="OptimizationModeComboBox"/>
      </item>
-     <item row="9" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>Compounding mode:</string>
        </property>
       </widget>
      </item>
-     <item row="9" column="1">
+     <item row="8" column="1">
       <widget class="QComboBox" name="CompoundingModeComboBox"/>
      </item>
-     <item row="10" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Fill holes:</string>
        </property>
       </widget>
      </item>
-     <item row="10" column="1">
+     <item row="9" column="1">
       <widget class="QCheckBox" name="FillHolesCheckBox">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
-     <item row="11" column="0">
+     <item row="10" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
         <string>Number of threads:</string>
        </property>
       </widget>
      </item>
-     <item row="11" column="1">
+     <item row="10" column="1">
       <widget class="QSpinBox" name="NumberOfThreadsSpinBox">
        <property name="value">
         <number>1</number>
        </property>
       </widget>
      </item>
-     <item row="12" column="1">
+     <item row="11" column="0">
+      <widget class="QLabel" name="label_12">
+       <property name="text">
+        <string>Skip interval:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="11" column="1">
       <layout class="QHBoxLayout" name="horizontalLayout">
        <item>
-        <widget class="QPushButton" name="ApplyButton">
-         <property name="text">
-          <string>Apply</string>
-         </property>
-        </widget>
+        <widget class="QSpinBox" name="spinBox_3"/>
        </item>
       </layout>
      </item>
-     <item row="6" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_2">
-       <item>
-        <widget class="QSpinBox" name="XClipRectangleSizeSpinBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="maximum">
-          <number>1000000000</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="YClipRectangleSizeSpinBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="maximum">
-          <number>1000000000</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
-     </item>
-     <item row="5" column="1">
-      <layout class="QHBoxLayout" name="horizontalLayout_5">
-       <item>
-        <widget class="QSpinBox" name="XClipRectangleOriginSpinBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>-999999999</number>
-         </property>
-         <property name="maximum">
-          <number>1000000000</number>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QSpinBox" name="YClipRectangleOriginSpinBox">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="minimum">
-          <number>-999999999</number>
-         </property>
-         <property name="maximum">
-          <number>1000000000</number>
-         </property>
-        </widget>
-       </item>
-      </layout>
+    </layout>
+   </item>
+   <item>
+    <widget class="qMRMLCollapsibleButton" name="MRMLCollapsibleButton">
+     <property name="text">
+      <string>Clipping</string>
+     </property>
+     <property name="collapsed">
+      <bool>true</bool>
+     </property>
+     <layout class="QFormLayout" name="formLayout_2">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_11">
+        <property name="toolTip">
+         <string> Crop rectangle origin (in pixels).</string>
+        </property>
+        <property name="text">
+         <string>Clip rectangle origin:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QSpinBox" name="XClipRectangleOriginSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string> Crop rectangle origin X component (in pixels).</string>
+          </property>
+          <property name="minimum">
+           <number>-999999999</number>
+          </property>
+          <property name="maximum">
+           <number>1000000000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="YClipRectangleOriginSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string> Crop rectangle origin Y component(in pixels).</string>
+          </property>
+          <property name="minimum">
+           <number>-999999999</number>
+          </property>
+          <property name="maximum">
+           <number>1000000000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QSpinBox" name="XClipRectangleSizeSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Crop rectangle size X component (in pixels).</string>
+          </property>
+          <property name="maximum">
+           <number>1000000000</number>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="YClipRectangleSizeSpinBox">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="toolTip">
+           <string>Crop rectangle size Y component (in pixels).</string>
+          </property>
+          <property name="maximum">
+           <number>1000000000</number>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item row="1" column="0">
+       <widget class="QLabel" name="label_9">
+        <property name="toolTip">
+         <string>Crop rectangle size (in pixels).</string>
+        </property>
+        <property name="text">
+         <string>Clip rectangle size:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="ctkCollapsibleButton" name="CollapsibleButton">
+     <property name="text">
+      <string>Fan angles</string>
+     </property>
+     <layout class="QFormLayout" name="formLayout_4">
+      <item row="0" column="0">
+       <widget class="QLabel" name="label_10">
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QSpinBox" name="spinBox_2"/>
+        </item>
+        <item>
+         <widget class="QSpinBox" name="spinBox"/>
+        </item>
+       </layout>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QFormLayout" name="formLayout_3">
+     <item row="0" column="1">
+      <widget class="QPushButton" name="ApplyButton">
+       <property name="text">
+        <string>Apply</string>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>qMRMLCollapsibleButton</class>
+   <extends>ctkCollapsibleButton</extends>
+   <header>qMRMLCollapsibleButton.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>qMRMLNodeComboBox</class>
    <extends>QWidget</extends>
@@ -311,6 +385,12 @@
    <class>qSlicerWidget</class>
    <extends>QWidget</extends>
    <header>qSlicerWidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
@@ -363,70 +443,6 @@
     <hint type="destinationlabel">
      <x>328</x>
      <y>74</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ClipRectangleEnabledCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>XClipRectangleSizeSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>128</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>234</x>
-     <y>179</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ClipRectangleEnabledCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>YClipRectangleSizeSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>128</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>443</x>
-     <y>179</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ClipRectangleEnabledCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>XClipRectangleOriginSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>128</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>234</x>
-     <y>151</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>ClipRectangleEnabledCheckBox</sender>
-   <signal>toggled(bool)</signal>
-   <receiver>YClipRectangleOriginSpinBox</receiver>
-   <slot>setEnabled(bool)</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>338</x>
-     <y>128</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>443</x>
-     <y>151</y>
     </hint>
    </hints>
   </connection>
