@@ -29,7 +29,7 @@ SlicerIGSIO is an extension for [3D Slicer](http://slicer.org) designed to provi
 
 - Volume Reconstructor
     - Image volume and required transform sequences need to be included in the same Sequence
-    - The image ROI is automatically calculated from the sequence, however you can optionally specifiy an AnnotationROI
+    - The image ROI is automatically calculated from the sequence, however you can optionally specify an AnnotationROI
     - After clicking apply, the volume reconstruction is perfomed in RAS
 
 ## Video Codecs
