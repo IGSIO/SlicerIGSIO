@@ -4,7 +4,7 @@ SlicerIGSIO is developed as part of the [IGSIO (Image Guided Surgery InterOperab
 
 ## Overview
 
-SlicerIGSIO is a utility extension for [3D Slicer](http://slicer.org) designed to provide access to [IGSIO tools and algorithms](https://github.com/IGSIO/IGSIO)  within 3D Slicer. It should not be installed directly by end users.
+SlicerIGSIO is an extension for [3D Slicer](http://slicer.org) designed to provide access to [IGSIO tools and algorithms](https://github.com/IGSIO/IGSIO).
 
 ![Screenshot of SlicerIGSIO extension](Images/SlicerIGSIOScreenshot1.png)
 
@@ -22,8 +22,20 @@ SlicerIGSIO is a utility extension for [3D Slicer](http://slicer.org) designed t
 
 ## User guides
 
-As a utility extension, SlicerIGSIO has no end-user components, and is intended to be used by other extensions such as SlicerIGT.
-SlicerIGT tutorials can be found [here](http://www.slicerigt.org/wp/user-tutorial/).
+- ### SequenceIO
+  To load an image sequence file containing transform and/or tool status metadata, drag and drop a file using the ".igs.*" compound extension into Slicer. This extension indicates that the sequence file contains tracked frame information (Ex. [MetaImageSequenceIOTest1.igs.mhd]( https://github.com/IGSIO/IGSIO/blob/master/Source/SequenceIO/Testing/Data/MetaImageSequenceIOTest1.igs.mhd)).
+  
+  MKV video files can also be opened in 3D Slicer provided that the relevant codec is installed (See codecs included with SlicerIGSIO below)
+
+- Volume Reconstructor
+  To create a reconstructed volume from a volume sequence:
+    - Image volume and required transform sequences need to be included in the same Sequence
+    - The image ROI is automatically calculated from the sequence, however you can optionally specifiy an AnnotationROI
+    - After clicking apply, the volume reconstruction is perfomed in RAS
+
+## Video Codecs
+The following video compression codecs are included with the SlicerIGSIO extension:
+- VP9 ([Wikipedia](https://en.wikipedia.org/wiki/VP9))
 
 ## Support
 
