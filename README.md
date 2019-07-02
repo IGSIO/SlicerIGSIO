@@ -28,7 +28,6 @@ SlicerIGSIO is an extension for [3D Slicer](http://slicer.org) designed to provi
   MKV video files can also be opened in 3D Slicer provided that the relevant codec is installed (See codecs included with SlicerIGSIO below)
 
 - Volume Reconstructor
-  To create a reconstructed volume from a volume sequence:
     - Image volume and required transform sequences need to be included in the same Sequence
     - The image ROI is automatically calculated from the sequence, however you can optionally specifiy an AnnotationROI
     - After clicking apply, the volume reconstruction is perfomed in RAS
