@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>556</width>
-    <height>550</height>
+    <height>539</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,6 +27,9 @@
      </property>
      <item row="0" column="0">
       <widget class="QLabel" name="LabelInputVolumeSequence">
+       <property name="toolTip">
+        <string>Input sequence browser containing the images and transforms used for volume reconstruction</string>
+       </property>
        <property name="text">
         <string>Input sequence browser:</string>
        </property>
@@ -34,6 +37,9 @@
      </item>
      <item row="0" column="1">
       <widget class="qMRMLNodeComboBox" name="InputSequenceBrowserSelector">
+       <property name="toolTip">
+        <string>Input sequence browser containing the images and transforms used for volume reconstruction</string>
+       </property>
        <property name="nodeTypes">
         <stringlist>
          <string>vtkMRMLSequenceBrowserNode</string>
@@ -43,6 +49,9 @@
      </item>
      <item row="2" column="0">
       <widget class="QLabel" name="LabelOutputVolume">
+       <property name="toolTip">
+        <string>Output reconstructed volume node</string>
+       </property>
        <property name="text">
         <string>Output volume node:</string>
        </property>
@@ -50,6 +59,9 @@
      </item>
      <item row="2" column="1">
       <widget class="qMRMLNodeComboBox" name="OutputVolumeSelector">
+       <property name="toolTip">
+        <string>Output reconstructed volume node</string>
+       </property>
        <property name="nodeTypes">
         <stringlist>
          <string>vtkMRMLScalarVolumeNode</string>
@@ -62,6 +74,9 @@
      </item>
      <item row="3" column="0">
       <widget class="QLabel" name="LabelROINode">
+       <property name="toolTip">
+        <string>Region of interest in which the volume should be reconstructed.</string>
+       </property>
        <property name="text">
         <string>ROI node:</string>
        </property>
@@ -71,6 +86,9 @@
       <layout class="QHBoxLayout" name="ROILayout">
        <item>
         <widget class="qMRMLNodeComboBox" name="ReconstructionROISelector">
+         <property name="toolTip">
+          <string>Region of interest in which the volume should be reconstructed.</string>
+         </property>
          <property name="nodeTypes">
           <stringlist>
            <string>vtkMRMLAnnotationROINode</string>
@@ -83,6 +101,9 @@
        </item>
        <item>
         <widget class="QPushButton" name="ROIVisibilityButton">
+         <property name="toolTip">
+          <string>ROI node visibility</string>
+         </property>
          <property name="text">
           <string/>
          </property>
@@ -113,7 +134,7 @@
        <item>
         <widget class="QDoubleSpinBox" name="XSpacingSpinbox">
          <property name="toolTip">
-          <string>Output image spacing for &quot;I&quot; dimension of the reconstructed volume.</string>
+          <string>Output image spacing for &quot;I&quot; dimension of the reconstructed volume</string>
          </property>
          <property name="minimum">
           <double>0.000000000000000</double>
@@ -129,7 +150,7 @@
        <item>
         <widget class="QDoubleSpinBox" name="YSpacingSpinbox">
          <property name="toolTip">
-          <string>Output image spacing for &quot;J&quot; dimension of the reconstructed volume.</string>
+          <string>Output image spacing for &quot;J&quot; dimension of the reconstructed volume</string>
          </property>
          <property name="minimum">
           <double>0.000000000000000</double>
@@ -145,7 +166,7 @@
        <item>
         <widget class="QDoubleSpinBox" name="ZSpacingSpinbox">
          <property name="toolTip">
-          <string>Output image spacing for &quot;K&quot; dimension of the reconstructed volume.</string>
+          <string>Output image spacing for &quot;K&quot; dimension of the reconstructed volume</string>
          </property>
          <property name="minimum">
           <double>0.000000000000000</double>
@@ -162,16 +183,26 @@
      </item>
      <item row="5" column="0">
       <widget class="QLabel" name="LabelInterpolationMode">
+       <property name="toolTip">
+        <string>Interpolation mode used for performing the volume reconstruction</string>
+       </property>
        <property name="text">
         <string>Interpolation mode:</string>
        </property>
       </widget>
      </item>
      <item row="5" column="1">
-      <widget class="QComboBox" name="InterpolationModeComboBox"/>
+      <widget class="QComboBox" name="InterpolationModeComboBox">
+       <property name="toolTip">
+        <string>Interpolation mode used for performing the volume reconstruction</string>
+       </property>
+      </widget>
      </item>
      <item row="6" column="0">
       <widget class="QLabel" name="LabelOptimizationMode">
+       <property name="toolTip">
+        <string>Optimization mode (turn off optimization only if it is not stable on your architecture).</string>
+       </property>
        <property name="text">
         <string>Optimization mode:</string>
        </property>
@@ -181,20 +212,34 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QComboBox" name="OptimizationModeComboBox"/>
+      <widget class="QComboBox" name="OptimizationModeComboBox">
+       <property name="toolTip">
+        <string>Optimization mode (turn off optimization only if it is not stable on your architecture)</string>
+       </property>
+      </widget>
      </item>
      <item row="7" column="0">
       <widget class="QLabel" name="LabelCompoundingMode">
+       <property name="toolTip">
+        <string>Method for compounding overlapping input pixels</string>
+       </property>
        <property name="text">
         <string>Compounding mode:</string>
        </property>
       </widget>
      </item>
      <item row="7" column="1">
-      <widget class="QComboBox" name="CompoundingModeComboBox"/>
+      <widget class="QComboBox" name="CompoundingModeComboBox">
+       <property name="toolTip">
+        <string>Method for compounding overlapping input pixels</string>
+       </property>
+      </widget>
      </item>
      <item row="8" column="0">
       <widget class="QLabel" name="LabelFillHoles">
+       <property name="toolTip">
+        <string>Indicates if hole filling should be applied on reconstructed volume</string>
+       </property>
        <property name="text">
         <string>Fill holes:</string>
        </property>
@@ -202,6 +247,9 @@
      </item>
      <item row="8" column="1">
       <widget class="QCheckBox" name="FillHolesCheckBox">
+       <property name="toolTip">
+        <string>Indicates if hole filling should be applied on reconstructed volume</string>
+       </property>
        <property name="text">
         <string/>
        </property>
@@ -209,6 +257,9 @@
      </item>
      <item row="9" column="0">
       <widget class="QLabel" name="LabelNumberOfThreads">
+       <property name="toolTip">
+        <string>Number of threads used for processing the data (Choose 0 for maximum speed). The reconstruction result is slightly different if more than one thread is used because due to interpolation and rounding errors is influenced by the order the pixels are processed.</string>
+       </property>
        <property name="text">
         <string>Number of threads:</string>
        </property>
@@ -216,25 +267,38 @@
      </item>
      <item row="9" column="1">
       <widget class="QSpinBox" name="NumberOfThreadsSpinBox">
+       <property name="toolTip">
+        <string>Number of threads used for processing the data (Choose 0 for maximum speed). The reconstruction result is slightly different if more than one thread is used because due to interpolation and rounding errors is influenced by the order the pixels are processed.</string>
+       </property>
        <property name="value">
-        <number>1</number>
+        <number>0</number>
        </property>
       </widget>
      </item>
      <item row="10" column="0">
       <widget class="QLabel" name="LabelSkipInterval">
+       <property name="toolTip">
+        <string>Only every N images from the input will be used in the reconstruction</string>
+       </property>
        <property name="text">
         <string>Skip interval:</string>
        </property>
       </widget>
      </item>
      <item row="10" column="1">
-      <widget class="QSpinBox" name="SkipIntervalSpinbox"/>
+      <widget class="QSpinBox" name="SkipIntervalSpinbox">
+       <property name="toolTip">
+        <string>Only every N images from the input will be used in the reconstruction</string>
+       </property>
+      </widget>
      </item>
      <item row="1" column="1">
       <layout class="QFormLayout" name="LayoutSequence">
        <item row="0" column="0">
         <widget class="QLabel" name="LabelVolumeNode">
+         <property name="toolTip">
+          <string>Input volume node containing the images used for reconstruction</string>
+         </property>
          <property name="text">
           <string>Input volume:</string>
          </property>
@@ -242,6 +306,9 @@
        </item>
        <item row="0" column="1">
         <widget class="ctkComboBox" name="InputVolumeNodeSelector">
+         <property name="toolTip">
+          <string>Input volume node containing the images used for reconstruction</string>
+         </property>
          <property name="defaultText">
           <string>Select a volume</string>
          </property>
@@ -266,7 +333,7 @@
       <bool>false</bool>
      </property>
      <layout class="QFormLayout" name="formLayout_2">
-      <item row="1" column="0">
+      <item row="0" column="0">
        <widget class="QLabel" name="LabelClipRectangleOrigin">
         <property name="toolTip">
          <string> Crop rectangle origin (in pixels).</string>
@@ -276,7 +343,7 @@
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="0" column="1">
        <layout class="QHBoxLayout" name="LayoutClipRectangleOrigin">
         <item>
          <widget class="QSpinBox" name="XClipRectangleOriginSpinBox">
@@ -312,7 +379,17 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="0">
+       <widget class="QLabel" name="LabelClipRectangleSize">
+        <property name="toolTip">
+         <string>Crop rectangle size (in pixels).</string>
+        </property>
+        <property name="text">
+         <string>Clip rectangle size:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
        <layout class="QHBoxLayout" name="LayoutClipRectangleSize">
         <item>
          <widget class="QSpinBox" name="XClipRectangleSizeSpinBox">
@@ -342,30 +419,6 @@
         </item>
        </layout>
       </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="LabelClipRectangleSize">
-        <property name="toolTip">
-         <string>Crop rectangle size (in pixels).</string>
-        </property>
-        <property name="text">
-         <string>Clip rectangle size:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="0">
-       <widget class="QLabel" name="LabelClipRectangleEnabled">
-        <property name="text">
-         <string>Clip rectangle enabled:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <widget class="QCheckBox" name="ClipRectangleEnabledCheckBox">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
@@ -382,33 +435,30 @@
      </property>
      <layout class="QFormLayout" name="formLayout_4">
       <item row="1" column="0">
-       <widget class="QLabel" name="LabelFanAnglesEnabled">
-        <property name="text">
-         <string>Fan angles enabled:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QCheckBox" name="FanAnglesEnabledCheckBox">
-        <property name="text">
-         <string/>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="0">
        <widget class="QLabel" name="LabelFanAngle">
+        <property name="toolTip">
+         <string>Only the region within  the two fan angles will be reconstructed</string>
+        </property>
         <property name="text">
          <string>Fan angle:</string>
         </property>
        </widget>
       </item>
-      <item row="2" column="1">
+      <item row="1" column="1">
        <layout class="QHBoxLayout" name="LayoutFanAngles">
         <item>
-         <widget class="QSpinBox" name="MinFanAngleSpinbox"/>
+         <widget class="QSpinBox" name="MinFanAngleSpinbox">
+          <property name="toolTip">
+           <string>First fan angle used for clipping. Only the region within  the two fan angles will be reconstructed</string>
+          </property>
+         </widget>
         </item>
         <item>
-         <widget class="QSpinBox" name="MaxFanAngleSpinbox"/>
+         <widget class="QSpinBox" name="MaxFanAngleSpinbox">
+          <property name="toolTip">
+           <string>Second fan angle used for clipping. Only the region within  the two fan angles will be reconstructed</string>
+          </property>
+         </widget>
         </item>
        </layout>
       </item>

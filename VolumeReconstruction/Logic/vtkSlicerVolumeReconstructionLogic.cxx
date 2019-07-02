@@ -169,7 +169,6 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   vtkMRMLVolumeNode* inputVolumeNode,
   vtkMRMLScalarVolumeNode* outputVolumeNode,
   vtkMRMLAnnotationROINode* roiNode,
-  bool clipRectangleEnabled,
   int clipRectangleOrigin[2],
   int clipRectangleSize[2],
   double outputSpacing[3],
@@ -217,12 +216,8 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   this->Internal->Reconstructor->SetFillHoles(fillHoles);
   this->Internal->Reconstructor->SetImageCoordinateFrame("Image");
   this->Internal->Reconstructor->SetReferenceCoordinateFrame("World");
-
-  if (clipRectangleEnabled)
-  {
-    this->Internal->Reconstructor->SetClipRectangleOrigin(clipRectangleOrigin);
-    this->Internal->Reconstructor->SetClipRectangleSize(clipRectangleSize);
-  }
+  this->Internal->Reconstructor->SetClipRectangleOrigin(clipRectangleOrigin);
+  this->Internal->Reconstructor->SetClipRectangleSize(clipRectangleSize);
 
   if (roiNode)
   {

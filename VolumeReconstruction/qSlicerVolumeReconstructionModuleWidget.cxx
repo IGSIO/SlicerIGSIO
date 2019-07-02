@@ -124,9 +124,9 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   d->InterpolationModeComboBox->addItem("Nearest neighbor", vtkIGSIOPasteSliceIntoVolume::InterpolationType::NEAREST_NEIGHBOR_INTERPOLATION);
   d->InterpolationModeComboBox->addItem("Linear", vtkIGSIOPasteSliceIntoVolume::InterpolationType::LINEAR_INTERPOLATION);
 
-  d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);
-  d->OptimizationModeComboBox->addItem("Partial optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::PARTIAL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("Full optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::FULL_OPTIMIZATION);
+  d->OptimizationModeComboBox->addItem("Partial optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::PARTIAL_OPTIMIZATION);
+  d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);  
 
   d->CompoundingModeComboBox->addItem("Latest", vtkIGSIOPasteSliceIntoVolume::CompoundingType::LATEST_COMPOUNDING_MODE);
   d->CompoundingModeComboBox->addItem("Maximum", vtkIGSIOPasteSliceIntoVolume::CompoundingType::MAXIMUM_COMPOUNDING_MODE);
@@ -273,17 +273,16 @@ void qSlicerVolumeReconstructionModuleWidget::onApply()
   bool fillHoles = d->FillHolesCheckBox->isChecked();
   int numberOfThreads = d->NumberOfThreadsSpinBox->value();
 
-  bool clipRectangleEnabled = d->ClipRectangleEnabledCheckBox->isChecked();
-  int outputRectangleOrigin[2];
-  outputRectangleOrigin[0] = d->XClipRectangleOriginSpinBox->value();
-  outputRectangleOrigin[1] = d->YClipRectangleOriginSpinBox->value();
+  int clipRectangleOrigin[2];
+  clipRectangleOrigin[0] = d->XClipRectangleOriginSpinBox->value();
+  clipRectangleOrigin[1] = d->YClipRectangleOriginSpinBox->value();
   int clipRectangleSize[2];
   clipRectangleSize[0] = d->XClipRectangleSizeSpinBox->value();
   clipRectangleSize[1] = d->YClipRectangleSizeSpinBox->value();
 
   d->logic()->ReconstructVolume(
     inputSequenceBrowser, inputVolumeNode, outputVolumeNode, reconstructionROINode,
-    clipRectangleEnabled, outputRectangleOrigin, clipRectangleSize,
+    clipRectangleOrigin, clipRectangleSize,
     outputSpacing,
     interpolationMode, optimizationMode, compoundingMode, fillHoles,
     numberOfThreads);
