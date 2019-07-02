@@ -259,7 +259,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
 
   if (this->Internal->Reconstructor->GetReconstructedVolume(outputVolumeNode->GetImageData()) != IGSIO_SUCCESS)
   {
-    vtkErrorMacro("Could not retreive reconstructed image");
+    vtkErrorMacro("Could not retrieve reconstructed image");
   }
 
   double spacing[3];

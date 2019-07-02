@@ -52,7 +52,7 @@ ExternalProject_Add(${proj}
     # Superbuild
     -D${EXTENSION_NAME}_SUPERBUILD:BOOL=OFF
     -DEXTENSION_SUPERBUILD_BINARY_DIR:PATH=${${EXTENSION_NAME}_BINARY_DIR}
-    # External libray directoriesp
+    # External library directoriesp
     -DSlicer_DIR:PATH=${Slicer_DIR}
     -DVP9_DIR:PATH=${VP9_DIR}
   DEPENDS

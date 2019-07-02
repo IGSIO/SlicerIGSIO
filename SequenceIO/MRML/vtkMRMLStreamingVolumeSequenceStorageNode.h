@@ -51,7 +51,7 @@ public:
   /// Return true if the node can be written by using thie writer.
   virtual bool CanWriteFromReferenceNode(vtkMRMLNode* refNode) override;
 
-  /// Return a default file extension for writting
+  /// Return a default file extension for writing
   virtual const char* GetDefaultWriteFileExtension() override;
 
   static bool ReadVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);

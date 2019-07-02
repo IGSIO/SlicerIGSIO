@@ -230,7 +230,7 @@ void vtkMRMLStreamingVolumeSequenceStorageNode::UpdateCompressionPresets()
     }
   }
 
-  // Codec is specified but compression paramter is not.
+  // Codec is specified but compression parameter is not.
   if (!this->CodecFourCC.empty() && this->CompressionParameter.empty())
   {
     vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec>::Take(
