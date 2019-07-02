@@ -57,6 +57,7 @@ public:
 
   void ReconstructVolume(
     vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+    vtkMRMLVolumeNode* inputVolumeNode,
     vtkMRMLScalarVolumeNode* outputVolumeNode,
     vtkMRMLAnnotationROINode* roiNode,
     bool outputRectangleEnabled,

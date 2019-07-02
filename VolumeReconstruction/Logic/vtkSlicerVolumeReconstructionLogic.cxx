@@ -166,6 +166,7 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
 //---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+  vtkMRMLVolumeNode* inputVolumeNode,
   vtkMRMLScalarVolumeNode* outputVolumeNode,
   vtkMRMLAnnotationROINode* roiNode,
   bool clipRectangleEnabled,
@@ -184,13 +185,25 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
     return;
   }
 
+  if (!inputVolumeNode)
+  {
+    vtkErrorMacro("Invalid input volume node!");
+    return;
+  }
+
   if (!outputVolumeNode)
   {
     vtkErrorMacro("Invalid output volume node!");
     return;
   }
 
-  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode(); // TODO: for now assume image is master
+  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
+  if (!masterSequence)
+  {
+  vtkErrorMacro("Invalid master sequence node!")
+  return;
+  }
+
   const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
   this->SetNumberOfVolumeNodesForReconstructionInInput(numberOfFrames);
   this->SetVolumeNodesAddedToReconstruction(0);
@@ -240,9 +253,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   {
     vtkMRMLSequenceNode* imageSequence = masterSequence;
     inputSequenceBrowser->SetSelectedItemNumber(i);
-    vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(
-      inputSequenceBrowser->GetProxyNode(imageSequence));
-    this->AddVolumeNodeToReconstructedVolume(volumeNode);
+    this->AddVolumeNodeToReconstructedVolume(inputVolumeNode);
   }
 
   if (!outputVolumeNode->GetImageData())

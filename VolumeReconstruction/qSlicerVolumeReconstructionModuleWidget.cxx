@@ -40,9 +40,10 @@ Care Ontario.
 #include <vtkMRMLSequenceBrowserNode.h>
 
 // Slicer MRML includes
-#include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLAnnotationDisplayNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLScene.h>
 
 // Volume reconstruction logic includes
 #include "vtkSlicerVolumeReconstructionLogic.h"
@@ -116,6 +117,10 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
+  // TODO: Currently fan angles is not currently connected to logic.
+  d->CollapsibleButtonFanAngles->setEnabled(false);
+  d->CollapsibleButtonFanAngles->setVisible(false);
+
   d->InterpolationModeComboBox->addItem("Nearest neighbor", vtkIGSIOPasteSliceIntoVolume::InterpolationType::NEAREST_NEIGHBOR_INTERPOLATION);
   d->InterpolationModeComboBox->addItem("Linear", vtkIGSIOPasteSliceIntoVolume::InterpolationType::LINEAR_INTERPOLATION);
 
@@ -187,10 +192,35 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
 
-  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
-  vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
+  QVariant currentVolumeData = d->InputVolumeNodeSelector->currentData();
+  d->InputVolumeNodeSelector->clear();
 
+  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
+  std::vector<vtkMRMLNode*> proxyNodes;
+  if (inputSequenceBrowser)
+  {
+    inputSequenceBrowser->GetAllProxyNodes(proxyNodes);
+  }
+  for (vtkMRMLNode* proxyNode : proxyNodes)
+  {
+    vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(proxyNode);
+    if (!volumeNode)
+    {
+      continue;
+    }
+    d->InputVolumeNodeSelector->addItem(volumeNode->GetName(), volumeNode->GetID());
+  }
+
+  d->InputVolumeNodeSelector->setCurrentIndex(d->InputVolumeNodeSelector->findData(currentVolumeData));
+  if (d->InputVolumeNodeSelector->currentIndex() == -1 && d->InputVolumeNodeSelector->count() > 0)
+  {
+    d->InputVolumeNodeSelector->setCurrentIndex(0);
+  }
+
+  vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
+  d->ApplyButton->setEnabled(inputSequenceBrowser && outputVolumeNode && d->InputVolumeNodeSelector->currentIndex() > -1);
+
+  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
   d->ROIVisibilityButton->setEnabled(reconstructionROINode);
   if (reconstructionROINode)
   {
@@ -200,8 +230,6 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
   {
     d->ROIVisibilityButton->setChecked(false);
   }
-
-  d->ApplyButton->setEnabled(inputSequenceBrowser && outputVolumeNode);
 }
 
 //-----------------------------------------------------------------------------
@@ -222,7 +250,15 @@ void qSlicerVolumeReconstructionModuleWidget::onApply()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
 
+  if (!this->mrmlScene())
+  {
+    return;
+  }
+
+  std::string inputVolumeID = d->InputVolumeNodeSelector->currentData().toString().toStdString();
+
   vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
+  vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(inputVolumeID));
   vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
   vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
 
@@ -246,7 +282,7 @@ void qSlicerVolumeReconstructionModuleWidget::onApply()
   clipRectangleSize[1] = d->YClipRectangleSizeSpinBox->value();
 
   d->logic()->ReconstructVolume(
-    inputSequenceBrowser, outputVolumeNode, reconstructionROINode,
+    inputSequenceBrowser, inputVolumeNode, outputVolumeNode, reconstructionROINode,
     clipRectangleEnabled, outputRectangleOrigin, clipRectangleSize,
     outputSpacing,
     interpolationMode, optimizationMode, compoundingMode, fillHoles,
