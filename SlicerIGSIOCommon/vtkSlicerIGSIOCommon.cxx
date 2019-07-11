@@ -60,6 +60,19 @@ enum FrameStatus
   Frame_Skip,
 };
 
+struct FrameBlock
+{
+  int StartFrame;
+  int EndFrame;
+  bool ReEncodingRequired;
+  FrameBlock()
+    : StartFrame(-1)
+    , EndFrame(-1)
+    , ReEncodingRequired(false)
+  {
+  }
+};
+
 //----------------------------------------------------------------------------
 bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrameList* trackedFrameList, vtkMRMLSequenceNode* sequenceNode)
 {

@@ -60,19 +60,6 @@ public:
 
   static bool SequenceBrowserToTrackedFrameList(vtkMRMLSequenceBrowserNode* sequenceBrowserNode, vtkIGSIOTrackedFrameList* trackedFrameList);
 
-  struct FrameBlock
-  {
-    int StartFrame;
-    int EndFrame;
-    bool ReEncodingRequired;
-    FrameBlock()
-      : StartFrame(-1)
-      , EndFrame(-1)
-      , ReEncodingRequired(false)
-    {
-    }
-  };
-
   // Python wrapped function for ReEncodeVideoSequence
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
                                     int startIndex = 0, int endIndex = -1, std::string codecFourCC = "")

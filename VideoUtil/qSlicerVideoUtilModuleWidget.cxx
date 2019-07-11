@@ -42,8 +42,8 @@ Care Ontario.
 
 enum
 {
-  PARAMETER_VALUE_COLUMN = 0,
-  PARAMETER_DESCRIPTION_COLUMN,
+  PARAMETER_NAME_COLUMN = 0,
+  PARAMETER_VALUE_COLUMN,
 };
 
 //-----------------------------------------------------------------------------
@@ -95,8 +95,8 @@ void qSlicerVideoUtilModuleWidget::setup()
   d->setupUi(this);
   this->Superclass::setup();
 
-  connect(d->EncodeButton, SIGNAL(clicked()), this, SLOT(encodeVideo()));
-  connect(d->CodecSelector, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onCodecChanged(QString)));
+  connect(d->encodeButton, SIGNAL(clicked()), this, SLOT(encodeVideo()));
+  connect(d->codecSelector, SIGNAL(currentIndexChanged(const QString&)), this, SLOT(onCodecChanged(QString)));
 
   std::vector<std::string> codecFourCCs = vtkStreamingVolumeCodecFactory::GetInstance()->GetStreamingCodecFourCCs();
   QStringList codecs;
@@ -104,14 +104,14 @@ void qSlicerVideoUtilModuleWidget::setup()
   {
     codecs << QString::fromStdString(*codecIt);
   }
-  d->CodecSelector->addItems(codecs);
+  d->codecSelector->addItems(codecs);
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
 {
   Q_D(qSlicerVideoUtilModuleWidget);
-  d->EncodingParameterTable->setRowCount(0);
+  d->encodingParameterTable->setRowCount(0);
 
   vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec> ::Take(
         vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC.toStdString()));
@@ -121,28 +121,25 @@ void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
   }
 
   std::vector<std::string> parameterNames = codec->GetAvailiableParameterNames();
-  QStringList parameters;
-  for (std::vector<std::string>::iterator parameterIt = parameterNames.begin(); parameterIt != parameterNames.end(); ++parameterIt)
-  {
-    parameters << QString::fromStdString(*parameterIt);
-  }
-
-  d->EncodingParameterTable->setRowCount(parameterNames.size());
-  d->EncodingParameterTable->setVerticalHeaderLabels(parameters);
+  d->encodingParameterTable->setRowCount(parameterNames.size());
 
   int currentRow = 0;
   for (std::vector<std::string>::iterator parameterIt = parameterNames.begin(); parameterIt != parameterNames.end(); ++parameterIt)
   {
+    std::string parameterName = parameterNames[currentRow];
+    QString description = QString::fromStdString(codec->GetParameterDescription(*parameterIt));
+
+    QLabel* nameLabel = new QLabel(parameterName.c_str(), d->encodingParameterTable);
+    nameLabel->setToolTip(description);
+    d->encodingParameterTable->setCellWidget(currentRow, PARAMETER_NAME_COLUMN, nameLabel);
+
     std::string value;
     codec->GetParameter(*parameterIt, value);
-    QTextEdit* textEdit = new QTextEdit(d->EncodingParameterTable);
+    QTextEdit* textEdit = new QTextEdit(d->encodingParameterTable);
     textEdit->setText(QString::fromStdString(value));
-    d->EncodingParameterTable->setCellWidget(currentRow, PARAMETER_VALUE_COLUMN, textEdit);
+    textEdit->setToolTip(description);
+    d->encodingParameterTable->setCellWidget(currentRow, PARAMETER_VALUE_COLUMN, textEdit);
 
-    QString description = QString::fromStdString(codec->GetParameterDescription(*parameterIt));
-    QLabel* descriptionLabel = new QLabel(d->EncodingParameterTable);
-    descriptionLabel->setText(description);
-    d->EncodingParameterTable->setCellWidget(currentRow, PARAMETER_DESCRIPTION_COLUMN, descriptionLabel);
     ++currentRow;
   }
 }
@@ -151,18 +148,18 @@ void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
 void qSlicerVideoUtilModuleWidget::encodeVideo()
 {
   Q_D(qSlicerVideoUtilModuleWidget);
-  vtkMRMLSequenceNode* sequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->VideoNodeSelector->currentNode());
+  vtkMRMLSequenceNode* sequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->videoNodeSelector->currentNode());
   if (!sequenceNode)
   {
     return;
   }
 
   std::map<std::string, std::string> parameters;
-  for (int i = 0; i < d->EncodingParameterTable->rowCount(); ++i)
+  for (int i = 0; i < d->encodingParameterTable->rowCount(); ++i)
   {
-    std::string parameterName = d->EncodingParameterTable->verticalHeaderItem(i)->text().toStdString();
+    std::string parameterName = d->encodingParameterTable->verticalHeaderItem(i)->text().toStdString();
 
-    QTextEdit* valueTextEdit = qobject_cast<QTextEdit*>(d->EncodingParameterTable->cellWidget(i, PARAMETER_VALUE_COLUMN));
+    QTextEdit* valueTextEdit = qobject_cast<QTextEdit*>(d->encodingParameterTable->cellWidget(i, PARAMETER_VALUE_COLUMN));
     std::string parameterValue = valueTextEdit->toPlainText().toStdString();
     if (parameterValue == "")
     {
@@ -171,7 +168,7 @@ void qSlicerVideoUtilModuleWidget::encodeVideo()
     parameters[parameterName] = parameterValue;
   }
 
-  std::string encoding = d->CodecSelector->currentText().toStdString();
+  std::string encoding = d->codecSelector->currentText().toStdString();
   vtkSlicerIGSIOCommon::ReEncodeVideoSequence(sequenceNode, 0, -1, encoding, parameters, true);
 
 }
