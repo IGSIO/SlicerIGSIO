@@ -123,19 +123,13 @@ void qSlicerVolumeReconstructionModule::setup()
 {
   this->Superclass::setup();
 
-  qSlicerCoreApplication* app = qSlicerCoreApplication::application();
-
   // Create logger instance
   vtkSlicerIGSIOLogger::Instance();
-
-  // Register the IO
-  vtkSlicerVolumeReconstructionLogic* logic = vtkSlicerVolumeReconstructionLogic::SafeDownCast(this->logic());
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerVolumeReconstructionModule::setMRMLScene(vtkMRMLScene* scene)
-{
-  vtkMRMLScene* oldScene = this->mrmlScene();
+{ 
   this->Superclass::setMRMLScene(scene);
 }
 

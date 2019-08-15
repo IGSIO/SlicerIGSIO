@@ -37,6 +37,7 @@ class VTK_SLICERIGSIOCOMMON_EXPORT vtkSlicerIGSIOLogger : public vtkIGSIOLogger
 public:
   static vtkIGSIOLogger* Instance();
 
+  using vtkIGSIOLogger::LogMessage;
   void LogMessage(LogLevelType level, const char* msg, const char* fileName, int lineNumber, const char* optionalPrefix = NULL) override;
   void LogMessage(LogLevelType level, const wchar_t* msg, const char* fileName, int lineNumber, const wchar_t* optionalPrefix = NULL) override;
 

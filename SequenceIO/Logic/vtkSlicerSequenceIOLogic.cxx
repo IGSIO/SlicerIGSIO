@@ -145,7 +145,6 @@ public:
 
     if (numberOfComponents == 1)
     {
-      bool scalarDisplayNodeRequired = (numberOfComponents == 1);
       vtkSmartPointer<vtkMRMLVolumeDisplayNode> displayNode;
       displayNode = vtkSmartPointer<vtkMRMLScalarVolumeDisplayNode>::New();
       if (node->GetScene())

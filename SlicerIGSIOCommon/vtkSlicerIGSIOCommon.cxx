@@ -91,7 +91,6 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
   sequenceNode->SetIndexName("time");
   sequenceNode->SetIndexUnit("s");
 
-  FrameSizeType frameSize = { 0, 0, 0 };
   std::string encodingFourCC;
   trackedFrameList->GetEncodingFourCC(encodingFourCC);
   if (!encodingFourCC.empty())
@@ -110,9 +109,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
   // How many digits are required to represent the frame numbers
   int frameNumberMaxLength = std::floor(std::log10(trackedFrameList->GetNumberOfTrackedFrames())) + 1;
 
-  for (int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
+  for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
-
     igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     std::stringstream timestampSS;
     timestampSS << trackedFrame->GetTimestamp();
@@ -227,18 +225,10 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
     sequenceBrowserNode->AddSynchronizedSequenceNode(videoSequenceNode);
   }
 
-  FrameSizeType frameSize = { 0, 0, 0 };
-  trackedFrameList->GetFrameSize(frameSize);
-
-  int dimensions[3] = { 0, 0, 0 };
-  dimensions[0] = frameSize[0];
-  dimensions[1] = frameSize[1];
-  dimensions[2] = frameSize[2];
-
   std::map<std::string, vtkSmartPointer<vtkMRMLSequenceNode>> transformSequenceNodes;
 
   int frameNumberMaxLength = std::floor(std::log10(trackedFrameList->GetNumberOfTrackedFrames())) + 1;
-  for (int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
+  for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
     igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
     std::stringstream timestampSS;

@@ -144,7 +144,6 @@ void qSlicerVideoUtilModule::setup()
 //-----------------------------------------------------------------------------
 void qSlicerVideoUtilModule::setMRMLScene(vtkMRMLScene* scene)
 {
-  vtkMRMLScene* oldScene = this->mrmlScene();
   this->Superclass::setMRMLScene(scene);
 }
 

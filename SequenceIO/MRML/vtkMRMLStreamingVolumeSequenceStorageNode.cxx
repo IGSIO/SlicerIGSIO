@@ -100,7 +100,12 @@ int vtkMRMLStreamingVolumeSequenceStorageNode::ReadDataInternal(vtkMRMLNode* ref
 //----------------------------------------------------------------------------
 bool vtkMRMLStreamingVolumeSequenceStorageNode::CanWriteFromReferenceNode(vtkMRMLNode* refNode)
 {
-
+  vtkMRMLSequenceNode* sequenceNode = vtkMRMLSequenceNode::SafeDownCast(refNode);
+  if (sequenceNode == NULL)
+  {
+    vtkErrorMacro("vtkMRMLStreamingVolumeSequenceStorageNode::CanWriteFromReferenceNode: input is not a sequenceNode node");
+    return false;
+  }
   return true;
 }
 

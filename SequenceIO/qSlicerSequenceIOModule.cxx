@@ -139,7 +139,6 @@ void qSlicerSequenceIOModule::setup()
 //-----------------------------------------------------------------------------
 void qSlicerSequenceIOModule::setMRMLScene(vtkMRMLScene* scene)
 {
-  vtkMRMLScene* oldScene = this->mrmlScene();
   this->Superclass::setMRMLScene(scene);
 }
 

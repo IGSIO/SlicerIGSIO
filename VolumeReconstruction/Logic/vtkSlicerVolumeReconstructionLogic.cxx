@@ -119,6 +119,7 @@ void vtkSlicerVolumeReconstructionLogic::RegisterNodes()
 //---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::StartReconstruction(vtkMRMLAnnotationROINode* roiNode)
 {
+  // TODO: not implemented
 }
 
 //---------------------------------------------------------------------------
@@ -246,7 +247,6 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
 
   for (int i = 0; i < numberOfFrames; ++i)
   {
-    vtkMRMLSequenceNode* imageSequence = masterSequence;
     inputSequenceBrowser->SetSelectedItemNumber(i);
     this->AddVolumeNodeToReconstructedVolume(inputVolumeNode);
   }

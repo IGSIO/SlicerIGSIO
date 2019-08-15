@@ -62,7 +62,7 @@ void SetTestingImageDataForValue(vtkImageData* image, unsigned char value)
 }
 
 //----------------------------------------------------------------------------
-int vtkEncodeUncompressedSequenceTest(int argc, char* argv[])
+int vtkEncodeUncompressedSequenceTest(int vtkNotUsed(argc), char* vtkNotUsed(argv)[])
 {
   int width = 10;
   int height = 10;
