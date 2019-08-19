@@ -18,17 +18,17 @@ Care Ontario.
 
 ==============================================================================*/
 
-#ifndef __vtkSlicerIGSIO_h
-#define __vtkSlicerIGSIO_h
+#ifndef __vtkSlicerIGSIOCommon_h
+#define __vtkSlicerIGSIOCommon_h
 
 #if defined(WIN32) && !defined(vtkSlicerIGSIOCommon_STATIC)
-  #if defined(vtkSlicerIGSIOCommon_EXPORTS)
-    #define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllexport )
-  #else
-    #define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllimport )
-  #endif
+#if defined(vtkSlicerIGSIOCommon_EXPORTS)
+#define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllexport )
 #else
-  #define VTK_SLICERIGSIOCOMMON_EXPORT
+#define VTK_SLICERIGSIOCOMMON_EXPORT __declspec( dllimport )
+#endif
+#else
+#define VTK_SLICERIGSIOCOMMON_EXPORT
 #endif
 
 class vtkMRMLScene;
@@ -42,9 +42,7 @@ class vtkGenericVideoWriter;
 #include <map>
 #include <igsioVideoFrame.h>
 
-/// \ingroup SlicerIGSIO_vtkSlicerIGSIO
-/// Common utility functions for SlicerRT.
-/// Note: The vtk prefix ensures python wrapping of the class that broke in VTK8.
+/// Common utility functions for SlicerIGSIO.
 class VTK_SLICERIGSIOCOMMON_EXPORT vtkSlicerIGSIOCommon
 {
 public:
@@ -62,16 +60,27 @@ public:
 
   // Python wrapped function for ReEncodeVideoSequence
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
-                                    int startIndex = 0, int endIndex = -1, std::string codecFourCC = "")
+    int startIndex = 0, int endIndex = -1, std::string codecFourCC = "")
   {
     return vtkSlicerIGSIOCommon::ReEncodeVideoSequence(videoStreamSequenceNode, startIndex, endIndex, codecFourCC, std::map<std::string, std::string>());
   }
 
+  static bool EncodeVideoSequence(vtkMRMLSequenceNode* inputSequenceNode, vtkMRMLSequenceNode* outputSequenceNode,
+    int startIndex, int endIndex,
+    std::string codecFourCC,
+    std::map<std::string, std::string> codecParameters,
+    bool forceReEncoding = false, bool minimalReEncoding = false, vtkCallbackCommand* progressCallback = nullptr);
+
   static bool ReEncodeVideoSequence(vtkMRMLSequenceNode* videoStreamSequenceNode,
-                                    int startIndex, int endIndex,
-                                    std::string codecFourCC,
-                                    std::map<std::string, std::string> codecParameters,
-                                    bool forceReEncoding = false, bool minimalReEncoding = false);
+    int startIndex, int endIndex,
+    std::string codecFourCC,
+    std::map<std::string, std::string> codecParameters,
+    bool forceReEncoding = false, bool minimalReEncoding = false)
+  {
+    return vtkSlicerIGSIOCommon::EncodeVideoSequence(videoStreamSequenceNode, videoStreamSequenceNode,
+      startIndex, endIndex, codecFourCC, codecParameters,
+      forceReEncoding, minimalReEncoding);
+  }
 };
 
 #endif

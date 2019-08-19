@@ -55,6 +55,8 @@ protected:
   virtual void setup();
   virtual void setMRMLScene(vtkMRMLScene*);
 
+  static void updateProgress(vtkObject* caller, unsigned long event, void* clientData, void* callData);
+
 private:
   Q_DECLARE_PRIVATE(qSlicerVideoUtilModuleWidget);
   Q_DISABLE_COPY(qSlicerVideoUtilModuleWidget);

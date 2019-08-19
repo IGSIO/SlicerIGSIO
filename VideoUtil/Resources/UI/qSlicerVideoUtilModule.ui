@@ -23,7 +23,7 @@
       <item>
        <layout class="QFormLayout" name="formLayout">
         <item row="0" column="1">
-         <widget class="qMRMLNodeComboBox" name="videoNodeSelector">
+         <widget class="qMRMLNodeComboBox" name="inputSequenceNodeSelector">
           <property name="nodeTypes">
            <stringlist>
             <string>vtkMRMLSequenceNode</string>
@@ -32,30 +32,30 @@
          </widget>
         </item>
         <item row="0" column="0">
-         <widget class="QLabel" name="nodeSelectorLabel">
+         <widget class="QLabel" name="inputNodeSelectorLabel">
           <property name="text">
-           <string>Current video sequence:</string>
+           <string>Input sequence:</string>
           </property>
          </widget>
         </item>
-        <item row="1" column="1">
+        <item row="2" column="1">
          <widget class="QComboBox" name="codecSelector"/>
         </item>
-        <item row="1" column="0">
+        <item row="2" column="0">
          <widget class="QLabel" name="encodingLabel">
           <property name="text">
            <string>Encoding type:</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="0">
+        <item row="3" column="0">
          <widget class="QLabel" name="parameterLabel">
           <property name="text">
            <string>Encoding parameters:</string>
           </property>
          </widget>
         </item>
-        <item row="2" column="1">
+        <item row="3" column="1">
          <widget class="QTableWidget" name="encodingParameterTable">
           <property name="selectionMode">
            <enum>QAbstractItemView::NoSelection</enum>
@@ -81,7 +81,7 @@
           </column>
          </widget>
         </item>
-        <item row="3" column="1">
+        <item row="4" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QPushButton" name="encodeButton">
@@ -92,6 +92,22 @@
           </item>
          </layout>
         </item>
+        <item row="1" column="0">
+         <widget class="QLabel" name="outputNodeSelectorLabel">
+          <property name="text">
+           <string>Output sequence:</string>
+          </property>
+         </widget>
+        </item>
+        <item row="1" column="1">
+         <widget class="qMRMLNodeComboBox" name="outputSequenceNodeSelector">
+          <property name="nodeTypes">
+           <stringlist>
+            <string>vtkMRMLSequenceNode</string>
+           </stringlist>
+          </property>
+         </widget>
+        </item>
        </layout>
       </item>
      </layout>
@@ -100,6 +116,12 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>ctkCollapsibleButton</class>
+   <extends>QWidget</extends>
+   <header>ctkCollapsibleButton.h</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>qMRMLCollapsibleButton</class>
    <extends>ctkCollapsibleButton</extends>
@@ -117,12 +139,6 @@
    <header>qSlicerWidget.h</header>
    <container>1</container>
   </customwidget>
-  <customwidget>
-   <class>ctkCollapsibleButton</class>
-   <extends>QWidget</extends>
-   <header>ctkCollapsibleButton.h</header>
-   <container>1</container>
-  </customwidget>
  </customwidgets>
  <resources>
   <include location="../qSlicerVideoUtilModule.qrc"/>
@@ -131,7 +147,7 @@
   <connection>
    <sender>qSlicerVideoUtilModule</sender>
    <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
-   <receiver>videoNodeSelector</receiver>
+   <receiver>inputSequenceNodeSelector</receiver>
    <slot>setMRMLScene(vtkMRMLScene*)</slot>
    <hints>
     <hint type="sourcelabel">
@@ -141,6 +157,22 @@
     <hint type="destinationlabel">
      <x>264</x>
      <y>19</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>qSlicerVideoUtilModule</sender>
+   <signal>mrmlSceneChanged(vtkMRMLScene*)</signal>
+   <receiver>outputSequenceNodeSelector</receiver>
+   <slot>setMRMLScene(vtkMRMLScene*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>149</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>340</x>
+     <y>77</y>
     </hint>
    </hints>
   </connection>

@@ -50,7 +50,6 @@ class qSlicerVolumeReconstructionModulePrivate
 {
 public:
   qSlicerVolumeReconstructionModulePrivate();
-
 };
 
 //-----------------------------------------------------------------------------
@@ -129,7 +128,7 @@ void qSlicerVolumeReconstructionModule::setup()
 
 //-----------------------------------------------------------------------------
 void qSlicerVolumeReconstructionModule::setMRMLScene(vtkMRMLScene* scene)
-{ 
+{
   this->Superclass::setMRMLScene(scene);
 }
 

@@ -20,13 +20,15 @@ Care Ontario.
 
 // Qt includes
 #include <QDebug>
+#include <QProgressDialog>
 #include <QStandardItemModel>
 #include <QTreeView>
-#include <QTextEdit>
+#include <QLineEdit>
 
 // SlicerQt includes
 #include "qSlicerVideoUtilModuleWidget.h"
 #include "ui_qSlicerVideoUtilModule.h"
+#include "qSlicerApplication.h"
 
 // vtkAddon includes
 #include <vtkStreamingVolumeCodecFactory.h>
@@ -40,6 +42,9 @@ Care Ontario.
 // qMRMLWidgets includes
 #include <qMRMLNodeFactory.h>
 
+// VTK includes
+#include <vtkCallbackCommand.h>
+
 enum
 {
   PARAMETER_NAME_COLUMN = 0,
@@ -48,7 +53,7 @@ enum
 
 //-----------------------------------------------------------------------------
 /// \ingroup Slicer_QtModules_VideoUtil
-class qSlicerVideoUtilModuleWidgetPrivate: public Ui_qSlicerVideoUtilModule
+class qSlicerVideoUtilModuleWidgetPrivate : public Ui_qSlicerVideoUtilModule
 {
   Q_DECLARE_PUBLIC(qSlicerVideoUtilModuleWidget);
 protected:
@@ -56,6 +61,7 @@ protected:
 public:
   qSlicerVideoUtilModuleWidgetPrivate(qSlicerVideoUtilModuleWidget& object);
   ~qSlicerVideoUtilModuleWidgetPrivate();
+  QProgressDialog* EncodingProgressDialog;
 
 };
 
@@ -65,6 +71,7 @@ public:
 //-----------------------------------------------------------------------------
 qSlicerVideoUtilModuleWidgetPrivate::qSlicerVideoUtilModuleWidgetPrivate(qSlicerVideoUtilModuleWidget& object)
   : q_ptr(&object)
+  , EncodingProgressDialog(nullptr)
 {
 }
 
@@ -114,7 +121,7 @@ void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
   d->encodingParameterTable->setRowCount(0);
 
   vtkSmartPointer<vtkStreamingVolumeCodec> codec = vtkSmartPointer<vtkStreamingVolumeCodec> ::Take(
-        vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC.toStdString()));
+    vtkStreamingVolumeCodecFactory::GetInstance()->CreateCodecByFourCC(codecFourCC.toStdString()));
   if (!codec)
   {
     return;
@@ -135,7 +142,7 @@ void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
 
     std::string value;
     codec->GetParameter(*parameterIt, value);
-    QTextEdit* textEdit = new QTextEdit(d->encodingParameterTable);
+    QLineEdit* textEdit = new QLineEdit(d->encodingParameterTable);
     textEdit->setText(QString::fromStdString(value));
     textEdit->setToolTip(description);
     d->encodingParameterTable->setCellWidget(currentRow, PARAMETER_VALUE_COLUMN, textEdit);
@@ -148,19 +155,28 @@ void qSlicerVideoUtilModuleWidget::onCodecChanged(const QString& codecFourCC)
 void qSlicerVideoUtilModuleWidget::encodeVideo()
 {
   Q_D(qSlicerVideoUtilModuleWidget);
-  vtkMRMLSequenceNode* sequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->videoNodeSelector->currentNode());
-  if (!sequenceNode)
+  vtkMRMLSequenceNode* inputSequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->inputSequenceNodeSelector->currentNode());
+  if (!inputSequenceNode)
   {
+    qCritical() << "Invalid input seqeuence node!";
+    return;
+  }
+
+  vtkMRMLSequenceNode* outputSequenceNode = vtkMRMLSequenceNode::SafeDownCast(d->outputSequenceNodeSelector->currentNode());
+  if (!outputSequenceNode)
+  {
+    qCritical() << "Invalid output seqeuence node!";
     return;
   }
 
   std::map<std::string, std::string> parameters;
   for (int i = 0; i < d->encodingParameterTable->rowCount(); ++i)
   {
-    std::string parameterName = d->encodingParameterTable->verticalHeaderItem(i)->text().toStdString();
+    QLabel* nameLabel = qobject_cast<QLabel*>(d->encodingParameterTable->cellWidget(i, PARAMETER_NAME_COLUMN));
+    std::string parameterName = nameLabel->text().toStdString();
 
-    QTextEdit* valueTextEdit = qobject_cast<QTextEdit*>(d->encodingParameterTable->cellWidget(i, PARAMETER_VALUE_COLUMN));
-    std::string parameterValue = valueTextEdit->toPlainText().toStdString();
+    QLineEdit* valueTextEdit = qobject_cast<QLineEdit*>(d->encodingParameterTable->cellWidget(i, PARAMETER_VALUE_COLUMN));
+    std::string parameterValue = valueTextEdit->text().toStdString();
     if (parameterValue == "")
     {
       continue;
@@ -168,9 +184,42 @@ void qSlicerVideoUtilModuleWidget::encodeVideo()
     parameters[parameterName] = parameterValue;
   }
 
-  std::string encoding = d->codecSelector->currentText().toStdString();
-  vtkSlicerIGSIOCommon::ReEncodeVideoSequence(sequenceNode, 0, -1, encoding, parameters, true);
+  vtkNew<vtkCallbackCommand> progressCallback;
+  progressCallback->SetClientData(this);
+  progressCallback->SetCallback(qSlicerVideoUtilModuleWidget::updateProgress);
 
+  if (!d->EncodingProgressDialog)
+  {
+    d->EncodingProgressDialog = new QProgressDialog("Sequence encoding", "",
+      0, 100, this);
+    d->EncodingProgressDialog->setWindowTitle(QString("Encoding sequence..."));
+    d->EncodingProgressDialog->setCancelButton(nullptr);
+    d->EncodingProgressDialog->setWindowFlags(d->EncodingProgressDialog->windowFlags()
+      & ~Qt::WindowCloseButtonHint & ~Qt::WindowContextHelpButtonHint);
+    d->EncodingProgressDialog->setFixedSize(d->EncodingProgressDialog->sizeHint());
+    d->EncodingProgressDialog->setWindowModality(Qt::WindowModal);
+  }
+
+  std::string encoding = d->codecSelector->currentText().toStdString();
+  vtkSlicerIGSIOCommon::EncodeVideoSequence(inputSequenceNode, outputSequenceNode, 0, -1, encoding, parameters, true, false, progressCallback);
+
+  if (d->EncodingProgressDialog)
+  {
+    delete d->EncodingProgressDialog;
+    d->EncodingProgressDialog = nullptr;
+  }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVideoUtilModuleWidget::updateProgress(vtkObject* caller, unsigned long event, void* clientData, void* callData)
+{
+  qSlicerVideoUtilModuleWidget* self = static_cast<qSlicerVideoUtilModuleWidget*>(clientData);
+  qSlicerVideoUtilModuleWidgetPrivate* d = self->d_func();
+
+  double* progress = static_cast<double*>(callData);
+  //vtkWarningWithObjectMacro(nullptr, << *progress);
+  d->EncodingProgressDialog->setValue(100 * (*progress));
+  d->EncodingProgressDialog->update();
 }
 
 //-----------------------------------------------------------------------------

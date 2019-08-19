@@ -117,7 +117,7 @@ void vtkSlicerVolumeReconstructionLogic::RegisterNodes()
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerVolumeReconstructionLogic::StartReconstruction(vtkMRMLAnnotationROINode* roiNode)
+void vtkSlicerVolumeReconstructionLogic::StartReconstruction(vtkMRMLAnnotationROINode* vtkNotUsed(roiNode))
 {
   // TODO: not implemented
 }
