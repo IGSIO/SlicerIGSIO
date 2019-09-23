@@ -10,7 +10,7 @@ set(KIT_TEST_SRCS
 slicerMacroConfigureModuleCxxTestDriver(
   NAME ${KIT}
   SOURCES ${KIT_TEST_SRCS}
-  TARGET_LIBRARIES vtkSlicerVideoUtilModuleLogic
+  TARGET_LIBRARIES vtkSlicerSequenceIOModuleLogic
   WITH_VTK_DEBUG_LEAKS_CHECK
   )
 

@@ -31,6 +31,8 @@ Care Ontario.
 // VTK includes
 #include <vtkCallbackCommand.h>
 
+#include <vtkMRMLNodeSequencer.h>
+
 // IGSIO includes
 #include <vtkIGSIOTrackedFrameList.h>
 
@@ -38,6 +40,15 @@ Care Ontario.
 #include <vtkMRMLSequenceBrowserNode.h>
 
 class vtkMRMLIGTLConnectorNode;
+
+//----------------------------------------------------------------------------
+class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT StreamingVolumeNodeSequencer : public vtkMRMLNodeSequencer::NodeSequencer
+{
+public:
+  StreamingVolumeNodeSequencer();
+  virtual void CopyNode(vtkMRMLNode* source, vtkMRMLNode* target, bool shallowCopy /* =false */) override;
+  virtual void AddDefaultDisplayNodes(vtkMRMLNode* node) override;
+};
 
 /// \ingroup Slicer_QtModules_SequenceIO
 class VTK_SLICER_SEQUENCEIO_MODULE_LOGIC_EXPORT vtkSlicerSequenceIOLogic : public vtkSlicerModuleLogic

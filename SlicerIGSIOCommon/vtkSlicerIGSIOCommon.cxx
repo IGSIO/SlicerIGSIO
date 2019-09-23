@@ -159,7 +159,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
       }
     }
 
-    // Convert frame to a string with the a maximum number of digits (frameNumberMaxLength)
+    // Convert frame to a string with the maximum number of digits (frameNumberMaxLength)
     // ex. 0, 1, 2, 3 or 0000, 0001, 0002, 0003 etc.
     std::stringstream frameNumberSS;
     frameNumberSS << std::setw(frameNumberMaxLength) << std::setfill('0') << i;
@@ -177,13 +177,6 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     }
   }
 
-  /*for (std::map< std::string, std::string >::iterator imageMetaDataIt = imageMetaData.begin(); imageMetaDataIt != imageMetaData.end(); ++imageMetaDataIt)
-  {
-    std::string attributeName = "Sequences.";
-    attributeName += imageMetaDataIt->first;
-    createdImageNode->SetAttribute(attributeName.c_str(), imageMetaDataIt->second.c_str());
-  }
-  createdImageNode->SetAttribute("Sequences.Source", IMAGE_NODE_BASE_NAME);*/
   sequenceNode->SetAttribute("Sequences.Source", "Image");
 
   return true;
@@ -655,11 +648,11 @@ bool vtkSlicerIGSIOCommon::EncodeVideoSequence(vtkMRMLSequenceNode* inputSequenc
         outputStreamingVolumeNode->SetAndObserveFrame(outputFrame);
         outputSequenceNode->SetDataNodeAtValue(outputStreamingVolumeNode, inputSequenceNode->GetNthIndexValue(i));
 
-        framesProcessed++;
+        ++framesProcessed;
         progress = (1.0 * framesProcessed) / numberOfFrames;
         if (progressCallback)
         {
-          progressCallback->Execute(nullptr, vtkCommand::ProgressEvent, (void*)& progress);
+          progressCallback->Execute(nullptr, vtkCommand::ProgressEvent, (void*)&progress);
         }
       }
     }
