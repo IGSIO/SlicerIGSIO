@@ -66,6 +66,9 @@ public:
   /// Return the authors of the module
   virtual QStringList contributors()const;
 
+  /// Make this module hidden
+  bool isHidden()const override { return true; };
+
 protected:
 
   /// Initialize the module. Register the volumes reader/writer
