@@ -52,7 +52,7 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
     -DVP9_DIR:PATH=${VP9_DIR}
 
-    -DBUILD_TESTING:BOOL=OFF
+    -DBUILD_TESTING:BOOL=ON
     )
 
   if (APPLE)

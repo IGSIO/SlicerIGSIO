@@ -52,7 +52,7 @@ public:
 
   void RegisterNodes() override;
 
-  bool AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode);
+  bool AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode, bool isFirst, bool isLast);
   void StartReconstruction(vtkMRMLAnnotationROINode* roiNode);
 
   void ReconstructVolume(
