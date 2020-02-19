@@ -69,6 +69,9 @@ public:
     bool fillHoles,
     int numberOfThreads);
 
+  void CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+    vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS);
+
   //----------------------------------------------------------------
   // Events
   //----------------------------------------------------------------

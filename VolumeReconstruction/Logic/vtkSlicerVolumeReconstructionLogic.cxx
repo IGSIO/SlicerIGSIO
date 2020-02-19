@@ -169,7 +169,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
   vtkMRMLVolumeNode* inputVolumeNode,
   vtkMRMLScalarVolumeNode* outputVolumeNode,
-  vtkMRMLAnnotationROINode* roiNode,
+  vtkMRMLAnnotationROINode* inputROINode,
   int clipRectangleOrigin[2],
   int clipRectangleSize[2],
   double outputSpacing[3],
@@ -204,6 +204,8 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   return;
   }
 
+  this->GetApplicationLogic()->PauseRender();
+
   const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
   this->SetNumberOfVolumeNodesForReconstructionInInput(numberOfFrames);
   this->SetVolumeNodesAddedToReconstruction(0);
@@ -220,26 +222,33 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   this->Internal->Reconstructor->SetClipRectangleOrigin(clipRectangleOrigin);
   this->Internal->Reconstructor->SetClipRectangleSize(clipRectangleSize);
 
-  if (roiNode)
+  vtkSmartPointer<vtkMRMLAnnotationROINode> roiNode = inputROINode;
+  if (!roiNode)
   {
-    double bounds[6];
-    roiNode->GetBounds(bounds);
-    int extent[6] = {
-      0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
-      0, static_cast<int>(std::ceil((bounds[3] - bounds[2]) / outputSpacing[1])),
-      0, static_cast<int>(std::ceil((bounds[5] - bounds[4]) / outputSpacing[2]))
-    };
-    this->Internal->Reconstructor->SetOutputExtent(extent);
-    double outputOrigin[3] = { bounds[0], bounds[2], bounds[4] };
-    this->Internal->Reconstructor->SetOutputOrigin(outputOrigin);
+    roiNode = vtkSmartPointer<vtkMRMLAnnotationROINode>::New();
+    if (inputVolumeNode->GetName())
+    {
+      std::string roiNodeName = inputVolumeNode->GetName();
+      roiNodeName += "_Bounds";
+      roiNode->SetName(roiNodeName.c_str());
+    }
+    if (this->GetMRMLScene())
+    {
+      this->GetMRMLScene()->AddNode(roiNode);
+    }
+    this->CalculateROIFromVolumeSequence(inputSequenceBrowser, inputVolumeNode, roiNode);
   }
-  else
-  {
-    vtkNew<vtkIGSIOTrackedFrameList> trackedFrameList;
-    vtkSlicerIGSIOCommon::SequenceBrowserToTrackedFrameList(inputSequenceBrowser, trackedFrameList);
-    std::string errorDescription;
-    this->Internal->Reconstructor->SetOutputExtentFromFrameList(trackedFrameList, vtkNew<vtkIGSIOTransformRepository>(), errorDescription);
-  }
+
+  double bounds[6];
+  roiNode->GetBounds(bounds);
+  int extent[6] = {
+    0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
+    0, static_cast<int>(std::ceil((bounds[3] - bounds[2]) / outputSpacing[1])),
+    0, static_cast<int>(std::ceil((bounds[5] - bounds[4]) / outputSpacing[2]))
+  };
+  this->Internal->Reconstructor->SetOutputExtent(extent);
+  double outputOrigin[3] = { bounds[0], bounds[2], bounds[4] };
+  this->Internal->Reconstructor->SetOutputOrigin(outputOrigin);
 
   int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
 
@@ -275,6 +284,61 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
 
   this->InvokeEvent(VolumeReconstructionFinished);
+
+  this->GetApplicationLogic()->ResumeRender();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+  vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS)
+{
+  if (!inputSequenceBrowser)
+  {
+    vtkErrorMacro("Invalid input sequence browser!");
+    return;
+  }
+
+  if (!inputVolumeNode)
+  {
+    vtkErrorMacro("Invalid input volume node!");
+    return;
+  }
+
+  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
+  if (!masterSequence)
+  {
+    vtkErrorMacro("Invalid master sequence node!")
+      return;
+  }
+
+  double rasBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
+  inputVolumeNode->GetRASBounds(rasBounds);
+
+  const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
+  int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
+  for (int i = 0; i < numberOfFrames; ++i)
+  {
+    inputSequenceBrowser->SetSelectedItemNumber(i);
+
+    double selectedRASBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
+    inputVolumeNode->GetRASBounds(selectedRASBounds);
+    for (int i = 0; i < 3; ++i)
+    {
+      rasBounds[2*i] = std::min(selectedRASBounds[2*i], rasBounds[2*i]);
+      rasBounds[2*i+1] = std::max(selectedRASBounds[2*i+1], rasBounds[2*i+1]);
+    }
+  }
+  inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
+
+  double radiusRAS[3] = { 0 };
+  double centerRAS[3] = { 0 };
+  for (int i = 0; i < 3; ++i)
+  {
+    radiusRAS[i] = 0.5*(rasBounds[2*i+1] - rasBounds[2*i]);
+    centerRAS[i] = (rasBounds[2 * i + 1] + rasBounds[2 * i])/2.0;
+  }
+  outputROINodeRAS->SetXYZ(centerRAS);
+  outputROINodeRAS->SetRadiusXYZ(radiusRAS);
 }
 
 //---------------------------------------------------------------------------
