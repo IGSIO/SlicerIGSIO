@@ -47,18 +47,25 @@ public:
 public slots:
   void onToggleROIVisible();
   void onApply();
+  void onReset();
 
 protected:
   QScopedPointer<qSlicerVolumeReconstructionModuleWidgetPrivate> d_ptr;
 
-  virtual void setup();
+  virtual void setup() override;
+  virtual void enter() override;
 
 protected slots:
+  void onVolumeReconstructionNodeChanged(vtkMRMLNode* volumeReconstructionNode);
+
   virtual void updateWidgetFromMRML();
+  virtual void updateMRMLFromWidget();
 
   virtual void startProgressDialog();
   virtual void updateReconstructionProgress();
   virtual void stopProgressDialog();
+
+  virtual void onLiveUpdateIntervalTimeout();
 
   virtual void setMRMLScene(vtkMRMLScene*);
 

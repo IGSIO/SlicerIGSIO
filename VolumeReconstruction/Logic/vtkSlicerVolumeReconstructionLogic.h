@@ -36,11 +36,12 @@ Care Ontario.
 #include <vtkMRMLSequenceBrowserNode.h>
 
 //
-#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLVolumeNode.h>
 
 class vtkMRMLIGTLConnectorNode;
-class vtkMRMLScalarVolumeNode;
+class vtkMRMLVolumeNode;
 class vtkMRMLAnnotationROINode;
+class vtkMRMLVolumeReconstructionNode;
 
 /// \ingroup Slicer_QtModules_VolumeReconstruction
 class VTK_SLICER_VOLUMERECONSTRUCTION_MODULE_LOGIC_EXPORT vtkSlicerVolumeReconstructionLogic : public vtkSlicerModuleLogic
@@ -49,57 +50,28 @@ public:
   static vtkSlicerVolumeReconstructionLogic* New();
   vtkTypeMacro(vtkSlicerVolumeReconstructionLogic, vtkSlicerModuleLogic);
   void PrintSelf(ostream&, vtkIndent) override;
-
   void RegisterNodes() override;
 
-  bool AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode, bool isFirst, bool isLast);
-  void StartReconstruction(vtkMRMLAnnotationROINode* roiNode);
+  void StartVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
+  void StartLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
+  void ResumeLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
+  void StopLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
+  bool AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode, bool isFirst, bool isLast);
+  void GetReconstructedVolume(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
 
-  void ReconstructVolume(
-    vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
-    vtkMRMLVolumeNode* inputVolumeNode,
-    vtkMRMLScalarVolumeNode* outputVolumeNode,
-    vtkMRMLAnnotationROINode* roiNode,
-    int clipRectangleOrigin[2],
-    int clipRectangleSize[2],
-    double outputSpacing[3],
-    int interpolationMode,
-    int optimizationMode,
-    int compoundingMode,
-    bool fillHoles,
-    int numberOfThreads);
+  void ReconstructVolumeFromSequence(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
 
   void CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
     vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS);
 
-  //----------------------------------------------------------------
-  // Events
-  //----------------------------------------------------------------
-
-  enum
-  {
-    VolumeReconstructionStarted = 56000,
-    VolumeAddedToReconstruction,
-    VolumeReconstructionFinished,
-  };
-
-  //----------------------------------------------------------------
-  // Connector and device Management
-  //----------------------------------------------------------------
-
-  //----------------------------------------------------------------
-  // MRML Management
-  //----------------------------------------------------------------
-
-  //----------------------------------------------------------------
-  // Properties
-  //----------------------------------------------------------------
-  vtkSetMacro(NumberOfVolumeNodesForReconstructionInInput, int);
-  vtkGetMacro(NumberOfVolumeNodesForReconstructionInInput, int);
-  vtkSetMacro(VolumeNodesAddedToReconstruction, int);
-  vtkGetMacro(VolumeNodesAddedToReconstruction, int);
+  vtkMRMLVolumeNode* GetOrAddOutputVolumeNode(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
 
 protected:
+  void SetMRMLSceneInternal(vtkMRMLScene* newScene) override;
+  void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
+  void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) override;
+
+  virtual void ProcessMRMLNodesEvents(vtkObject* caller, unsigned long event, void* callData);
 
   //----------------------------------------------------------------
   // Constructor, destructor etc.

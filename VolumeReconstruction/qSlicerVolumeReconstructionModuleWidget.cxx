@@ -38,6 +38,7 @@ Care Ontario.
 
 // Sequence includes
 #include <vtkMRMLSequenceBrowserNode.h>
+#include <vtkMRMLSequenceNode.h>
 
 // Slicer MRML includes
 #include <vtkMRMLAnnotationROINode.h>
@@ -45,8 +46,11 @@ Care Ontario.
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLScene.h>
 
-// Volume reconstruction logic includes
+// VolumeReconstruction logic includes
 #include "vtkSlicerVolumeReconstructionLogic.h"
+
+// VolumeReconstruction MRML includes
+#include <vtkMRMLVolumeReconstructionNode.h>
 
 // IGSIO volume reconstruction includes
 #include <vtkIGSIOPasteSliceIntoVolume.h>
@@ -71,6 +75,10 @@ public:
 
   vtkSlicerVolumeReconstructionLogic* logic() const;
   QProgressDialog* ReconstructionProgressDialog;
+  QTimer* LiveUpdateIntervalTimer;
+
+  vtkWeakPointer<vtkMRMLVolumeReconstructionNode> VolumeReconstructionNode;
+
 };
 
 //-----------------------------------------------------------------------------
@@ -80,6 +88,8 @@ public:
 qSlicerVolumeReconstructionModuleWidgetPrivate::qSlicerVolumeReconstructionModuleWidgetPrivate(qSlicerVolumeReconstructionModuleWidget& object)
   : q_ptr(&object)
   , ReconstructionProgressDialog(nullptr)
+  , VolumeReconstructionNode(nullptr)
+  , LiveUpdateIntervalTimer(new QTimer(&object))
 {
 }
 
@@ -129,23 +139,63 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   }
   d->OptimizationModeComboBox->addItem("Full optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::FULL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("Partial optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::PARTIAL_OPTIMIZATION);
-  d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);  
+  d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);
 
   d->CompoundingModeComboBox->addItem("Latest", vtkIGSIOPasteSliceIntoVolume::CompoundingType::LATEST_COMPOUNDING_MODE);
   d->CompoundingModeComboBox->addItem("Maximum", vtkIGSIOPasteSliceIntoVolume::CompoundingType::MAXIMUM_COMPOUNDING_MODE);
   d->CompoundingModeComboBox->addItem("Mean", vtkIGSIOPasteSliceIntoVolume::CompoundingType::MEAN_COMPOUNDING_MODE);
   d->CompoundingModeComboBox->addItem("Importance mask", vtkIGSIOPasteSliceIntoVolume::CompoundingType::IMPORTANCE_MASK_COMPOUNDING_MODE);
 
-  connect(d->InputSequenceBrowserSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateWidgetFromMRML()));
-  connect(d->OutputVolumeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateWidgetFromMRML()));
-  connect(d->ReconstructionROISelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateWidgetFromMRML()));
-  connect(d->ROIVisibilityButton, SIGNAL(clicked()), this, SLOT(onToggleROIVisible()));
-  connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(onApply()));
+  connect(d->VolumeReconstructionSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(onVolumeReconstructionNodeChanged(vtkMRMLNode*)));
 
-  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeReconstructionStarted, this, SLOT(startProgressDialog()));
-  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeAddedToReconstruction, this, SLOT(updateReconstructionProgress()));
-  qvtkConnect(d->logic(), vtkSlicerVolumeReconstructionLogic::VolumeReconstructionFinished, this, SLOT(stopProgressDialog()));
+  connect(d->LiveUpdateIntervalTimer, SIGNAL(timeout()), this, SLOT(onLiveUpdateIntervalTimeout()));
+
+  connect(d->LiveReconstructionRadioButton, SIGNAL(clicked()), this, SLOT(updateMRMLFromWidget()));
+  connect(d->RecordedReconstructionRadioButton, SIGNAL(clicked()), this, SLOT(updateMRMLFromWidget()));
+
+  connect(d->InputSequenceBrowserSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->InputVolumeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->OutputVolumeSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateMRMLFromWidget()));
+
+  connect(d->InputROISelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->ROIVisibilityButton, SIGNAL(clicked()), this, SLOT(onToggleROIVisible()));
+
+  // Volume reconstruction parameters
+  connect(d->LiveUpdateIntervalSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->XSpacingSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->YSpacingSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->ZSpacingSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->InterpolationModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->OptimizationModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->CompoundingModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->FillHolesCheckBox, SIGNAL(stateChanged(int)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->NumberOfThreadsSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->SkipIntervalSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->XClipRectangleOriginSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->YClipRectangleOriginSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->XClipRectangleSizeSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->YClipRectangleSizeSpinBox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->MinFanAngleSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+  connect(d->MaxFanAngleSpinbox, SIGNAL(valueChanged(QString)), this, SLOT(updateMRMLFromWidget()));
+
+  connect(d->ResetButton, SIGNAL(clicked()), this, SLOT(onReset()));
+  connect(d->ApplyButton, SIGNAL(clicked()), this, SLOT(onApply()));
 }
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::enter()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+
+  // Make sure a command line module node is available when the module widget
+  // is activated. If no CLI node is available then create a new one.
+  if (d->VolumeReconstructionSelector->currentNode() == nullptr)
+  {
+    vtkMRMLVolumeReconstructionNode* node = vtkMRMLVolumeReconstructionNode::SafeDownCast(d->VolumeReconstructionSelector->addNode());
+    d->VolumeReconstructionSelector->setCurrentNode(node);
+  }
+}
+
 
 //-----------------------------------------------------------------------------
 void qSlicerVolumeReconstructionModuleWidget::startProgressDialog()
@@ -158,7 +208,7 @@ void qSlicerVolumeReconstructionModuleWidget::startProgressDialog()
   }
 
   d->ReconstructionProgressDialog = new QProgressDialog("Volume reconstruction", "",
-    0, d->logic()->GetNumberOfVolumeNodesForReconstructionInInput(), this);
+    0, 100, this);
   d->ReconstructionProgressDialog->setWindowTitle(QString("Reconstructing volume..."));
   d->ReconstructionProgressDialog->setCancelButton(nullptr);
   d->ReconstructionProgressDialog->setWindowFlags(d->ReconstructionProgressDialog->windowFlags()
@@ -187,7 +237,43 @@ void qSlicerVolumeReconstructionModuleWidget::updateReconstructionProgress()
   {
     return;
   }
-  d->ReconstructionProgressDialog->setValue(d->logic()->GetVolumeNodesAddedToReconstruction());
+
+  if (!d->VolumeReconstructionNode)
+  {
+    return;
+  }
+
+  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = d->VolumeReconstructionNode->GetInputSequenceBrowserNode();
+  if (!inputSequenceBrowser)
+  {
+    return;
+  }
+
+  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
+  if (!masterSequence)
+  {
+    return;
+  }
+
+  int numberOfFrames = masterSequence->GetNumberOfDataNodes();
+  int progress = std::floor((100.0 * d->VolumeReconstructionNode->GetNumberOfVolumesAddedToReconstruction()) / numberOfFrames);
+  d->ReconstructionProgressDialog->setValue(progress);
+  qApp->processEvents();
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::onVolumeReconstructionNodeChanged(vtkMRMLNode* node)
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (!this->mrmlScene() || this->mrmlScene()->IsBatchProcessing())
+  {
+    return;
+  }
+
+  vtkMRMLVolumeReconstructionNode* volumeReconstructionNode = vtkMRMLVolumeReconstructionNode::SafeDownCast(node);
+  qvtkReconnect(d->VolumeReconstructionNode, volumeReconstructionNode, vtkCommand::ModifiedEvent, this, SLOT(updateWidgetFromMRML()));
+  d->VolumeReconstructionNode = volumeReconstructionNode;
+  this->updateWidgetFromMRML();
 }
 
 //-----------------------------------------------------------------------------
@@ -195,57 +281,190 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
 
-  QVariant currentVolumeData = d->InputVolumeNodeSelector->currentData();
-  d->InputVolumeNodeSelector->clear();
-
-  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
-  std::vector<vtkMRMLNode*> proxyNodes;
-  if (inputSequenceBrowser)
+  if (!d->VolumeReconstructionNode)
   {
-    inputSequenceBrowser->GetAllProxyNodes(proxyNodes);
+    d->ParameterWidget->setEnabled(false);
+    d->ApplyButton->setEnabled(false);
+    return;
   }
-  for (vtkMRMLNode* proxyNode : proxyNodes)
+  d->ParameterWidget->setEnabled(true);
+  d->ApplyButton->setEnabled(true);
+
+  bool liveReconstruction = d->VolumeReconstructionNode->GetLiveVolumeReconstruction();
+  bool wasBlocking = d->LiveReconstructionRadioButton->blockSignals(true);
+  d->LiveReconstructionRadioButton->setChecked(liveReconstruction);
+  d->LiveReconstructionRadioButton->blockSignals(wasBlocking);
+
+  wasBlocking = d->LiveUpdateIntervalSpinBox->blockSignals(true);
+  d->LiveUpdateIntervalSpinBox->setValue(d->VolumeReconstructionNode->GetLiveUpdateIntervalSeconds());
+  d->LiveUpdateIntervalSpinBox->blockSignals(wasBlocking);
+
+  wasBlocking = d->RecordedReconstructionRadioButton->blockSignals(true);
+  d->RecordedReconstructionRadioButton->setChecked(!liveReconstruction);
+  d->RecordedReconstructionRadioButton->blockSignals(wasBlocking);
+
+  if (liveReconstruction)
   {
-    vtkMRMLVolumeNode* volumeNode = vtkMRMLVolumeNode::SafeDownCast(proxyNode);
-    if (!volumeNode)
-    {
-      continue;
-    }
-    d->InputVolumeNodeSelector->addItem(volumeNode->GetName(), volumeNode->GetID());
+    d->InputSequenceBrowserSelector->setEnabled(false);
+    d->ResetButton->setEnabled(true);
+    d->ApplyButton->setCheckable(true);
+    d->ApplyButton->setText("Start live volume reconstruction");
+  }
+  else
+  {
+    d->InputSequenceBrowserSelector->setEnabled(true);
+    d->ResetButton->setEnabled(false);
+    d->ApplyButton->setCheckable(false);
+    d->ApplyButton->setText("Apply");
   }
 
-  d->InputVolumeNodeSelector->setCurrentIndex(d->InputVolumeNodeSelector->findData(currentVolumeData));
-  if (d->InputVolumeNodeSelector->currentIndex() == -1 && d->InputVolumeNodeSelector->count() > 0)
+  int liveUpdateIntervalMilliSeconds = d->VolumeReconstructionNode->GetLiveUpdateIntervalSeconds() * 1000;
+  if (d->LiveUpdateIntervalTimer->interval() != liveUpdateIntervalMilliSeconds)
   {
-    d->InputVolumeNodeSelector->setCurrentIndex(0);
+    d->LiveUpdateIntervalTimer->setInterval(liveUpdateIntervalMilliSeconds);
   }
 
-  vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
-  d->ApplyButton->setEnabled(inputSequenceBrowser && outputVolumeNode && d->InputVolumeNodeSelector->currentIndex() > -1);
-
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
-  d->ROIVisibilityButton->setEnabled(reconstructionROINode);
-  if (reconstructionROINode)
+  if (liveReconstruction && d->VolumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
   {
-    d->ROIVisibilityButton->setChecked(reconstructionROINode->GetDisplayVisibility());
+    d->ResetButton->setEnabled(false);
+    d->ParameterWidget->setEnabled(false);
+  }
+
+  vtkMRMLVolumeNode* volumeNode = d->VolumeReconstructionNode->GetInputVolumeNode();
+  QVariant currentVolumeData = volumeNode ? volumeNode->GetName() : "";
+
+  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = d->VolumeReconstructionNode->GetInputSequenceBrowserNode();
+  wasBlocking = d->InputSequenceBrowserSelector->blockSignals(true);
+  d->InputSequenceBrowserSelector->setCurrentNode(inputSequenceBrowser);
+  d->InputSequenceBrowserSelector->blockSignals(wasBlocking);
+
+  vtkMRMLVolumeNode* inputVolumeNode = d->VolumeReconstructionNode->GetInputVolumeNode();
+  wasBlocking = d->InputVolumeSelector->blockSignals(true);
+  d->InputVolumeSelector->setCurrentNode(inputVolumeNode);
+  d->InputVolumeSelector->blockSignals(false);
+
+  vtkMRMLVolumeNode* outputVolumeNode = d->VolumeReconstructionNode->GetOutputVolumeNode();
+  wasBlocking = d->OutputVolumeSelector->blockSignals(true);
+  d->OutputVolumeSelector->setCurrentNode(outputVolumeNode);
+  d->OutputVolumeSelector->blockSignals(wasBlocking);
+
+  vtkMRMLAnnotationROINode* inputROINode = d->VolumeReconstructionNode->GetInputROINode();
+  wasBlocking = d->InputROISelector->blockSignals(true);
+  d->InputROISelector->setCurrentNode(inputROINode);
+  d->InputROISelector->blockSignals(wasBlocking);
+
+  d->ROIVisibilityButton->setEnabled(inputROINode);
+  if (inputROINode)
+  {
+    d->ROIVisibilityButton->setChecked(inputROINode->GetDisplayVisibility());
   }
   else
   {
     d->ROIVisibilityButton->setChecked(false);
   }
+
+  if (liveReconstruction)
+  {
+    d->ApplyButton->setEnabled(inputVolumeNode && inputROINode);
+  }
+  else
+  {
+    d->ApplyButton->setEnabled(inputSequenceBrowser && inputVolumeNode);
+  }
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::updateMRMLFromWidget()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (!d->VolumeReconstructionNode)
+  {
+    return;
+  }
+
+  MRMLNodeModifyBlocker(d->VolumeReconstructionNode);
+
+  bool liveVolumeReconstruction = d->LiveReconstructionRadioButton->isChecked();
+  if (liveVolumeReconstruction != d->VolumeReconstructionNode->GetLiveVolumeReconstruction())
+  {
+    d->VolumeReconstructionNode->SetNumberOfVolumesAddedToReconstruction(0);
+  }
+  d->VolumeReconstructionNode->SetLiveVolumeReconstruction(liveVolumeReconstruction);
+  d->VolumeReconstructionNode->SetLiveUpdateIntervalSeconds(d->LiveUpdateIntervalSpinBox->value());
+
+  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
+  d->VolumeReconstructionNode->SetAndObserveInputSequenceBrowserNode(inputSequenceBrowser);
+
+  vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(d->InputVolumeSelector->currentNode());
+  d->VolumeReconstructionNode->SetAndObserveInputVolumeNode(inputVolumeNode);
+
+  vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
+  d->VolumeReconstructionNode->SetAndObserveOutputVolumeNode(outputVolumeNode);
+
+  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->InputROISelector->currentNode());
+  d->VolumeReconstructionNode->SetAndObserveInputROINode(reconstructionROINode);
+
+  double outputSpacing[3] = { 0,0,0 };
+  outputSpacing[0] = d->XSpacingSpinbox->value();
+  outputSpacing[1] = d->YSpacingSpinbox->value();
+  outputSpacing[2] = d->ZSpacingSpinbox->value();
+  d->VolumeReconstructionNode->SetOutputSpacing(outputSpacing);
+
+  int interpolationMode = d->InterpolationModeComboBox->currentData().toInt();
+  d->VolumeReconstructionNode->SetInterpolationMode(interpolationMode);
+
+  int optimizationMode = d->OptimizationModeComboBox->currentData().toInt();
+  d->VolumeReconstructionNode->SetOptimizationMode(optimizationMode);
+
+  int compoundingMode = d->CompoundingModeComboBox->currentData().toInt();
+  d->VolumeReconstructionNode->SetCompoundingMode(compoundingMode);
+
+  bool fillHoles = d->FillHolesCheckBox->isChecked();
+  d->VolumeReconstructionNode->SetFillHoles(fillHoles);
+
+  int numberOfThreads = d->NumberOfThreadsSpinBox->value();
+  d->VolumeReconstructionNode->SetNumberOfThreads(numberOfThreads);
+
+  int clipRectangleOrigin[2];
+  clipRectangleOrigin[0] = d->XClipRectangleOriginSpinBox->value();
+  clipRectangleOrigin[1] = d->YClipRectangleOriginSpinBox->value();
+  d->VolumeReconstructionNode->SetClipRectangleOrigin(clipRectangleOrigin);
+
+  int clipRectangleSize[2];
+  clipRectangleSize[0] = d->XClipRectangleSizeSpinBox->value();
+  clipRectangleSize[1] = d->YClipRectangleSizeSpinBox->value();
+  d->VolumeReconstructionNode->SetClipRectangleSize(clipRectangleSize);
 }
 
 //-----------------------------------------------------------------------------
 void qSlicerVolumeReconstructionModuleWidget::onToggleROIVisible()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
+  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->InputROISelector->currentNode());
   if (!reconstructionROINode)
   {
     return;
   }
 
   reconstructionROINode->SetDisplayVisibility(d->ROIVisibilityButton->isChecked());
+}
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::onReset()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+
+  if (!this->mrmlScene())
+  {
+    return;
+  }
+
+  if (!d->VolumeReconstructionNode)
+  {
+    return;
+  }
+
+  d->VolumeReconstructionNode->SetNumberOfVolumesAddedToReconstruction(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -258,37 +477,52 @@ void qSlicerVolumeReconstructionModuleWidget::onApply()
     return;
   }
 
-  std::string inputVolumeID = d->InputVolumeNodeSelector->currentData().toString().toStdString();
+  if (!d->VolumeReconstructionNode)
+  {
+    return;
+  }
 
-  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = vtkMRMLSequenceBrowserNode::SafeDownCast(d->InputSequenceBrowserSelector->currentNode());
-  vtkMRMLVolumeNode* inputVolumeNode = vtkMRMLVolumeNode::SafeDownCast(this->mrmlScene()->GetNodeByID(inputVolumeID));
-  vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->ReconstructionROISelector->currentNode());
+  if (d->VolumeReconstructionNode->GetLiveVolumeReconstruction())
+  {
+    if (!d->VolumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
+    {
+      if (d->VolumeReconstructionNode->GetNumberOfVolumesAddedToReconstruction() == 0)
+      {
+        d->logic()->StartLiveVolumeReconstruction(d->VolumeReconstructionNode);
+      }
+      else
+      {
+        d->logic()->ResumeLiveVolumeReconstruction(d->VolumeReconstructionNode);
+      }
+      d->LiveUpdateIntervalTimer->start();
+    }
+    else
+    {
+      d->LiveUpdateIntervalTimer->stop();
+      d->logic()->StopLiveVolumeReconstruction(d->VolumeReconstructionNode);
+    }
+  }
+  else
+  {
+    qvtkConnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeReconstructionStarted, this, SLOT(startProgressDialog()));
+    qvtkConnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeAddedToReconstruction, this, SLOT(updateReconstructionProgress()));
+    qvtkConnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeReconstructionFinished, this, SLOT(stopProgressDialog()));
+    d->logic()->ReconstructVolumeFromSequence(d->VolumeReconstructionNode);
+    qvtkDisconnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeReconstructionStarted, this, SLOT(startProgressDialog()));
+    qvtkDisconnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeAddedToReconstruction, this, SLOT(updateReconstructionProgress()));
+    qvtkDisconnect(d->VolumeReconstructionNode, vtkMRMLVolumeReconstructionNode::VolumeReconstructionFinished, this, SLOT(stopProgressDialog()));
+  }
+}
 
-  double outputSpacing[3] = { 0,0,0 };
-  outputSpacing[0] = d->XSpacingSpinbox->value();
-  outputSpacing[1] = d->YSpacingSpinbox->value();
-  outputSpacing[2] = d->ZSpacingSpinbox->value();
-
-  int interpolationMode = d->InterpolationModeComboBox->currentData().toInt();
-  int optimizationMode = d->OptimizationModeComboBox->currentData().toInt();
-  int compoundingMode = d->CompoundingModeComboBox->currentData().toInt();
-  bool fillHoles = d->FillHolesCheckBox->isChecked();
-  int numberOfThreads = d->NumberOfThreadsSpinBox->value();
-
-  int clipRectangleOrigin[2];
-  clipRectangleOrigin[0] = d->XClipRectangleOriginSpinBox->value();
-  clipRectangleOrigin[1] = d->YClipRectangleOriginSpinBox->value();
-  int clipRectangleSize[2];
-  clipRectangleSize[0] = d->XClipRectangleSizeSpinBox->value();
-  clipRectangleSize[1] = d->YClipRectangleSizeSpinBox->value();
-
-  d->logic()->ReconstructVolume(
-    inputSequenceBrowser, inputVolumeNode, outputVolumeNode, reconstructionROINode,
-    clipRectangleOrigin, clipRectangleSize,
-    outputSpacing,
-    interpolationMode, optimizationMode, compoundingMode, fillHoles,
-    numberOfThreads);
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModuleWidget::onLiveUpdateIntervalTimeout()
+{
+  Q_D(qSlicerVolumeReconstructionModuleWidget);
+  if (!d->VolumeReconstructionNode)
+  {
+    return;
+  }
+  d->logic()->GetReconstructedVolume(d->VolumeReconstructionNode);
 }
 
 //-----------------------------------------------------------------------------

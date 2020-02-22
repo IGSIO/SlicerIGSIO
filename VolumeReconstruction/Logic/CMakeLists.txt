@@ -6,6 +6,7 @@ find_package(IGSIO REQUIRED)
 
 set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT")
 set(${KIT}_INCLUDE_DIRECTORIES
+  ${vtkSlicer${MODULE_NAME}ModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerAnnotationModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
@@ -20,6 +21,7 @@ set(${KIT}_SRCS
 
 set(${KIT}_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
+  vtkSlicer${MODULE_NAME}ModuleMRML
   vtkSlicerIGSIOCommon
   vtkVolumeReconstruction
   )

@@ -24,13 +24,10 @@ Care Ontario.
 #include <vtkMRMLColorLogic.h>
 
 // MRML includes
-#include <vtkMRMLVolumeNode.h>
-#include <vtkMRMLStreamingVolumeNode.h>
-#include <vtkMRMLSelectionNode.h>
-#include <vtkMRMLLinearTransformNode.h>
-#include <vtkMRMLColorTableNode.h>
-#include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLAnnotationROINode.h>
+#include <vtkMRMLLinearTransformNode.h>
+#include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLVolumeNode.h>
 
 // Sequence MRML includes
 #include <vtkMRMLSequenceNode.h>
@@ -42,6 +39,9 @@ Care Ontario.
 
 // IGSIO VolumeReconstructor includes
 #include <vtkIGSIOVolumeReconstructor.h>
+
+// VolumeReconstructor MRML includes
+#include <vtkMRMLVolumeReconstructionNode.h>
 
 // SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
@@ -55,9 +55,12 @@ Care Ontario.
 // VTK includes
 #include <vtkMatrix4x4.h>
 #include <vtkTransform.h>
+#include <vtkSmartPointer.h>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerVolumeReconstructionLogic);
+
+typedef std::map<vtkMRMLVolumeReconstructionNode*, vtkSmartPointer<vtkIGSIOVolumeReconstructor> > VolumeReconstuctorMap;
 
 //---------------------------------------------------------------------------
 class vtkSlicerVolumeReconstructionLogic::vtkInternal
@@ -67,9 +70,9 @@ public:
   vtkInternal(vtkSlicerVolumeReconstructionLogic* external);
   ~vtkInternal();
 
-  vtkNew<vtkIGSIOVolumeReconstructor> Reconstructor;
-
   vtkSlicerVolumeReconstructionLogic* External;
+
+  VolumeReconstuctorMap Reconstructors;
 };
 
 //----------------------------------------------------------------------------
@@ -114,20 +117,178 @@ void vtkSlicerVolumeReconstructionLogic::RegisterNodes()
     vtkErrorMacro("Scene is invalid");
     return;
   }
+  this->GetMRMLScene()->RegisterNodeClass(vtkSmartPointer<vtkMRMLVolumeReconstructionNode>::New());
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerVolumeReconstructionLogic::StartReconstruction(vtkMRMLAnnotationROINode* vtkNotUsed(roiNode))
+void vtkSlicerVolumeReconstructionLogic::SetMRMLSceneInternal(vtkMRMLScene* newScene)
 {
-  // TODO: not implemented
+  vtkNew<vtkIntArray> sceneEvents;
+  sceneEvents->InsertNextValue(vtkMRMLScene::NodeAddedEvent);
+  sceneEvents->InsertNextValue(vtkMRMLScene::NodeRemovedEvent);
+  this->SetAndObserveMRMLSceneEventsInternal(newScene, sceneEvents.GetPointer());
 }
 
 //---------------------------------------------------------------------------
-bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode, bool isFirst, bool isLast)
+void vtkSlicerVolumeReconstructionLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
 {
-  if (!volumeNode->GetImageData())
+  vtkMRMLVolumeReconstructionNode* volumeReconstructionNode = vtkMRMLVolumeReconstructionNode::SafeDownCast(node);
+  if (!node || !this->GetMRMLScene())
   {
-    vtkErrorMacro("Input volume node has no image data!");
+    return;
+  }
+
+  this->Internal->Reconstructors[volumeReconstructionNode] = vtkSmartPointer<vtkIGSIOVolumeReconstructor>::New();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::OnMRMLSceneNodeRemoved(vtkMRMLNode* node)
+{
+  vtkMRMLVolumeReconstructionNode* volumeReconstructionNode = vtkMRMLVolumeReconstructionNode::SafeDownCast(node);
+  if (!volumeReconstructionNode || !this->GetMRMLScene())
+  {
+    return;
+  }
+
+  VolumeReconstuctorMap::iterator volumeReconstructorIt = this->Internal->Reconstructors.find(volumeReconstructionNode);
+  if (volumeReconstructorIt != this->Internal->Reconstructors.end())
+  {
+    this->Internal->Reconstructors.erase(volumeReconstructorIt);
+  }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::ProcessMRMLNodesEvents(vtkObject* caller, unsigned long event, void* callData)
+{
+  vtkMRMLVolumeReconstructionNode* volumeReconstructionNode = vtkMRMLVolumeReconstructionNode::SafeDownCast(caller);
+  if (volumeReconstructionNode && event == vtkMRMLVolumeReconstructionNode::InputVolumeModified && volumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
+  {
+    this->AddVolumeNodeToReconstructedVolume(volumeReconstructionNode, volumeReconstructionNode->GetNumberOfVolumesAddedToReconstruction() == 0, false);
+  }
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    vtkErrorMacro("Invalid volume reconstructor node!");
+    return;
+  }
+
+  vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
+  if (!inputVolumeNode)
+  {
+    vtkErrorMacro("Invalid input sequence browser!");
+    return;
+  }
+
+  vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
+  if (!inputROINode)
+  {
+    vtkErrorMacro("Invalid input volume node!");
+    return;
+  }
+
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  if (!reconstructor)
+  {
+    vtkErrorMacro("Invalid volume reconstructor!");
+    return;
+  }
+
+  double bounds[6] = { 0 };
+  inputROINode->GetBounds(bounds);
+  double outputSpacing[3] = { 0 };
+  volumeReconstructionNode->GetOutputSpacing(outputSpacing);
+  int outputExtent[6] = {
+    0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
+    0, static_cast<int>(std::ceil((bounds[3] - bounds[2]) / outputSpacing[1])),
+    0, static_cast<int>(std::ceil((bounds[5] - bounds[4]) / outputSpacing[2]))
+  };
+  double outputOrigin[3] = { bounds[0], bounds[2], bounds[4] };
+
+  reconstructor->SetOutputExtent(outputExtent);
+  reconstructor->SetOutputOrigin(outputOrigin);
+  reconstructor->SetOutputSpacing(outputSpacing);
+  reconstructor->SetCompoundingMode(vtkIGSIOPasteSliceIntoVolume::CompoundingType(volumeReconstructionNode->GetCompoundingMode()));
+  reconstructor->SetOptimization(vtkIGSIOPasteSliceIntoVolume::OptimizationType(volumeReconstructionNode->GetOptimizationMode()));
+  reconstructor->SetInterpolation(vtkIGSIOPasteSliceIntoVolume::InterpolationType(volumeReconstructionNode->GetInterpolationMode()));
+  reconstructor->SetNumberOfThreads(volumeReconstructionNode->GetNumberOfThreads());
+  reconstructor->SetFillHoles(volumeReconstructionNode->GetFillHoles());
+  reconstructor->SetImageCoordinateFrame("Image");
+  reconstructor->SetReferenceCoordinateFrame("World");
+  reconstructor->SetClipRectangleOrigin(volumeReconstructionNode->GetClipRectangleOrigin());
+  reconstructor->SetClipRectangleSize(volumeReconstructionNode->GetClipRectangleSize());
+  reconstructor->Reset();
+
+  volumeReconstructionNode->SetNumberOfVolumesAddedToReconstruction(0);
+  volumeReconstructionNode->InvokeEvent(vtkMRMLVolumeReconstructionNode::VolumeReconstructionStarted);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::StartLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    return;
+  }
+  this->StartVolumeReconstruction(volumeReconstructionNode);
+  this->ResumeLiveVolumeReconstruction(volumeReconstructionNode);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::ResumeLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    return;
+  }
+  vtkNew<vtkIntArray> events;
+  events->InsertNextValue(vtkMRMLVolumeReconstructionNode::InputVolumeModified);
+  vtkObserveMRMLNodeEventsMacro(volumeReconstructionNode, events);
+  volumeReconstructionNode->LiveVolumeReconstructionInProgressOn();
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::StopLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    return;
+  }
+  volumeReconstructionNode->LiveVolumeReconstructionInProgressOff();
+  vtkUnObserveMRMLNodeMacro(volumeReconstructionNode);
+  this->GetReconstructedVolume(volumeReconstructionNode);
+}
+
+//---------------------------------------------------------------------------
+bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode, bool isFirst, bool isLast)
+{
+  if (!volumeReconstructionNode)
+  {
+    vtkErrorMacro("Invalid volume reconstructor node!");
+    return false;
+  }
+
+  vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
+  if (!inputVolumeNode)
+  {
+    vtkErrorMacro("Invalid input sequence browser!");
+    return false;
+  }
+
+  vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
+  if (!inputROINode)
+  {
+    vtkErrorMacro("Invalid input volume node!");
+    return false;
+  }
+
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  if (!reconstructor)
+  {
+    vtkErrorMacro("Invalid volume reconstructor!");
     return false;
   }
 
@@ -135,11 +296,11 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
   imageToWorldTransform->Identity();
   imageToWorldTransform->PreMultiply();
   vtkNew<vtkMatrix4x4> ijkToRASMatrix;
-  volumeNode->GetIJKToRASMatrix(ijkToRASMatrix);
+  inputVolumeNode->GetIJKToRASMatrix(ijkToRASMatrix);
   imageToWorldTransform->Concatenate(ijkToRASMatrix);
 
   vtkNew<vtkMatrix4x4> parentToWorldMatrix;
-  vtkMRMLTransformNode* transformNode = volumeNode->GetParentTransformNode();
+  vtkMRMLTransformNode* transformNode = inputVolumeNode->GetParentTransformNode();
   if (transformNode)
   {
     transformNode->GetMatrixTransformToWorld(parentToWorldMatrix);
@@ -151,113 +312,35 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
 
   std::string errorDetail;
   igsioTrackedFrame trackedFrame;
-  trackedFrame.GetImageData()->DeepCopyFrom(volumeNode->GetImageData());
+  trackedFrame.GetImageData()->DeepCopyFrom(inputVolumeNode->GetImageData());
 
   bool insertedIntoVolume = false;
-  if (this->Internal->Reconstructor->AddTrackedFrame(&trackedFrame, transformRepository, isFirst, isLast, &insertedIntoVolume) != IGSIO_SUCCESS)
+  if (reconstructor->AddTrackedFrame(&trackedFrame, transformRepository, isFirst, isLast, &insertedIntoVolume) != IGSIO_SUCCESS)
   {
     return false;
   }
 
-  this->SetVolumeNodesAddedToReconstruction(this->GetVolumeNodesAddedToReconstruction() + 1);
-  this->InvokeEvent(vtkSlicerVolumeReconstructionLogic::VolumeAddedToReconstruction);
+  int numberOfVolumesAddedToReconstruction = volumeReconstructionNode->GetNumberOfVolumesAddedToReconstruction();
+  volumeReconstructionNode->SetNumberOfVolumesAddedToReconstruction(numberOfVolumesAddedToReconstruction + 1);
+  volumeReconstructionNode->InvokeEvent(vtkMRMLVolumeReconstructionNode::VolumeAddedToReconstruction);
   return  true;
 }
 
 //---------------------------------------------------------------------------
-void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
-  vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
-  vtkMRMLVolumeNode* inputVolumeNode,
-  vtkMRMLScalarVolumeNode* outputVolumeNode,
-  vtkMRMLAnnotationROINode* inputROINode,
-  int clipRectangleOrigin[2],
-  int clipRectangleSize[2],
-  double outputSpacing[3],
-  int interpolationMode,
-  int optimizationMode,
-  int compoundingMode,
-  bool fillHoles,
-  int numberOfThreads)
+void vtkSlicerVolumeReconstructionLogic::GetReconstructedVolume(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
 {
-  if (!inputSequenceBrowser)
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  if (!reconstructor)
   {
-    vtkErrorMacro("Invalid input sequence browser!");
+    vtkErrorMacro("Invalid volume reconstructor!");
     return;
   }
 
-  if (!inputVolumeNode)
-  {
-    vtkErrorMacro("Invalid input volume node!");
-    return;
-  }
-
+  vtkMRMLVolumeNode* outputVolumeNode = this->GetOrAddOutputVolumeNode(volumeReconstructionNode);
   if (!outputVolumeNode)
   {
     vtkErrorMacro("Invalid output volume node!");
     return;
-  }
-
-  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
-  if (!masterSequence)
-  {
-  vtkErrorMacro("Invalid master sequence node!")
-  return;
-  }
-
-  this->GetApplicationLogic()->PauseRender();
-
-  const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
-  this->SetNumberOfVolumeNodesForReconstructionInInput(numberOfFrames);
-  this->SetVolumeNodesAddedToReconstruction(0);
-  this->InvokeEvent(VolumeReconstructionStarted);
-
-  this->Internal->Reconstructor->SetOutputSpacing(outputSpacing);
-  this->Internal->Reconstructor->SetCompoundingMode(vtkIGSIOPasteSliceIntoVolume::CompoundingType(compoundingMode));
-  this->Internal->Reconstructor->SetOptimization(vtkIGSIOPasteSliceIntoVolume::OptimizationType(optimizationMode));
-  this->Internal->Reconstructor->SetInterpolation(vtkIGSIOPasteSliceIntoVolume::InterpolationType(interpolationMode));
-  this->Internal->Reconstructor->SetNumberOfThreads(numberOfThreads);
-  this->Internal->Reconstructor->SetFillHoles(fillHoles);
-  this->Internal->Reconstructor->SetImageCoordinateFrame("Image");
-  this->Internal->Reconstructor->SetReferenceCoordinateFrame("World");
-  this->Internal->Reconstructor->SetClipRectangleOrigin(clipRectangleOrigin);
-  this->Internal->Reconstructor->SetClipRectangleSize(clipRectangleSize);
-
-  vtkSmartPointer<vtkMRMLAnnotationROINode> roiNode = inputROINode;
-  if (!roiNode)
-  {
-    roiNode = vtkSmartPointer<vtkMRMLAnnotationROINode>::New();
-    if (inputVolumeNode->GetName())
-    {
-      std::string roiNodeName = inputVolumeNode->GetName();
-      roiNodeName += "_Bounds";
-      roiNode->SetName(roiNodeName.c_str());
-    }
-    if (this->GetMRMLScene())
-    {
-      this->GetMRMLScene()->AddNode(roiNode);
-    }
-    this->CalculateROIFromVolumeSequence(inputSequenceBrowser, inputVolumeNode, roiNode);
-  }
-
-  double bounds[6];
-  roiNode->GetBounds(bounds);
-  int extent[6] = {
-    0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
-    0, static_cast<int>(std::ceil((bounds[3] - bounds[2]) / outputSpacing[1])),
-    0, static_cast<int>(std::ceil((bounds[5] - bounds[4]) / outputSpacing[2]))
-  };
-  this->Internal->Reconstructor->SetOutputExtent(extent);
-  double outputOrigin[3] = { bounds[0], bounds[2], bounds[4] };
-  this->Internal->Reconstructor->SetOutputOrigin(outputOrigin);
-
-  int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
-
-  this->Internal->Reconstructor->Reset();
-
-  for (int i = 0; i < numberOfFrames; ++i)
-  {
-    inputSequenceBrowser->SetSelectedItemNumber(i);
-    this->AddVolumeNodeToReconstructedVolume(inputVolumeNode, i == 0, i == numberOfFrames-1);
   }
 
   if (!outputVolumeNode->GetImageData())
@@ -266,7 +349,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
     outputVolumeNode->SetAndObserveImageData(imageData);
   }
 
-  if (this->Internal->Reconstructor->GetReconstructedVolume(outputVolumeNode->GetImageData()) != IGSIO_SUCCESS)
+  if (reconstructor->GetReconstructedVolume(outputVolumeNode->GetImageData()) != IGSIO_SUCCESS)
   {
     vtkErrorMacro("Could not retrieve reconstructed image");
   }
@@ -281,10 +364,81 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   outputVolumeNode->GetImageData()->SetOrigin(0, 0, 0);
   outputVolumeNode->SetOrigin(origin);
 
+  volumeReconstructionNode->InvokeEvent(vtkMRMLVolumeReconstructionNode::VolumeReconstructionFinished);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    vtkErrorMacro("Invalid volume reconstructor node!");
+    return;
+  }
+
+  vtkMRMLSequenceBrowserNode* inputSequenceBrowser = volumeReconstructionNode->GetInputSequenceBrowserNode();
+  if (!inputSequenceBrowser)
+  {
+    vtkErrorMacro("Invalid input sequence browser!");
+    return;
+  }
+
+  vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
+  if (!inputVolumeNode)
+  {
+    vtkErrorMacro("Invalid input sequence browser!");
+    return;
+  }
+
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  if (!reconstructor)
+  {
+    vtkErrorMacro("Invalid volume reconstructor!");
+    return;
+  }
+
+  vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
+  if (!masterSequence)
+  {
+    vtkErrorMacro("Invalid master sequence node!");
+    return;
+  }
+
+  this->GetApplicationLogic()->PauseRender();
+
+  vtkSmartPointer<vtkMRMLAnnotationROINode> inputROINode = volumeReconstructionNode->GetInputROINode();
+  if (!inputROINode)
+  {
+    inputROINode = vtkSmartPointer<vtkMRMLAnnotationROINode>::New();
+    if (inputVolumeNode->GetName())
+    {
+      std::string roiNodeName = inputVolumeNode->GetName();
+      roiNodeName += "_Bounds";
+      inputROINode->SetName(roiNodeName.c_str());
+    }
+    if (this->GetMRMLScene())
+    {
+      this->GetMRMLScene()->AddNode(inputROINode);
+    }
+    volumeReconstructionNode->SetAndObserveInputROINode(inputROINode);
+    this->CalculateROIFromVolumeSequence(inputSequenceBrowser, inputVolumeNode, inputROINode);
+  }
+
+  // Begin volume reconstruction
+  this->StartVolumeReconstruction(volumeReconstructionNode);
+
+  // Save the currently selected item to restore later
+  int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
+
+  const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
+  for (int i = 0; i < numberOfFrames; ++i)
+  {
+    inputSequenceBrowser->SetSelectedItemNumber(i);
+    this->AddVolumeNodeToReconstructedVolume(volumeReconstructionNode, i == 0, i == numberOfFrames - 1);
+  }
+
+  this->GetReconstructedVolume(volumeReconstructionNode);
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
-
-  this->InvokeEvent(VolumeReconstructionFinished);
-
   this->GetApplicationLogic()->ResumeRender();
 }
 
@@ -324,8 +478,8 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
     inputVolumeNode->GetRASBounds(selectedRASBounds);
     for (int i = 0; i < 3; ++i)
     {
-      rasBounds[2*i] = std::min(selectedRASBounds[2*i], rasBounds[2*i]);
-      rasBounds[2*i+1] = std::max(selectedRASBounds[2*i+1], rasBounds[2*i+1]);
+      rasBounds[2 * i] = std::min(selectedRASBounds[2 * i], rasBounds[2 * i]);
+      rasBounds[2 * i + 1] = std::max(selectedRASBounds[2 * i + 1], rasBounds[2 * i + 1]);
     }
   }
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
@@ -334,11 +488,47 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   double centerRAS[3] = { 0 };
   for (int i = 0; i < 3; ++i)
   {
-    radiusRAS[i] = 0.5*(rasBounds[2*i+1] - rasBounds[2*i]);
-    centerRAS[i] = (rasBounds[2 * i + 1] + rasBounds[2 * i])/2.0;
+    radiusRAS[i] = 0.5 * (rasBounds[2 * i + 1] - rasBounds[2 * i]);
+    centerRAS[i] = (rasBounds[2 * i + 1] + rasBounds[2 * i]) / 2.0;
   }
   outputROINodeRAS->SetXYZ(centerRAS);
   outputROINodeRAS->SetRadiusXYZ(radiusRAS);
+}
+
+//---------------------------------------------------------------------------
+vtkMRMLVolumeNode* vtkSlicerVolumeReconstructionLogic::GetOrAddOutputVolumeNode(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
+{
+  if (!volumeReconstructionNode)
+  {
+    vtkErrorMacro("Invalid volume reconstructor node!");
+    return nullptr;
+  }
+
+  vtkSmartPointer<vtkMRMLVolumeNode> outputVolumeNode = volumeReconstructionNode->GetOutputVolumeNode();
+  if (outputVolumeNode)
+  {
+    return outputVolumeNode;
+  }
+  outputVolumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+
+  vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
+  if (inputVolumeNode && inputVolumeNode->GetName())
+  {
+    std::string roiNodeName = inputVolumeNode->GetName();
+    roiNodeName += "_ReconstructedVolume";
+    outputVolumeNode->SetName(roiNodeName.c_str());
+  }
+  else
+  {
+    outputVolumeNode->SetName("ReconstructedVolume");
+  }
+
+  if (this->GetMRMLScene())
+  {
+    this->GetMRMLScene()->AddNode(outputVolumeNode);
+  }
+  volumeReconstructionNode->SetAndObserveOutputVolumeNode(outputVolumeNode);
+  return outputVolumeNode;
 }
 
 //---------------------------------------------------------------------------
