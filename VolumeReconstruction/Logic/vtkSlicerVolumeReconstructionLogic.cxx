@@ -123,7 +123,7 @@ void vtkSlicerVolumeReconstructionLogic::StartReconstruction(vtkMRMLAnnotationRO
 }
 
 //---------------------------------------------------------------------------
-bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode)
+bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkMRMLVolumeNode* volumeNode, bool isFirst, bool isLast)
 {
   if (!volumeNode->GetImageData())
   {
@@ -154,7 +154,7 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
   trackedFrame.GetImageData()->DeepCopyFrom(volumeNode->GetImageData());
 
   bool insertedIntoVolume = false;
-  if (this->Internal->Reconstructor->AddTrackedFrame(&trackedFrame, transformRepository, &insertedIntoVolume) != IGSIO_SUCCESS)
+  if (this->Internal->Reconstructor->AddTrackedFrame(&trackedFrame, transformRepository, isFirst, isLast, &insertedIntoVolume) != IGSIO_SUCCESS)
   {
     return false;
   }
@@ -257,7 +257,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolume(
   for (int i = 0; i < numberOfFrames; ++i)
   {
     inputSequenceBrowser->SetSelectedItemNumber(i);
-    this->AddVolumeNodeToReconstructedVolume(inputVolumeNode);
+    this->AddVolumeNodeToReconstructedVolume(inputVolumeNode, i == 0, i == numberOfFrames-1);
   }
 
   if (!outputVolumeNode->GetImageData())

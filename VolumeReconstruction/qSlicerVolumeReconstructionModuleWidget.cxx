@@ -124,6 +124,9 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   d->InterpolationModeComboBox->addItem("Nearest neighbor", vtkIGSIOPasteSliceIntoVolume::InterpolationType::NEAREST_NEIGHBOR_INTERPOLATION);
   d->InterpolationModeComboBox->addItem("Linear", vtkIGSIOPasteSliceIntoVolume::InterpolationType::LINEAR_INTERPOLATION);
 
+  if (vtkIGSIOPasteSliceIntoVolume::IsGpuAccelerationSupported()) {
+    d->OptimizationModeComboBox->addItem("GPU acceleration (OpenCL)", vtkIGSIOPasteSliceIntoVolume::OptimizationType::GPU_ACCELERATION_OPENCL);
+  }
   d->OptimizationModeComboBox->addItem("Full optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::FULL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("Partial optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::PARTIAL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);  
