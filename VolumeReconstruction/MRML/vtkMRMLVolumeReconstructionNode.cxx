@@ -65,8 +65,7 @@ vtkMRMLVolumeReconstructionNode::vtkMRMLVolumeReconstructionNode()
   this->AddNodeReferenceRole(this->GetOutputVolumeNodeReferenceRole(), this->GetOutputVolumeNodeReferenceMRMLAttributeName());
 
   vtkNew<vtkIntArray> inputVolumeEvents;
-  inputVolumeEvents->InsertNextTuple1(vtkCommand::ModifiedEvent);
-  inputVolumeEvents->InsertNextTuple1(vtkMRMLTransformableNode::TransformModifiedEvent);
+  inputVolumeEvents->InsertNextTuple1(vtkMRMLVolumeNode::ImageDataModifiedEvent);
   this->AddNodeReferenceRole(this->GetInputVolumeNodeReferenceRole(), this->GetInputVolumeNodeReferenceMRMLAttributeName(), inputVolumeEvents);
 }
 
