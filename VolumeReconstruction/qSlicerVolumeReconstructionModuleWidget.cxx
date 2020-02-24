@@ -134,12 +134,13 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   d->InterpolationModeComboBox->addItem("Nearest neighbor", vtkIGSIOPasteSliceIntoVolume::InterpolationType::NEAREST_NEIGHBOR_INTERPOLATION);
   d->InterpolationModeComboBox->addItem("Linear", vtkIGSIOPasteSliceIntoVolume::InterpolationType::LINEAR_INTERPOLATION);
 
-  if (vtkIGSIOPasteSliceIntoVolume::IsGpuAccelerationSupported()) {
-    d->OptimizationModeComboBox->addItem("GPU acceleration (OpenCL)", vtkIGSIOPasteSliceIntoVolume::OptimizationType::GPU_ACCELERATION_OPENCL);
-  }
   d->OptimizationModeComboBox->addItem("Full optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::FULL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("Partial optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::PARTIAL_OPTIMIZATION);
   d->OptimizationModeComboBox->addItem("No optimization", vtkIGSIOPasteSliceIntoVolume::OptimizationType::NO_OPTIMIZATION);
+  if (vtkIGSIOPasteSliceIntoVolume::IsGpuAccelerationSupported())
+  {
+    d->OptimizationModeComboBox->addItem("GPU acceleration (OpenCL)", vtkIGSIOPasteSliceIntoVolume::OptimizationType::GPU_ACCELERATION_OPENCL);
+  }
 
   d->CompoundingModeComboBox->addItem("Latest", vtkIGSIOPasteSliceIntoVolume::CompoundingType::LATEST_COMPOUNDING_MODE);
   d->CompoundingModeComboBox->addItem("Maximum", vtkIGSIOPasteSliceIntoVolume::CompoundingType::MAXIMUM_COMPOUNDING_MODE);
@@ -186,12 +187,21 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
 void qSlicerVolumeReconstructionModuleWidget::enter()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
+  Superclass::enter();
 
-  // Make sure a command line module node is available when the module widget
-  // is activated. If no CLI node is available then create a new one.
+  if (!this->mrmlScene())
+  {
+    return;
+  }
+
   if (d->VolumeReconstructionSelector->currentNode() == nullptr)
   {
-    vtkMRMLVolumeReconstructionNode* node = vtkMRMLVolumeReconstructionNode::SafeDownCast(d->VolumeReconstructionSelector->addNode());
+    vtkMRMLVolumeReconstructionNode* node = vtkMRMLVolumeReconstructionNode::SafeDownCast(
+      this->mrmlScene()->GetFirstNodeByClass("vtkMRMLVolumeReconstructionNode"));
+    if (!node)
+    {
+      node = vtkMRMLVolumeReconstructionNode::SafeDownCast(d->VolumeReconstructionSelector->addNode());
+    }
     d->VolumeReconstructionSelector->setCurrentNode(node);
   }
 }
@@ -280,13 +290,13 @@ void qSlicerVolumeReconstructionModuleWidget::onVolumeReconstructionNodeChanged(
 void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
-
-  if (!d->VolumeReconstructionNode)
+  if (!this->mrmlScene() || !d->VolumeReconstructionNode)
   {
     d->ParameterWidget->setEnabled(false);
     d->ApplyButton->setEnabled(false);
     return;
   }
+
   d->ParameterWidget->setEnabled(true);
   d->ApplyButton->setEnabled(true);
 
@@ -308,7 +318,16 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
     d->InputSequenceBrowserSelector->setEnabled(false);
     d->ResetButton->setEnabled(true);
     d->ApplyButton->setCheckable(true);
-    d->ApplyButton->setText("Start live volume reconstruction");
+    if (!d->VolumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
+    {
+      d->ApplyButton->setText("Start");
+      d->ApplyButton->setChecked(false);
+    }
+    else
+    {
+      d->ApplyButton->setText("Stop");
+      d->ApplyButton->setChecked(false);
+    }
   }
   else
   {
@@ -341,7 +360,7 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
   vtkMRMLVolumeNode* inputVolumeNode = d->VolumeReconstructionNode->GetInputVolumeNode();
   wasBlocking = d->InputVolumeSelector->blockSignals(true);
   d->InputVolumeSelector->setCurrentNode(inputVolumeNode);
-  d->InputVolumeSelector->blockSignals(false);
+  d->InputVolumeSelector->blockSignals(wasBlocking);
 
   vtkMRMLVolumeNode* outputVolumeNode = d->VolumeReconstructionNode->GetOutputVolumeNode();
   wasBlocking = d->OutputVolumeSelector->blockSignals(true);
@@ -532,8 +551,4 @@ void qSlicerVolumeReconstructionModuleWidget::setMRMLScene(vtkMRMLScene* scene)
 
   this->Superclass::setMRMLScene(scene);
   this->updateWidgetFromMRML();
-  if (scene == NULL)
-  {
-    return;
-  }
 }
