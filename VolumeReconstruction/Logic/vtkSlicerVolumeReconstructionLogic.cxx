@@ -18,15 +18,11 @@ Care Ontario.
 
 ==============================================================================*/
 
-// Slicer includes
-#include <vtkObjectFactory.h>
-#include <vtkMRMLScene.h>
-#include <vtkMRMLColorLogic.h>
-
 // MRML includes
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLLinearTransformNode.h>
 #include <vtkMRMLScalarVolumeNode.h>
+#include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 
 // Sequence MRML includes
@@ -40,20 +36,21 @@ Care Ontario.
 // IGSIO VolumeReconstructor includes
 #include <vtkIGSIOVolumeReconstructor.h>
 
-// VolumeReconstructor MRML includes
-#include <vtkMRMLVolumeReconstructionNode.h>
-
 // SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
 
-// Volumes includes
+// vtkAddon includes
 #include <vtkStreamingVolumeCodecFactory.h>
 
-// VolumeReconstruction includes
+// VolumeReconstructor MRML includes
+#include "vtkMRMLVolumeReconstructionNode.h"
+
+// VolumeReconstruction Logic includes
 #include "vtkSlicerVolumeReconstructionLogic.h"
 
 // VTK includes
 #include <vtkMatrix4x4.h>
+#include <vtkObjectFactory.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 
@@ -172,21 +169,21 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
 {
   if (!volumeReconstructionNode)
   {
-    vtkErrorMacro("Invalid volume reconstructor node!");
+    vtkErrorMacro("Invalid volume reconstruction node!");
     return;
   }
 
   vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
   if (!inputVolumeNode)
   {
-    vtkErrorMacro("Invalid input sequence browser!");
+    vtkErrorMacro("Invalid input volume node!");
     return;
   }
 
   vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
   if (!inputROINode)
   {
-    vtkErrorMacro("Invalid input volume node!");
+    vtkErrorMacro("Invalid input ROI node!");
     return;
   }
 
@@ -267,21 +264,21 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
 {
   if (!volumeReconstructionNode)
   {
-    vtkErrorMacro("Invalid volume reconstructor node!");
+    vtkErrorMacro("Invalid volume reconstruction node!");
     return false;
   }
 
   vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
   if (!inputVolumeNode)
   {
-    vtkErrorMacro("Invalid input sequence browser!");
+    vtkErrorMacro("Invalid input volume node!");
     return false;
   }
 
   vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
   if (!inputROINode)
   {
-    vtkErrorMacro("Invalid input volume node!");
+    vtkErrorMacro("Invalid input ROI node!");
     return false;
   }
 
@@ -372,7 +369,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
 {
   if (!volumeReconstructionNode)
   {
-    vtkErrorMacro("Invalid volume reconstructor node!");
+    vtkErrorMacro("Invalid volume reconstruction node!");
     return;
   }
 
@@ -386,7 +383,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
   vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
   if (!inputVolumeNode)
   {
-    vtkErrorMacro("Invalid input sequence browser!");
+    vtkErrorMacro("Invalid input volume node!");
     return;
   }
 
@@ -534,6 +531,6 @@ vtkMRMLVolumeNode* vtkSlicerVolumeReconstructionLogic::GetOrAddOutputVolumeNode(
 //---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::PrintSelf(ostream& os, vtkIndent indent)
 {
-  this->vtkObject::PrintSelf(os, indent);
-  os << indent << "vtkSlicerVolumeReconstructionLogic:             " << this->GetClassName() << "\n";
+  Superclass::PrintSelf(os, indent);
+  os << indent << "vtkSlicerVolumeReconstructionLogic: " << this->GetClassName() << "\n";
 }

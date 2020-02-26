@@ -46,7 +46,6 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     -DIGSIO_BUILD_SEQUENCEIO:BOOL=ON
     -DIGSIO_SEQUENCEIO_ENABLE_MKV:BOOL=ON
     -DIGSIO_USE_VP9:BOOL=ON
-    -DIGSIO_USE_GPU:BOOL=ON
 
     -DSlicer_DIR:PATH=${Slicer_DIR}
     -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
@@ -62,6 +61,16 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       -DCMAKE_OSX_SYSROOT:STRING=${CMAKE_OSX_SYSROOT}
     )
   endif()
+
+
+  FIND_PACKAGE(OpenCL QUIET)
+  IF (OpenCL_FOUND)
+    list(APPEND BUILD_OPTIONS
+      -DIGSIO_USE_GPU:BOOL=ON
+      )
+  ELSE()
+    MESSAGE(WARNING "Could not find OpenCL. IGSIO_USE_GPU will not be enabled.")
+  ENDIF()
 
   ExternalProject_Add(${proj}
     ${${proj}_EP_ARGS}
