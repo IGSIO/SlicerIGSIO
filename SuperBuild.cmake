@@ -22,6 +22,12 @@ set(${proj}_DEPENDS
    IGSIO
    )
 
+if (Slicer_EXTENSION_SOURCE_DIRS)
+list(APPEND ${proj}_DEPENDS
+  Slicer
+  )
+endif()
+
 ExternalProject_Include_Dependencies(${proj}
   PROJECT_VAR proj
   SUPERBUILD_VAR ${EXTENSION_NAME}_SUPERBUILD

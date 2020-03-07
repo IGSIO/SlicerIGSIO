@@ -33,6 +33,10 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
+  if (NOT Slicer_DIR)
+    find_package(Slicer REQUIRED)
+  endif()
+
   set(BUILD_OPTIONS
     -DVTK_DIR:PATH=${VTK_DIR}
     -DUSE_SYSTEM_ZLIB:BOOL=ON
