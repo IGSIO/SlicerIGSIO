@@ -51,13 +51,20 @@ Care Ontario.
 // VTK includes
 #include <vtkMatrix4x4.h>
 #include <vtkObjectFactory.h>
+#include <vtkTimerLog.h>
 #include <vtkTransform.h>
 #include <vtkSmartPointer.h>
 
 //---------------------------------------------------------------------------
 vtkStandardNewMacro(vtkSlicerVolumeReconstructionLogic);
 
-typedef std::map<vtkMRMLVolumeReconstructionNode*, vtkSmartPointer<vtkIGSIOVolumeReconstructor> > VolumeReconstuctorMap;
+struct ReconstructionInfo
+{
+  vtkSmartPointer<vtkIGSIOVolumeReconstructor> Reconstructor;
+  double LastUpdateTimeSeconds;
+};
+
+typedef std::map<vtkMRMLVolumeReconstructionNode*, ReconstructionInfo> VolumeReconstuctorMap;
 
 //---------------------------------------------------------------------------
 class vtkSlicerVolumeReconstructionLogic::vtkInternal
@@ -135,7 +142,11 @@ void vtkSlicerVolumeReconstructionLogic::OnMRMLSceneNodeAdded(vtkMRMLNode* node)
     return;
   }
 
-  this->Internal->Reconstructors[volumeReconstructionNode] = vtkSmartPointer<vtkIGSIOVolumeReconstructor>::New();
+  ReconstructionInfo info;
+  info.Reconstructor = vtkSmartPointer<vtkIGSIOVolumeReconstructor>::New();
+  info.LastUpdateTimeSeconds = vtkTimerLog::GetUniversalTime();
+
+  this->Internal->Reconstructors[volumeReconstructionNode] = info;
 }
 
 //---------------------------------------------------------------------------
@@ -165,6 +176,31 @@ void vtkSlicerVolumeReconstructionLogic::ProcessMRMLNodesEvents(vtkObject* calle
 }
 
 //---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::UpdateLiveVolumeReconstruction()
+{
+  vtkNew<vtkTimerLog> timer;
+  for (VolumeReconstuctorMap::iterator it = this->Internal->Reconstructors.begin(); it != this->Internal->Reconstructors.end(); ++it)
+  {
+    vtkMRMLVolumeReconstructionNode* volumeReconstructionNode = it->first;
+    ReconstructionInfo* info = &(it->second);
+    vtkIGSIOVolumeReconstructor* reconstructor = info->Reconstructor;
+    if (!volumeReconstructionNode || !reconstructor || !volumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
+    {
+      continue;
+    }
+
+    double currentTime = timer->GetUniversalTime();
+    if (currentTime - info->LastUpdateTimeSeconds < volumeReconstructionNode->GetLiveUpdateIntervalSeconds())
+    {
+      continue;
+    }
+
+    this->GetReconstructedVolume(volumeReconstructionNode);
+    info->LastUpdateTimeSeconds = currentTime;
+  }
+}
+
+//---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
 {
   if (!volumeReconstructionNode)
@@ -187,7 +223,7 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
     return;
   }
 
-  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
     vtkErrorMacro("Invalid volume reconstructor!");
@@ -282,7 +318,7 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     return false;
   }
 
-  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
     vtkErrorMacro("Invalid volume reconstructor!");
@@ -326,7 +362,7 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
 //---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::GetReconstructedVolume(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode)
 {
-  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
     vtkErrorMacro("Invalid volume reconstructor!");
@@ -340,6 +376,7 @@ void vtkSlicerVolumeReconstructionLogic::GetReconstructedVolume(vtkMRMLVolumeRec
     return;
   }
 
+  MRMLNodeModifyBlocker blocker(outputVolumeNode);
   if (!outputVolumeNode->GetImageData())
   {
     vtkSmartPointer<vtkImageData> imageData = vtkSmartPointer<vtkImageData>::New();
@@ -387,7 +424,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
     return;
   }
 
-  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode];
+  vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
     vtkErrorMacro("Invalid volume reconstructor!");

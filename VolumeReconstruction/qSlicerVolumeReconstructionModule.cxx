@@ -50,6 +50,9 @@ class qSlicerVolumeReconstructionModulePrivate
 {
 public:
   qSlicerVolumeReconstructionModulePrivate();
+  ~qSlicerVolumeReconstructionModulePrivate();
+
+  QTimer LiveVolumeReconstructionTimer;
 };
 
 //-----------------------------------------------------------------------------
@@ -58,6 +61,13 @@ public:
 //-----------------------------------------------------------------------------
 qSlicerVolumeReconstructionModulePrivate::qSlicerVolumeReconstructionModulePrivate()
 {
+  this->LiveVolumeReconstructionTimer.setSingleShot(false);
+  this->LiveVolumeReconstructionTimer.setInterval(100);
+  this->LiveVolumeReconstructionTimer.start();
+}
+
+qSlicerVolumeReconstructionModulePrivate::~qSlicerVolumeReconstructionModulePrivate()
+{;
 }
 
 //-----------------------------------------------------------------------------
@@ -69,11 +79,15 @@ qSlicerVolumeReconstructionModule::qSlicerVolumeReconstructionModule(QObject* _p
   , d_ptr(new qSlicerVolumeReconstructionModulePrivate)
 {
   Q_D(qSlicerVolumeReconstructionModule);
+
+  connect(&d->LiveVolumeReconstructionTimer, SIGNAL(timeout()), this, SLOT(updateLiveVolumeReconstruction()));
 }
 
 //-----------------------------------------------------------------------------
 qSlicerVolumeReconstructionModule::~qSlicerVolumeReconstructionModule()
 {
+  Q_D(qSlicerVolumeReconstructionModule);
+  disconnect(&d->LiveVolumeReconstructionTimer, SIGNAL(timeout(QString)), this, SLOT(updateLiveVolumeReconstruction()));
 }
 
 //-----------------------------------------------------------------------------
@@ -142,4 +156,16 @@ qSlicerAbstractModuleRepresentation* qSlicerVolumeReconstructionModule::createWi
 vtkMRMLAbstractLogic* qSlicerVolumeReconstructionModule::createLogic()
 {
   return vtkSlicerVolumeReconstructionLogic::New();
+}
+
+
+//-----------------------------------------------------------------------------
+void qSlicerVolumeReconstructionModule::updateLiveVolumeReconstruction()
+{
+  vtkSlicerVolumeReconstructionLogic* logic = vtkSlicerVolumeReconstructionLogic::SafeDownCast(this->logic());
+  if (!logic)
+  {
+    return;
+  }
+  logic->UpdateLiveVolumeReconstruction();
 }

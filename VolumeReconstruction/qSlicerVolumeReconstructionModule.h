@@ -77,6 +77,9 @@ protected:
   /// Create and return the logic associated to this module
   virtual vtkMRMLAbstractLogic* createLogic();
 
+protected slots:
+  void updateLiveVolumeReconstruction();
+
 public slots:
   virtual void setMRMLScene(vtkMRMLScene*);
 

@@ -75,7 +75,6 @@ public:
 
   vtkSlicerVolumeReconstructionLogic* logic() const;
   QProgressDialog* ReconstructionProgressDialog;
-  QTimer* LiveUpdateIntervalTimer;
 
   vtkWeakPointer<vtkMRMLVolumeReconstructionNode> VolumeReconstructionNode;
 
@@ -89,7 +88,6 @@ qSlicerVolumeReconstructionModuleWidgetPrivate::qSlicerVolumeReconstructionModul
   : q_ptr(&object)
   , ReconstructionProgressDialog(nullptr)
   , VolumeReconstructionNode(nullptr)
-  , LiveUpdateIntervalTimer(new QTimer(&object))
 {
 }
 
@@ -148,8 +146,6 @@ void qSlicerVolumeReconstructionModuleWidget::setup()
   d->CompoundingModeComboBox->addItem("Importance mask", vtkIGSIOPasteSliceIntoVolume::CompoundingType::IMPORTANCE_MASK_COMPOUNDING_MODE);
 
   connect(d->VolumeReconstructionSelector, SIGNAL(currentNodeChanged(vtkMRMLNode*)), this, SLOT(onVolumeReconstructionNodeChanged(vtkMRMLNode*)));
-
-  connect(d->LiveUpdateIntervalTimer, SIGNAL(timeout()), this, SLOT(onLiveUpdateIntervalTimeout()));
 
   connect(d->LiveReconstructionRadioButton, SIGNAL(clicked()), this, SLOT(updateMRMLFromWidget()));
   connect(d->RecordedReconstructionRadioButton, SIGNAL(clicked()), this, SLOT(updateMRMLFromWidget()));
@@ -337,12 +333,6 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
     d->ApplyButton->setText("Apply");
   }
 
-  int liveUpdateIntervalMilliSeconds = d->VolumeReconstructionNode->GetLiveUpdateIntervalSeconds() * 1000;
-  if (d->LiveUpdateIntervalTimer->interval() != liveUpdateIntervalMilliSeconds)
-  {
-    d->LiveUpdateIntervalTimer->setInterval(liveUpdateIntervalMilliSeconds);
-  }
-
   if (liveReconstruction && d->VolumeReconstructionNode->GetLiveVolumeReconstructionInProgress())
   {
     d->ResetButton->setEnabled(false);
@@ -513,11 +503,9 @@ void qSlicerVolumeReconstructionModuleWidget::onApply()
       {
         d->logic()->ResumeLiveVolumeReconstruction(d->VolumeReconstructionNode);
       }
-      d->LiveUpdateIntervalTimer->start();
     }
     else
     {
-      d->LiveUpdateIntervalTimer->stop();
       d->logic()->StopLiveVolumeReconstruction(d->VolumeReconstructionNode);
     }
   }

@@ -52,6 +52,8 @@ public:
   void PrintSelf(ostream&, vtkIndent) override;
   void RegisterNodes() override;
 
+  void UpdateLiveVolumeReconstruction();
+
   void StartVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
   void StartLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
   void ResumeLiveVolumeReconstruction(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
