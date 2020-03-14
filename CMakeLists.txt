@@ -17,6 +17,11 @@ set(EXTENSION_BUILD_SUBDIRECTORY inner-build)
 set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
 #-----------------------------------------------------------------------------
+# Options
+
+option(SlicerIGSIO_USE_VP9 ON)
+
+#-----------------------------------------------------------------------------
 # Extension dependencies
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
