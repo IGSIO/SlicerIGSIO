@@ -2,7 +2,6 @@
 set(proj IGSIO)
 
 set(${proj}_DEPENDS
-  VP9
   )
 
 # Include dependent projects if any
@@ -53,10 +52,19 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
 
     -DSlicer_DIR:PATH=${Slicer_DIR}
     -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
-    -DVP9_DIR:PATH=${VP9_DIR}
-
     -DBUILD_TESTING:BOOL=ON
     )
+
+if (SlicerIGSIO_USE_VP9)
+  list(APPEND ${proj}_DEPENDS
+    VP9
+    )
+  list(APPEND BUILD_OPTIONS
+    -DVP9_DIR:PATH=${VP9_DIR}
+    )
+    
+endif()
+
 
   if (APPLE)
     list(APPEND BUILD_OPTIONS

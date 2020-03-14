@@ -18,9 +18,14 @@ set(proj ${SUPERBUILD_TOPLEVEL_PROJECT})
 
 # Project dependencies
 set(${proj}_DEPENDS
-   VP9
    IGSIO
    )
+
+if (SlicerIGSIO_USE_VP9)
+  list(APPEND ${proj}_DEPENDS
+    VP9
+    )
+endif()
 
 if (Slicer_EXTENSION_SOURCE_DIRS)
 list(APPEND ${proj}_DEPENDS

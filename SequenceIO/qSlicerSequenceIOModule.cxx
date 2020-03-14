@@ -32,9 +32,6 @@ Care Ontario.
 #include <qSlicerCoreIOManager.h>
 #include <qSlicerNodeWriter.h>
 
-// IGSIO codec includes
-#include <vtkVP9VolumeCodec.h>
-
 // vtkSlicerIGSIOCommon includes
 #include <vtkSlicerIGSIOLogger.h>
 

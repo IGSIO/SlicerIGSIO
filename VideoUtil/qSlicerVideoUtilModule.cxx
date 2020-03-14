@@ -34,7 +34,10 @@ Care Ontario.
 #include <qSlicerNodeWriter.h>
 
 // IGSIO codec includes
+#include <igsioConfigure.h>
+#ifdef IGSIO_USE_VP9
 #include <vtkVP9VolumeCodec.h>
+#endif
 
 // vtkSlicerIGSIOCommon includes
 #include <vtkSlicerIGSIOLogger.h>
@@ -138,7 +141,9 @@ void qSlicerVideoUtilModule::setup()
 
   // Register the codecs
   vtkStreamingVolumeCodecFactory* codecFactory = vtkStreamingVolumeCodecFactory::GetInstance();
+#ifdef IGSIO_USE_VP9
   codecFactory->RegisterStreamingCodec(vtkSmartPointer<vtkVP9VolumeCodec>::New());
+#endif
 }
 
 //-----------------------------------------------------------------------------

@@ -16,16 +16,18 @@ set(EXTENSION_DEPENDS "Sequences")
 set(EXTENSION_BUILD_SUBDIRECTORY inner-build)
 set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
+find_package(Slicer REQUIRED)
+include(${Slicer_USE_FILE})
+mark_as_superbuild(Slicer_DIR)
+
 #-----------------------------------------------------------------------------
 # Options
 
 option(SlicerIGSIO_USE_VP9 ON)
+mark_as_superbuild(SlicerIGSIO_USE_VP9:BOOL)
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-find_package(Slicer REQUIRED)
-include(${Slicer_USE_FILE})
-mark_as_superbuild(Slicer_DIR)
 
 find_package(Sequences REQUIRED)
 mark_as_superbuild(Sequences_DIR)
