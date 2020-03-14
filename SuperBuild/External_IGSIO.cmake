@@ -1,4 +1,3 @@
-
 set(proj IGSIO)
 
 set(${proj}_DEPENDS
@@ -32,8 +31,12 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
   set(EP_SOURCE_DIR ${CMAKE_BINARY_DIR}/${proj})
   set(EP_BINARY_DIR ${CMAKE_BINARY_DIR}/${proj}-build)
 
-  if (NOT Slicer_DIR)
-    find_package(Slicer REQUIRED)
+  set(IGSIO_USE_3DSlicer ON)
+  if (DEFINED Slicer_EXTENSION_SOURCE_DIRS) # Custom build
+    set(IGSIO_USE_3DSlicer OFF)
+    list(APPEND ${proj}_DEPENDS
+      VTK
+      )
   endif()
 
   set(BUILD_OPTIONS
@@ -44,25 +47,31 @@ if(NOT DEFINED ${proj}_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
     -DZLIB_ROOT:PATH=${ZLIB_ROOT}
 
     -DIGSIO_SUPERBUILD:BOOL=ON
-    -DIGSIO_USE_3DSlicer:BOOL=ON
+    -DIGSIO_USE_3DSlicer:BOOL=${IGSIO_USE_3DSlicer}
     -DIGSIO_BUILD_VOLUMERECONSTRUCTION:BOOL=ON
     -DIGSIO_BUILD_SEQUENCEIO:BOOL=ON
     -DIGSIO_SEQUENCEIO_ENABLE_MKV:BOOL=ON
     -DIGSIO_USE_VP9:BOOL=${SlicerIGSIO_USE_VP9}
 
     -DSlicer_DIR:PATH=${Slicer_DIR}
-    -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
     -DBUILD_TESTING:BOOL=ON
     )
 
-if (SlicerIGSIO_USE_VP9)
-  list(APPEND ${proj}_DEPENDS
-    VP9
-    )
-  list(APPEND BUILD_OPTIONS
-    -DVP9_DIR:PATH=${VP9_DIR}
-    )
-    
+  if (IGSIO_USE_3DSlicer)
+    list(APPEND BUILD_OPTIONS
+      -DSlicer_DIR:PATH=${Slicer_DIR}
+      -DvtkAddon_DIR:PATH=${Slicer_DIR}/Libs/vtkAddon
+      )
+  endif()
+
+  if (SlicerIGSIO_USE_VP9)
+    list(APPEND ${proj}_DEPENDS
+      VP9
+      )
+    list(APPEND BUILD_OPTIONS
+      -DVP9_DIR:PATH=${VP9_DIR}
+      )
+
 endif()
 
 
@@ -82,6 +91,14 @@ endif()
       )
   ELSE()
     MESSAGE(WARNING "Could not find OpenCL. IGSIO_USE_GPU will not be enabled.")
+  ENDIF()
+
+  IF (NOT vtkAddon_CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+    set(vtkAddon_CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+  ENDIF()
+
+  IF (NOT vtkAddon_CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+    set(vtkAddon_CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_LIBRARY_OUTPUT_DIRECTORY})
   ENDIF()
 
   ExternalProject_Add(${proj}
@@ -107,6 +124,8 @@ endif()
       -DCMAKE_ARCHIVE_OUTPUT_DIRECTORY:PATH=${CMAKE_BINARY_DIR}/${Slicer_THIRDPARTY_LIB_DIR}
       -DIGSIO_INSTALL_BIN_DIR:PATH=${Slicer_THIRDPARTY_BIN_DIR}
       -DIGSIO_INSTALL_LIB_DIR:PATH=${Slicer_THIRDPARTY_LIB_DIR}
+      -DvtkAddon_CMAKE_RUNTIME_OUTPUT_DIRECTORY:PATH=${vtkAddon_CMAKE_RUNTIME_OUTPUT_DIRECTORY}
+      -DvtkAddon_CMAKE_LIBRARY_OUTPUT_DIRECTORY:PATH=${vtkAddon_CMAKE_LIBRARY_OUTPUT_DIRECTORY}
       # Install directories
       # NA
       # Options

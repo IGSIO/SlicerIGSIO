@@ -5,6 +5,9 @@ project(vtkSlicerIGSIOCommon)
 # --------------------------------------------------------------------------
 
 find_package(IGSIO REQUIRED)
+if (DEFINED Slicer_EXTENSION_SOURCE_DIRS) # Custom build
+  find_package(vtkAddon REQUIRED)
+endif()
 
 set(SlicerIGSIOCommon_SRCS
   vtkSlicerIGSIOCommon.cxx

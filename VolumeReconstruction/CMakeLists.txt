@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.8)
 
 find_package(IGSIO REQUIRED)
+if (DEFINED Slicer_EXTENSION_SOURCE_DIRS) # Custom build
+  find_package(vtkAddon REQUIRED)
+endif()
 
 set(MODULE_NAME "VolumeReconstruction")
 set(MODULE_TITLE "Volume Reconstruction")
