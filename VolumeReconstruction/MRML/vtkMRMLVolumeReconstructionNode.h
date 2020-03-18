@@ -27,8 +27,11 @@
 // vtkAddon includes  
 #include <vtkAddonSetGet.h>
 
-// PlusRemote includes
+// Volume Reconstruction includes
 #include "vtkSlicerVolumeReconstructionModuleMRMLExport.h"
+
+// IGSIO includes
+#include <vtkIGSIOPasteSliceIntoVolume.h>;
 
 class vtkMRMLAnnotationROINode;
 class vtkMRMLSequenceBrowserNode;
@@ -70,6 +73,29 @@ public:
     InputVolumeModified,
   };
 
+  enum InterpolationType
+  {
+    NEAREST_NEIGHBOR_INTERPOLATION = vtkIGSIOPasteSliceIntoVolume::NEAREST_NEIGHBOR_INTERPOLATION,
+    LINEAR_INTERPOLATION = vtkIGSIOPasteSliceIntoVolume::LINEAR_INTERPOLATION
+  };
+
+  enum OptimizationType
+  {
+    NO_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::NO_OPTIMIZATION,
+    PARTIAL_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::PARTIAL_OPTIMIZATION,
+    FULL_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::FULL_OPTIMIZATION,
+    GPU_ACCELERATION_OPENCL = vtkIGSIOPasteSliceIntoVolume::GPU_ACCELERATION_OPENCL
+  };
+
+  enum CompoundingType
+  {
+    UNDEFINED_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::UNDEFINED_COMPOUNDING_MODE,
+    LATEST_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::LATEST_COMPOUNDING_MODE,
+    MAXIMUM_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::MAXIMUM_COMPOUNDING_MODE,
+    MEAN_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::MEAN_COMPOUNDING_MODE,
+    IMPORTANCE_MASK_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::IMPORTANCE_MASK_COMPOUNDING_MODE
+  };
+
   const char* GetInputSequenceBrowserNodeReferenceRole() { return "inputSequenceBrowserNode"; };
   const char* GetInputSequenceBrowserNodeReferenceMRMLAttributeName() { return "inputSequenceBrowserNodeRef"; };
 
@@ -81,7 +107,6 @@ public:
 
   const char* GetOutputVolumeNodeReferenceRole() { return "outputVolumeNode"; };
   const char* GetOutputVolumeNodeReferenceMRMLAttributeName() { return "outputVolumeNodeRef"; };
-
 
   vtkMRMLSequenceBrowserNode* GetInputSequenceBrowserNode();
   vtkMRMLVolumeNode* GetInputVolumeNode();

@@ -35,8 +35,11 @@ Care Ontario.
 // Sequences MRML includes
 #include <vtkMRMLSequenceBrowserNode.h>
 
-//
+// MRML includes
 #include <vtkMRMLVolumeNode.h>
+
+// IGSIO includes
+#include <vtkIGSIOPasteSliceIntoVolume.h>
 
 class vtkMRMLIGTLConnectorNode;
 class vtkMRMLVolumeNode;
@@ -67,6 +70,11 @@ public:
     vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS);
 
   vtkMRMLVolumeNode* GetOrAddOutputVolumeNode(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
+
+  static bool IsGpuAccelerationSupported()
+  {
+    return vtkIGSIOPasteSliceIntoVolume::IsGpuAccelerationSupported();
+  };
 
 protected:
   void SetMRMLSceneInternal(vtkMRMLScene* newScene) override;
