@@ -32,7 +32,6 @@ set(SlicerIGSIOCommon_INCLUDE_DIRS
 # Build the library
 # --------------------------------------------------------------------------
 
-set(lib_name ${PROJECT_NAME})
 set(SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   ${VTK_LIBRARIES}
   MRMLCore
@@ -44,26 +43,26 @@ set(SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   )
 
 include_directories( ${SlicerIGSIOCommon_INCLUDE_DIRS} )
-add_library(${lib_name} ${SlicerIGSIOCommon_SRCS})
-target_link_libraries( ${lib_name} ${SlicerIGSIOCommon_LIBS} )
+add_library(${PROJECT_NAME} ${SlicerIGSIOCommon_SRCS})
+target_link_libraries( ${PROJECT_NAME} ${SlicerIGSIOCommon_LIBS} )
 
 # Set loadable modules output
-set_target_properties(${lib_name} PROPERTIES
+set_target_properties(${PROJECT_NAME} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_BIN_DIR}"
   LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}"
   ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${Slicer_QTLOADABLEMODULES_LIB_DIR}"
   )
 
 if(CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64" AND NOT WIN32)
-  set_target_properties(${lib_name} PROPERTIES COMPILE_FLAGS "-fPIC")
+  set_target_properties(${PROJECT_NAME} PROPERTIES COMPILE_FLAGS "-fPIC")
 endif()
 
-set_property(GLOBAL APPEND PROPERTY Slicer_TARGETS ${lib_name})
+set_property(GLOBAL APPEND PROPERTY Slicer_TARGETS ${PROJECT_NAME})
 
 # --------------------------------------------------------------------------
 # Install library
 # --------------------------------------------------------------------------
-install(TARGETS ${lib_name}
+install(TARGETS ${PROJECT_NAME}
   RUNTIME DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_BIN_DIR} COMPONENT RuntimeLibraries
   LIBRARY DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} COMPONENT RuntimeLibraries
   ARCHIVE DESTINATION ${Slicer_INSTALL_QTLOADABLEMODULES_LIB_DIR} COMPONENT Development
@@ -77,7 +76,7 @@ if(VTK_WRAP_PYTHON AND BUILD_SHARED_LIBS)
   set(Slicer_Wrapped_LIBRARIES
     )
 
-  foreach(library ${lib_name})
+  foreach(library ${PROJECT_NAME})
     if(TARGET ${library}PythonD)
       list(APPEND Slicer_Wrapped_LIBRARIES ${library}PythonD)
     endif()
