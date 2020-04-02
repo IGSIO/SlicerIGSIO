@@ -23,7 +23,7 @@ mark_as_superbuild(Slicer_DIR)
 #-----------------------------------------------------------------------------
 # Options
 
-option(SlicerIGSIO_USE_VP9 ON)
+option(SlicerIGSIO_USE_VP9 "Build with VP9 support" ON)
 mark_as_superbuild(SlicerIGSIO_USE_VP9:BOOL)
 
 #-----------------------------------------------------------------------------
