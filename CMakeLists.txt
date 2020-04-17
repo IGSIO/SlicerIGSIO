@@ -12,7 +12,6 @@ set(EXTENSION_CONTRIBUTORS "Kyle Sunderland (PerkLab, Queen's University), Andra
 set(EXTENSION_DESCRIPTION "This is a utility extension that is developed as part of the Image Guided Surgery InterOperability (IGSIO) organization (see http://igsio.github.io/), and should be used as a dependency for other extensions (Ex. SlicerIGT) to provide access to tools and algorithms implemented by IGSIO (https://github.com/IGSIO/IGSIO).")
 set(EXTENSION_ICONURL "https://github.com/IGSIO/SlicerIGSIO/raw/master/SlicerIGSIO.png")
 set(EXTENSION_SCREENSHOTURLS "https://github.com/IGSIO/SlicerIGSIO/raw/master/Images/SlicerIGSIOScreenshot1.png")
-set(EXTENSION_DEPENDS "Sequences")
 set(EXTENSION_BUILD_SUBDIRECTORY inner-build)
 set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
@@ -28,11 +27,6 @@ mark_as_superbuild(SlicerIGSIO_USE_VP9:BOOL)
 
 #-----------------------------------------------------------------------------
 # Extension dependencies
-
-if (NOT DEFINED Slicer_EXTENSION_SOURCE_DIRS) # Custom build
-  find_package(Sequences REQUIRED)
-  mark_as_superbuild(Sequences_DIR)
-endif()
 
 find_package(Git REQUIRED)
 mark_as_superbuild(GIT_EXECUTABLE)

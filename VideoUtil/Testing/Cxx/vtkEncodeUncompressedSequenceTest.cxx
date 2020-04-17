@@ -42,7 +42,6 @@ Care Ontario.
 
 // SequenceIO includes
 #include <vtkSlicerSequenceIOLogic.h>
-#include <vtkMRMLNodeSequencer.h>
 
 //---------------------------------------------------------------------------
 void SetTestingImageDataForValue(vtkImageData* image, unsigned char value)
@@ -72,12 +71,7 @@ int vtkEncodeUncompressedSequenceTest(int vtkNotUsed(argc), char* vtkNotUsed(arg
   int height = 10;
   int numFrames = 25;
 
-  vtkSmartPointer<vtkStreamingVolumeCodecFactory> factory = vtkStreamingVolumeCodecFactory::GetInstance();
-  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
-  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
-  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
-  vtkMRMLNodeSequencer::GetInstance()->RegisterNodeSequencer(new StreamingVolumeNodeSequencer());
-  
+  vtkSmartPointer<vtkStreamingVolumeCodecFactory> factory = vtkStreamingVolumeCodecFactory::GetInstance(); 
 
   vtkNew<vtkMRMLScene> scene;
   vtkNew<vtkMRMLSequenceNode> sequenceNode;

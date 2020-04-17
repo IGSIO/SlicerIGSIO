@@ -24,7 +24,6 @@ set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_BINARY_DIR}/MRML
   ${VTKIGSIOCOMMON_INCLUDE_DIRS}
   ${VTKVOLUMERECONSTRUCTION_INCLUDE_DIRS}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDES}
   ${SlicerIGSIOCommon_INCLUDE_DIRS}
   )
 
@@ -54,7 +53,6 @@ set(MODULE_TARGET_LIBRARIES
   vtkVolumeReconstruction
   vtkSlicerIGSIOCommon
   vtkSlicerSequencesModuleMRML
-  vtkSlicerSequenceBrowserModuleMRML
   )
 
 set(MODULE_RESOURCES

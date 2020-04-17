@@ -23,7 +23,6 @@ set(SlicerIGSIOCommon_INCLUDE_DIRS
   ${Slicer_Base_INCLUDE_DIRS}
   ${VTKIGSIOCOMMON_INCLUDE_DIRS}
   ${VTKSEQUENCEIO_INCLUDE_DIRS}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerVolumesModuleLogic_INCLUDE_DIRS}
   CACHE INTERNAL "" FORCE)
@@ -38,7 +37,6 @@ set(SlicerIGSIOCommon_LIBS ${SlicerIGSIOCommon_LIBS}
   vtkIGSIOCommon
   vtkSequenceIO
   vtkSlicerSequencesModuleMRML
-  vtkSlicerSequenceBrowserModuleMRML
   vtkSlicerVolumesModuleLogic
   )
 

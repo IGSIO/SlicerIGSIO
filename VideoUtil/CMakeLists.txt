@@ -22,7 +22,6 @@ set(MODULE_INCLUDE_DIRECTORIES
   ${CMAKE_CURRENT_BINARY_DIR}/Logic
   ${VTKSEQUENCEIO_INCLUDES}
   ${VTKIGSIOCOMMON_INCLUDES}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDES}
   ${SlicerIGSIOCommon_INCLUDE_DIRS}
   )
 
@@ -52,7 +51,6 @@ set(MODULE_TARGET_LIBRARIES
   vtkSequenceIO
   vtkSlicerIGSIOCommon
   vtkSlicerSequencesModuleMRML
-  vtkSlicerSequenceBrowserModuleMRML
   )
 
 set(MODULE_RESOURCES

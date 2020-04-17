@@ -122,7 +122,7 @@ QStringList qSlicerVideoUtilModule::categories() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerVideoUtilModule::dependencies() const
 {
-  return QStringList() << "Sequences" << "SequenceBrowser";
+  return QStringList() << "Sequences";
 }
 
 //-----------------------------------------------------------------------------

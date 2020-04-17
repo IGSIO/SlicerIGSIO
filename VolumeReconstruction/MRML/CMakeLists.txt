@@ -6,7 +6,6 @@ set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_MRML_EXPORT"
 
 set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
   ${VTKVOLUMERECONSTRUCTION_INCLUDE_DIRS}
   )
 
@@ -18,7 +17,6 @@ set(${KIT}_SRCS
 set(${KIT}_TARGET_LIBRARIES
   ${MRML_LIBRARIES}
   vtkSlicerSequencesModuleMRML
-  vtkSlicerSequenceBrowserModuleMRML
   vtkVolumeReconstruction
   )
 

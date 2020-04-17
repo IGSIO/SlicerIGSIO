@@ -128,7 +128,7 @@ QStringList qSlicerVolumeReconstructionModule::categories() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerVolumeReconstructionModule::dependencies() const
 {
-  return QStringList() << "Sequences" << "SequenceBrowser";
+  return QStringList() << "Sequences";
 }
 
 //-----------------------------------------------------------------------------

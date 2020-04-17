@@ -115,7 +115,7 @@ QStringList qSlicerSequenceIOModule::categories() const
 //-----------------------------------------------------------------------------
 QStringList qSlicerSequenceIOModule::dependencies() const
 {
-  return QStringList() << "Sequences" << "SequenceBrowser";
+  return QStringList() << "Sequences";
 }
 
 //-----------------------------------------------------------------------------

@@ -9,7 +9,6 @@ set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicer${MODULE_NAME}ModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
   ${vtkSlicerAnnotationModuleMRML_INCLUDE_DIRS}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
   ${VTKVOLUMERECONSTRUCTION_INCLUDE_DIRS}
   ${SlicerIGSIOCommon_INCLUDE_DIRS}
   )

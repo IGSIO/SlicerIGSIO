@@ -8,7 +8,6 @@ set(${KIT}_EXPORT_DIRECTIVE "VTK_SLICER_${MODULE_NAME_UPPER}_MODULE_LOGIC_EXPORT
 
 set(${KIT}_INCLUDE_DIRECTORIES
   ${vtkSlicerSequencesModuleMRML_INCLUDE_DIRS}
-  ${vtkSlicerSequenceBrowserModuleMRML_INCLUDE_DIRS}
   ${vtkSlicer${MODULE_NAME}ModuleMRML_INCLUDE_DIRS}
   ${VTKIGSIOCOMMON_INCLUDES}
   )
@@ -21,7 +20,6 @@ set(${KIT}_SRCS
 set(${KIT}_TARGET_LIBRARIES
   ${VTK_LIBRARIES}
   vtkSlicerSequencesModuleMRML
-  vtkSlicerSequenceBrowserModuleMRML
   vtkSlicer${MODULE_NAME}ModuleMRML
   )
 
