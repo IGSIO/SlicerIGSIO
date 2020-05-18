@@ -372,6 +372,68 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
     d->ROIVisibilityButton->setChecked(false);
   }
 
+  double outputSpacing[3] = { 0,0,0 };
+  d->VolumeReconstructionNode->GetOutputSpacing(outputSpacing);
+
+  wasBlocking = d->XSpacingSpinbox->blockSignals(true);
+  d->XSpacingSpinbox->setValue(outputSpacing[0]);
+  d->XSpacingSpinbox->blockSignals(wasBlocking);
+
+  wasBlocking = d->YSpacingSpinbox->blockSignals(true);
+  d->YSpacingSpinbox->setValue(outputSpacing[1]);
+  d->YSpacingSpinbox->blockSignals(wasBlocking);
+
+  wasBlocking = d->ZSpacingSpinbox->blockSignals(true);
+  d->ZSpacingSpinbox->setValue(outputSpacing[2]);
+  d->ZSpacingSpinbox->blockSignals(wasBlocking);
+
+  int interpolationMode = d->VolumeReconstructionNode->GetInterpolationMode();
+  wasBlocking = d->InterpolationModeComboBox->blockSignals(true);
+  d->InterpolationModeComboBox->setCurrentIndex(d->InterpolationModeComboBox->findData(interpolationMode));
+  d->InterpolationModeComboBox->blockSignals(wasBlocking);
+
+  int optimizationMode = d->VolumeReconstructionNode->GetOptimizationMode();
+  wasBlocking = d->OptimizationModeComboBox->blockSignals(true);
+  d->OptimizationModeComboBox->setCurrentIndex(d->OptimizationModeComboBox->findData(optimizationMode));
+  d->OptimizationModeComboBox->blockSignals(wasBlocking);
+
+  int compoundingMode = d->VolumeReconstructionNode->GetCompoundingMode();
+  wasBlocking = d->CompoundingModeComboBox->blockSignals(true);
+  d->CompoundingModeComboBox->setCurrentIndex(d->CompoundingModeComboBox->findData(compoundingMode));
+  d->CompoundingModeComboBox->blockSignals(wasBlocking);
+
+  bool fillHoles = d->VolumeReconstructionNode->GetFillHoles();
+  wasBlocking = d->FillHolesCheckBox->blockSignals(true);
+  d->FillHolesCheckBox->setChecked(fillHoles);
+  d->FillHolesCheckBox->blockSignals(wasBlocking);
+
+  int numberOfThreads = d->VolumeReconstructionNode->GetNumberOfThreads();
+  wasBlocking = d->NumberOfThreadsSpinBox->blockSignals(true);
+  d->NumberOfThreadsSpinBox->setValue(numberOfThreads);
+  d->NumberOfThreadsSpinBox->blockSignals(wasBlocking);
+
+  int clipRectangleOrigin[2] = {0, 0};
+  d->VolumeReconstructionNode->GetClipRectangleOrigin(clipRectangleOrigin);
+
+  wasBlocking = d->XClipRectangleOriginSpinBox->blockSignals(true);
+  d->XClipRectangleOriginSpinBox->setValue(clipRectangleOrigin[0]);
+  d->XClipRectangleOriginSpinBox->blockSignals(wasBlocking);
+
+  wasBlocking = d->YClipRectangleOriginSpinBox->blockSignals(true);
+  d->YClipRectangleOriginSpinBox->setValue(clipRectangleOrigin[1]);
+  d->YClipRectangleOriginSpinBox->blockSignals(wasBlocking);
+
+  int clipRectangleSize[2] = { 0, 0 };
+  d->VolumeReconstructionNode->GetClipRectangleSize(clipRectangleSize);
+
+  wasBlocking = d->XClipRectangleSizeSpinBox->blockSignals(true);
+  d->XClipRectangleSizeSpinBox->setValue(clipRectangleSize[0]);
+  d->XClipRectangleSizeSpinBox->blockSignals(wasBlocking);
+
+  wasBlocking = d->YClipRectangleSizeSpinBox->blockSignals(true);
+  d->YClipRectangleSizeSpinBox->setValue(clipRectangleSize[1]);
+  d->YClipRectangleSizeSpinBox->blockSignals(wasBlocking);
+
   if (liveReconstruction)
   {
     d->ApplyButton->setEnabled(inputVolumeNode && inputROINode);
@@ -391,7 +453,7 @@ void qSlicerVolumeReconstructionModuleWidget::updateMRMLFromWidget()
     return;
   }
 
-  MRMLNodeModifyBlocker(d->VolumeReconstructionNode);
+  MRMLNodeModifyBlocker blocker(d->VolumeReconstructionNode);
 
   bool liveVolumeReconstruction = d->LiveReconstructionRadioButton->isChecked();
   if (liveVolumeReconstruction != d->VolumeReconstructionNode->GetLiveVolumeReconstruction())
