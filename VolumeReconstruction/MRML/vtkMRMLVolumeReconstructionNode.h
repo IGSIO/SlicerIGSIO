@@ -76,7 +76,8 @@ public:
   enum InterpolationType
   {
     NEAREST_NEIGHBOR_INTERPOLATION = vtkIGSIOPasteSliceIntoVolume::NEAREST_NEIGHBOR_INTERPOLATION,
-    LINEAR_INTERPOLATION = vtkIGSIOPasteSliceIntoVolume::LINEAR_INTERPOLATION
+    LINEAR_INTERPOLATION = vtkIGSIOPasteSliceIntoVolume::LINEAR_INTERPOLATION,
+    INTERPOLATION_LAST
   };
 
   enum OptimizationType
@@ -84,7 +85,8 @@ public:
     NO_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::NO_OPTIMIZATION,
     PARTIAL_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::PARTIAL_OPTIMIZATION,
     FULL_OPTIMIZATION = vtkIGSIOPasteSliceIntoVolume::FULL_OPTIMIZATION,
-    GPU_ACCELERATION_OPENCL = vtkIGSIOPasteSliceIntoVolume::GPU_ACCELERATION_OPENCL
+    GPU_ACCELERATION_OPENCL = vtkIGSIOPasteSliceIntoVolume::GPU_ACCELERATION_OPENCL,
+    OPTIMIZATION_LAST
   };
 
   enum CompoundingType
@@ -93,7 +95,8 @@ public:
     LATEST_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::LATEST_COMPOUNDING_MODE,
     MAXIMUM_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::MAXIMUM_COMPOUNDING_MODE,
     MEAN_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::MEAN_COMPOUNDING_MODE,
-    IMPORTANCE_MASK_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::IMPORTANCE_MASK_COMPOUNDING_MODE
+    IMPORTANCE_MASK_COMPOUNDING_MODE = vtkIGSIOPasteSliceIntoVolume::IMPORTANCE_MASK_COMPOUNDING_MODE,
+    COMPOUNDING_MODE_LAST
   };
 
   const char* GetInputSequenceBrowserNodeReferenceRole() { return "inputSequenceBrowserNode"; };
@@ -135,12 +138,18 @@ public:
 
   vtkSetMacro(InterpolationMode, int);
   vtkGetMacro(InterpolationMode, int);
+  const char* GetInterpolationModeAsString(int interpolationMode);
+  int GetInterpolationModeFromString(const char* interpolationMode);
 
   vtkSetMacro(OptimizationMode, int);
   vtkGetMacro(OptimizationMode, int);
+  const char* GetOptimizationModeAsString(int optimizationMode);
+  int GetOptimizationModeFromString(const char* optimizationMode);
 
   vtkSetMacro(CompoundingMode, int);
   vtkGetMacro(CompoundingMode, int);
+  const char* GetCompoundingModeAsString(int compoundingMode);
+  int GetCompoundingModeFromString(const char* compoundingMode);
 
   vtkSetMacro(FillHoles, bool);
   vtkGetMacro(FillHoles, bool);

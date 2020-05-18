@@ -51,9 +51,9 @@ vtkMRMLVolumeReconstructionNode::vtkMRMLVolumeReconstructionNode()
   this->OutputSpacing[1] = 1.0;
   this->OutputSpacing[2] = 1.0;
 
-  this->InterpolationMode = 0;
-  this->OptimizationMode = 0;
-  this->CompoundingMode = 0;
+  this->InterpolationMode = NEAREST_NEIGHBOR_INTERPOLATION;
+  this->OptimizationMode = FULL_OPTIMIZATION;
+  this->CompoundingMode = MAXIMUM_COMPOUNDING_MODE;
   this->FillHoles = false;
   this->NumberOfThreads = 0;
 
@@ -70,9 +70,7 @@ vtkMRMLVolumeReconstructionNode::vtkMRMLVolumeReconstructionNode()
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLVolumeReconstructionNode::~vtkMRMLVolumeReconstructionNode()
-{
-}
+vtkMRMLVolumeReconstructionNode::~vtkMRMLVolumeReconstructionNode() = default;
 
 //----------------------------------------------------------------------------
 void vtkMRMLVolumeReconstructionNode::WriteXML(ostream& of, int nIndent)
@@ -84,9 +82,9 @@ void vtkMRMLVolumeReconstructionNode::WriteXML(ostream& of, int nIndent)
   vtkMRMLWriteXMLVectorMacro(clipRectangleOrigin, ClipRectangleOrigin, int, 2);
   vtkMRMLWriteXMLVectorMacro(clipRectangleSize, ClipRectangleSize, int, 2);
   vtkMRMLWriteXMLVectorMacro(outputSpacing, OutputSpacing, double, 3);
-  vtkMRMLWriteXMLIntMacro(interpolationMode, InterpolationMode);
-  vtkMRMLWriteXMLIntMacro(optimizationMode, OptimizationMode);
-  vtkMRMLWriteXMLIntMacro(compoundingMode, CompoundingMode);
+  vtkMRMLWriteXMLEnumMacro(interpolationMode, InterpolationMode);
+  vtkMRMLWriteXMLEnumMacro(optimizationMode, OptimizationMode);
+  vtkMRMLWriteXMLEnumMacro(compoundingMode, CompoundingMode);
   vtkMRMLWriteXMLBooleanMacro(fillHoles, FillHoles);
   vtkMRMLWriteXMLIntMacro(numberOfThreads, NumberOfThreads);
   vtkMRMLWriteXMLEndMacro();
@@ -103,9 +101,9 @@ void vtkMRMLVolumeReconstructionNode::ReadXMLAttributes(const char** atts)
   vtkMRMLReadXMLVectorMacro(clipRectangleOrigin, ClipRectangleOrigin, int, 2);
   vtkMRMLReadXMLVectorMacro(clipRectangleSize, ClipRectangleSize, int, 2);
   vtkMRMLReadXMLVectorMacro(outputSpacing, OutputSpacing, double, 3);
-  vtkMRMLReadXMLIntMacro(interpolationMode, InterpolationMode);
-  vtkMRMLReadXMLIntMacro(optimizationMode, OptimizationMode);
-  vtkMRMLReadXMLIntMacro(compoundingMode, CompoundingMode);
+  vtkMRMLReadXMLEnumMacro(interpolationMode, InterpolationMode);
+  vtkMRMLReadXMLEnumMacro(optimizationMode, OptimizationMode);
+  vtkMRMLReadXMLEnumMacro(compoundingMode, CompoundingMode);
   vtkMRMLReadXMLBooleanMacro(fillHoles, FillHoles);
   vtkMRMLReadXMLIntMacro(numberOfThreads, NumberOfThreads);
   vtkMRMLReadXMLEndMacro();
@@ -123,9 +121,9 @@ void vtkMRMLVolumeReconstructionNode::Copy(vtkMRMLNode* anode)
   vtkMRMLCopyVectorMacro(ClipRectangleOrigin, int, 2);
   vtkMRMLCopyVectorMacro(ClipRectangleSize, int, 2);
   vtkMRMLCopyVectorMacro(OutputSpacing, double, 3);
-  vtkMRMLCopyIntMacro(InterpolationMode);
-  vtkMRMLCopyIntMacro(OptimizationMode);
-  vtkMRMLCopyIntMacro(CompoundingMode);
+  vtkMRMLCopyEnumMacro(InterpolationMode);
+  vtkMRMLCopyEnumMacro(OptimizationMode);
+  vtkMRMLCopyEnumMacro(CompoundingMode);
   vtkMRMLCopyBooleanMacro(FillHoles);
   vtkMRMLCopyIntMacro(NumberOfThreads);
   vtkMRMLCopyEndMacro();
@@ -142,15 +140,73 @@ void vtkMRMLVolumeReconstructionNode::PrintSelf(ostream& os, vtkIndent indent)
   vtkMRMLPrintVectorMacro(ClipRectangleOrigin, int, 2);
   vtkMRMLPrintVectorMacro(ClipRectangleSize, int, 2);
   vtkMRMLPrintVectorMacro(OutputSpacing, double, 3);
-  vtkMRMLPrintIntMacro(InterpolationMode);
-  vtkMRMLPrintIntMacro(OptimizationMode);
-  vtkMRMLPrintIntMacro(CompoundingMode);
+  vtkMRMLPrintEnumMacro(InterpolationMode);
+  vtkMRMLPrintEnumMacro(OptimizationMode);
+  vtkMRMLPrintEnumMacro(CompoundingMode);
   vtkMRMLPrintBooleanMacro(FillHoles);
   vtkMRMLPrintIntMacro(NumberOfThreads);
   vtkMRMLPrintIntMacro(NumberOfVolumesAddedToReconstruction);
   vtkMRMLPrintIntMacro(LiveVolumeReconstructionInProgress);
   vtkMRMLPrintEndMacro();
 }
+
+//----------------------------------------------------------------------------
+const char* vtkMRMLVolumeReconstructionNode::GetInterpolationModeAsString(int interpolationMode)
+{
+  return vtkIGSIOPasteSliceIntoVolume::GetInterpolationModeAsString(static_cast<vtkIGSIOPasteSliceIntoVolume::InterpolationType>(interpolationMode));
+}
+
+//----------------------------------------------------------------------------
+int vtkMRMLVolumeReconstructionNode::GetInterpolationModeFromString(const char* interpolationMode)
+{
+  for (int i = 0; i < INTERPOLATION_LAST; ++i)
+  {
+    if (strcmp(this->GetInterpolationModeAsString(i), interpolationMode) == 0)
+    {
+      return i;
+    }
+  }
+  return NEAREST_NEIGHBOR_INTERPOLATION;
+}
+
+//----------------------------------------------------------------------------
+const char* vtkMRMLVolumeReconstructionNode::GetOptimizationModeAsString(int optimizationMode)
+{
+  return vtkIGSIOPasteSliceIntoVolume::GetOptimizationModeAsString(static_cast<vtkIGSIOPasteSliceIntoVolume::OptimizationType>(optimizationMode));
+}
+
+//----------------------------------------------------------------------------
+int vtkMRMLVolumeReconstructionNode::GetOptimizationModeFromString(const char* optimizationMode)
+{
+  for (int i = 0; i < OPTIMIZATION_LAST; ++i)
+  {
+    if (strcmp(this->GetOptimizationModeAsString(i), optimizationMode) == 0)
+    {
+      return i;
+    }
+  }
+  return NO_OPTIMIZATION;
+}
+
+//----------------------------------------------------------------------------
+const char* vtkMRMLVolumeReconstructionNode::GetCompoundingModeAsString(int compoundingMode)
+{
+  return vtkIGSIOPasteSliceIntoVolume::GetCompoundingModeAsString(static_cast<vtkIGSIOPasteSliceIntoVolume::CompoundingType>(compoundingMode));
+}
+
+//----------------------------------------------------------------------------
+int vtkMRMLVolumeReconstructionNode::GetCompoundingModeFromString(const char* compoundingMode)
+{
+  for (int i = 0; i < COMPOUNDING_MODE_LAST; ++i)
+  {
+    if (strcmp(this->GetCompoundingModeAsString(i), compoundingMode) == 0)
+    {
+      return i;
+    }
+  }
+  return MAXIMUM_COMPOUNDING_MODE;
+}
+
 
 //----------------------------------------------------------------------------
 void vtkMRMLVolumeReconstructionNode::ProcessMRMLEvents(vtkObject* caller, unsigned long eventID, void* callData)
