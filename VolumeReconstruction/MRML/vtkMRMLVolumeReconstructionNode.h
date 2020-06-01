@@ -31,7 +31,7 @@
 #include "vtkSlicerVolumeReconstructionModuleMRMLExport.h"
 
 // IGSIO includes
-#include <vtkIGSIOPasteSliceIntoVolume.h>;
+#include <vtkIGSIOPasteSliceIntoVolume.h>
 
 class vtkMRMLAnnotationROINode;
 class vtkMRMLSequenceBrowserNode;
