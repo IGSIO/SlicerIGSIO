@@ -80,12 +80,13 @@ ExternalProject_Execute(${proj} \"build\" make)
 
   elseif(WIN32)
 
-    set(BASE_VP9_URL "https://github.com/ShiftMediaProject/libvpx/releases/download/v1.7.0/libvpx_v1.7.0_")
+    set(BASE_VP9_URL "https://github.com/ShiftMediaProject/libvpx/releases/download/v1.8.2/libvpx_v1.8.2_")
     set(EP_SOURCE_DIR "${CMAKE_BINARY_DIR}/VP9")
 
     set(VP9_MSVC120_URL "${BASE_VP9_URL}msvc12.zip")
     set(VP9_MSVC140_URL "${BASE_VP9_URL}msvc14.zip")
     set(VP9_MSVC141_URL "${BASE_VP9_URL}msvc15.zip")
+    set(VP9_MSVC142_URL "${BASE_VP9_URL}msvc16.zip")
 
     if(NOT DEFINED VP9_MSVC${MSVC_TOOLSET_VERSION}_URL)
       message(FATAL_ERROR "There are no binaries available for Microsoft C++ compiler ${MSVC_VERSION}")
