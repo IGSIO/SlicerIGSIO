@@ -60,7 +60,7 @@ ExternalProject_Execute(${proj} \"build\" make)
 
     ExternalProject_SetIfNotDefined(
       ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-      "v1.6.1"
+      "v1.8.2"
       QUIET
       )
 
