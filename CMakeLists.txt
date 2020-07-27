@@ -25,6 +25,14 @@ mark_as_superbuild(Slicer_DIR)
 option(SlicerIGSIO_USE_VP9 "Build with VP9 support" ON)
 mark_as_superbuild(SlicerIGSIO_USE_VP9:BOOL)
 
+set(SlicerIGSIO_USE_GPU_DEFAULT OFF)
+find_package(OpenCL QUIET)
+if(OpenCL_FOUND AND NOT APPLE)
+  set(SlicerIGSIO_USE_GPU_DEFAULT ON)
+endif()
+
+option(SlicerIGSIO_USE_GPU "Build with GPU support" ${SlicerIGSIO_USE_GPU_DEFAULT})
+
 #-----------------------------------------------------------------------------
 # Extension dependencies
 

@@ -83,14 +83,10 @@ endif()
     )
   endif()
 
-
-  FIND_PACKAGE(OpenCL QUIET)
-  IF (OpenCL_FOUND)
+  IF (SlicerIGSIO_USE_GPU)
     list(APPEND BUILD_OPTIONS
       -DIGSIO_USE_GPU:BOOL=ON
       )
-  ELSE()
-    MESSAGE(WARNING "Could not find OpenCL. IGSIO_USE_GPU will not be enabled.")
   ENDIF()
 
   IF (NOT vtkAddon_CMAKE_RUNTIME_OUTPUT_DIRECTORY)
