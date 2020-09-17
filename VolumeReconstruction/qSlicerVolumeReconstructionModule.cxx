@@ -87,7 +87,7 @@ qSlicerVolumeReconstructionModule::qSlicerVolumeReconstructionModule(QObject* _p
 qSlicerVolumeReconstructionModule::~qSlicerVolumeReconstructionModule()
 {
   Q_D(qSlicerVolumeReconstructionModule);
-  disconnect(&d->LiveVolumeReconstructionTimer, SIGNAL(timeout(QString)), this, SLOT(updateLiveVolumeReconstruction()));
+  disconnect(&d->LiveVolumeReconstructionTimer, SIGNAL(timeout()), this, SLOT(updateLiveVolumeReconstruction()));
 }
 
 //-----------------------------------------------------------------------------
