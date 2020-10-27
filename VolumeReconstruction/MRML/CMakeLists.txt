@@ -18,6 +18,7 @@ set(${KIT}_TARGET_LIBRARIES
   ${MRML_LIBRARIES}
   vtkSlicerSequencesModuleMRML
   vtkVolumeReconstruction
+  vtkSlicerAnnotationsModuleMRML
   )
 
 # --------------------------------------------------------------------------

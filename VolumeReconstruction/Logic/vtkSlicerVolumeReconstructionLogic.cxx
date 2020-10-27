@@ -495,7 +495,7 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
   if (!masterSequence)
   {
-    vtkErrorMacro("Invalid master sequence node!")
+    vtkErrorMacro("Invalid master sequence node!");
       return;
   }
 
