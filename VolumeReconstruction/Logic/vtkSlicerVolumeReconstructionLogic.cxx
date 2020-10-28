@@ -495,8 +495,8 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   vtkMRMLSequenceNode* masterSequence = inputSequenceBrowser->GetMasterSequenceNode();
   if (!masterSequence)
   {
-    vtkErrorMacro("Invalid master sequence node!")
-      return;
+    vtkErrorMacro("Invalid master sequence node!");
+    return;
   }
 
   double rasBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };

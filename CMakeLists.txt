@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.5)
 
 #-----------------------------------------------------------------------------
 set(EXTENSION_NAME SlicerIGSIO)
-project(${EXTENSION_NAME})
 
 #-----------------------------------------------------------------------------
 # Extension meta-information
@@ -15,6 +14,10 @@ set(EXTENSION_SCREENSHOTURLS "https://github.com/IGSIO/SlicerIGSIO/raw/master/Im
 set(EXTENSION_BUILD_SUBDIRECTORY inner-build)
 set(SUPERBUILD_TOPLEVEL_PROJECT inner)
 
+#-----------------------------------------------------------------------------
+# Extension dependencies
+find_package(Slicer COMPONENTS ConfigurePrerequisites REQUIRED)
+project(${EXTENSION_NAME})
 find_package(Slicer REQUIRED)
 include(${Slicer_USE_FILE})
 mark_as_superbuild(Slicer_DIR)
@@ -34,15 +37,6 @@ endif()
 option(SlicerIGSIO_USE_GPU "Build with GPU support" ${SlicerIGSIO_USE_GPU_DEFAULT})
 
 #-----------------------------------------------------------------------------
-# Extension dependencies
-
-find_package(Git REQUIRED)
-mark_as_superbuild(GIT_EXECUTABLE)
-
-mark_as_superbuild(VP9_DIR)
-mark_as_superbuild(IGSIO_DIR)
-
-#-----------------------------------------------------------------------------
 # SuperBuild setup
 option(${EXTENSION_NAME}_SUPERBUILD "Build ${EXTENSION_NAME} and the projects it depends on." ON)
 mark_as_advanced(${EXTENSION_NAME}_SUPERBUILD)
@@ -52,18 +46,21 @@ if(${EXTENSION_NAME}_SUPERBUILD)
 endif()
 
 #-----------------------------------------------------------------------------
+# Extension dependencies
+
+find_package(Git REQUIRED)
+mark_as_superbuild(GIT_EXECUTABLE)
+
+mark_as_superbuild(VP9_DIR)
+mark_as_superbuild(IGSIO_DIR)
+
+#-----------------------------------------------------------------------------
 # Extension modules
 add_subdirectory(SlicerIGSIOCommon)
 add_subdirectory(SequenceIO)
 add_subdirectory(VideoUtil)
 add_subdirectory(VolumeReconstruction)
-
-# Sequences module was moved to Slicer core in Slicer-4.11 and MetafileImporter module
-# was moved to this extension.
-if(${Slicer_VERSION_MAJOR}.${Slicer_VERSION_MINOR} VERSION_GREATER_EQUAL 4.11)
-  message(STATUS "Slicer version ${Slicer_VERSION_MAJOR}.${Slicer_VERSION_MINOR} - MetafileImporter is included")
-  add_subdirectory(MetafileImporter)
-endif()
+add_subdirectory(MetafileImporter)
 
 #-----------------------------------------------------------------------------
 include(${Slicer_EXTENSION_GENERATE_CONFIG})

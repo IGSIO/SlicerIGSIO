@@ -299,8 +299,8 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
   }
   if (trackedFrameList->SetCustomString(TRACKNAME_FIELD_NAME, trackName) == IGSIO_FAIL)
   {
-    vtkErrorWithObjectMacro(sequenceNode, "Could not set track name!")
-      return false;
+    vtkErrorWithObjectMacro(sequenceNode, "Could not set track name!");
+    return false;
   }
 
 
