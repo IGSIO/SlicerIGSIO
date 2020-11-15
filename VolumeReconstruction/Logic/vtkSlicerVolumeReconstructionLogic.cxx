@@ -35,6 +35,7 @@ Care Ontario.
 
 // IGSIO VolumeReconstructor includes
 #include <vtkIGSIOVolumeReconstructor.h>
+#include <vtkIGSIOFillHolesInVolume.h>
 
 // SlicerIGSIOCommon includes
 #include "vtkSlicerIGSIOCommon.h"
@@ -249,6 +250,15 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
   reconstructor->SetInterpolation(vtkIGSIOPasteSliceIntoVolume::InterpolationType(volumeReconstructionNode->GetInterpolationMode()));
   reconstructor->SetNumberOfThreads(volumeReconstructionNode->GetNumberOfThreads());
   reconstructor->SetFillHoles(volumeReconstructionNode->GetFillHoles());
+  if (volumeReconstructionNode->GetFillHoles())
+  {
+    vtkIGSIOFillHolesInVolume* holeFiller = reconstructor->GetHoleFiller();
+    holeFiller->SetNumHFElements(1);
+    holeFiller->AllocateHFElements();
+    FillHolesInVolumeElement hfElement;
+    hfElement.setupAsStick(9, 1);
+    holeFiller->SetHFElement(0, hfElement);
+  }
   reconstructor->SetImageCoordinateFrame("Image");
   reconstructor->SetReferenceCoordinateFrame("World");
   reconstructor->SetClipRectangleOrigin(volumeReconstructionNode->GetClipRectangleOrigin());
@@ -343,9 +353,17 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
   vtkNew<vtkIGSIOTransformRepository> transformRepository;
   transformRepository->SetTransform(igsioTransformName("ImageToWorld"), imageToWorldTransform->GetMatrix());
 
+  vtkImageData* inputImageData = inputVolumeNode->GetImageData();
+
+  // Ensure that output scalar type matches input (only same scalar type can be added to the volume)
+  if (inputImageData)
+  {
+    reconstructor->SetOutputScalarType(inputImageData->GetScalarType());
+  }
+
   std::string errorDetail;
   igsioTrackedFrame trackedFrame;
-  trackedFrame.GetImageData()->DeepCopyFrom(inputVolumeNode->GetImageData());
+  trackedFrame.GetImageData()->DeepCopyFrom(inputImageData);
 
   bool insertedIntoVolume = false;
   if (reconstructor->AddTrackedFrame(&trackedFrame, transformRepository, isFirst, isLast, &insertedIntoVolume) != IGSIO_SUCCESS)
