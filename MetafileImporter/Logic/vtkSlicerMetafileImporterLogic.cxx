@@ -182,7 +182,7 @@ vtkMRMLSequenceNode* vtkSlicerMetafileImporterLogic::ReadSequenceMetafileImages(
   emptySliceImageData->SetSpacing(spacing[0],spacing[1],1);
   emptySliceImageData->SetOrigin(0,0,0);
 
-  int sliceSize=imageData->GetIncrements()[2];
+  int sliceSize=imageData->GetIncrements()[2] * imageData->GetScalarSize();
   for ( int frameNumber = 0; frameNumber < dimensions[2]; frameNumber++ )
   {
     // Add the image slice to scene as a volume
