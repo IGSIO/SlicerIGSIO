@@ -101,6 +101,11 @@ void vtkSlicerSequenceIOLogic::RegisterNodes()
   }
 
   this->GetMRMLScene()->RegisterNodeClass(vtkSmartPointer<vtkMRMLStreamingVolumeSequenceStorageNode>::New());
+
+  vtkSmartPointer<vtkMRMLStreamingVolumeNode> streamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::Take(
+    vtkMRMLStreamingVolumeNode::SafeDownCast(this->GetMRMLScene()->CreateNodeByClass("vtkMRMLStreamingVolumeNode")));
+  streamingVolumeNode->SetDefaultSequenceStorageNodeClassName("vtkMRMLStreamingVolumeSequenceStorageNode");
+  this->GetMRMLScene()->AddDefaultNode(streamingVolumeNode);
 }
 
 //---------------------------------------------------------------------------
