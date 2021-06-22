@@ -456,12 +456,18 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
     return;
   }
 
-  this->GetApplicationLogic()->PauseRender();
-
   vtkSmartPointer<vtkMRMLAnnotationROINode> inputROINode = volumeReconstructionNode->GetInputROINode();
   if (!inputROINode)
   {
-    inputROINode = vtkSmartPointer<vtkMRMLAnnotationROINode>::New();
+    if (this->GetMRMLScene())
+    {
+      inputROINode = vtkSmartPointer<vtkMRMLAnnotationROINode>::Take(vtkMRMLAnnotationROINode::SafeDownCast(this->GetMRMLScene()->CreateNodeByClass("vtkMRMLAnnotationROINode")));
+    }
+    if (!inputROINode)
+    {
+      inputROINode = vtkSmartPointer<vtkMRMLAnnotationROINode>::New();
+    }
+
     if (inputVolumeNode->GetName())
     {
       std::string roiNodeName = inputVolumeNode->GetName();
@@ -561,7 +567,15 @@ vtkMRMLVolumeNode* vtkSlicerVolumeReconstructionLogic::GetOrAddOutputVolumeNode(
   {
     return outputVolumeNode;
   }
-  outputVolumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+
+  if (this->GetMRMLScene())
+  {
+    outputVolumeNode = vtkSmartPointer<vtkMRMLVolumeNode>::Take(vtkMRMLVolumeNode::SafeDownCast(this->GetMRMLScene()->CreateNodeByClass("vtkMRMLScalarVolumeNode")));
+  }
+  if (!outputVolumeNode)
+  {
+    outputVolumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+  }
 
   vtkMRMLVolumeNode* inputVolumeNode = volumeReconstructionNode->GetInputVolumeNode();
   if (inputVolumeNode && inputVolumeNode->GetName())

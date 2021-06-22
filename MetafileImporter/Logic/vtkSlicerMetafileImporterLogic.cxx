@@ -164,7 +164,16 @@ vtkMRMLSequenceNode* vtkSlicerMetafileImporterLogic::ReadSequenceMetafileImages(
   }
 
   // Create sequence node
-  vtkSmartPointer<vtkMRMLSequenceNode> imagesSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::New();
+  vtkSmartPointer<vtkMRMLSequenceNode> imagesSequenceNode = nullptr;
+  if (this->GetMRMLScene())
+  {
+    imagesSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::Take(vtkMRMLSequenceNode::SafeDownCast(this->GetMRMLScene()->CreateNodeByClass("vtkMRMLSequenceNode")));
+  }
+  if (!imagesSequenceNode)
+  {
+    imagesSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::New();
+  }
+  
   this->GetMRMLScene()->AddNode(imagesSequenceNode);
   imagesSequenceNode->SetIndexName("time");
   imagesSequenceNode->SetIndexUnit("s");
@@ -390,9 +399,16 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(con
     {
       sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(foundSequenceBrowserNodes->GetItemAsObject(0));
     }
-    if (sequenceBrowserNode.GetPointer() == NULL)
+    if (!sequenceBrowserNode)
     {
-      sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::New();
+      if (this->GetMRMLScene())
+      {
+        sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::Take(vtkMRMLSequenceBrowserNode::SafeDownCast(this->GetMRMLScene()->CreateNodeByClass("vtkMRMLSequenceBrowserNode")));
+      }
+      if (!sequenceBrowserNode)
+      {
+        sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::New();
+      }
       sequenceBrowserNode->SetName(this->GetMRMLScene()->GenerateUniqueName(shortestBaseNodeName).c_str());
       this->GetMRMLScene()->AddNode(sequenceBrowserNode);
     }
@@ -572,9 +588,18 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadVolumeSequence(c
     return NULL;
   }
 
-  vtkNew<vtkMRMLVolumeSequenceStorageNode> storageNode;
+  vtkSmartPointer<vtkMRMLVolumeSequenceStorageNode> storageNode = vtkSmartPointer<vtkMRMLVolumeSequenceStorageNode>::Take(vtkMRMLVolumeSequenceStorageNode::SafeDownCast(scene->CreateNodeByClass("vtkMRMLVolumeSequenceStorageNode")));
+  if (!storageNode)
+  {
+    storageNode = vtkSmartPointer<vtkMRMLVolumeSequenceStorageNode>::New();
+  }
 
-  vtkNew<vtkMRMLSequenceNode> volumeSequenceNode;
+  vtkSmartPointer<vtkMRMLSequenceNode> volumeSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::Take(vtkMRMLSequenceNode::SafeDownCast(scene->CreateNodeByClass("vtkMRMLSequenceNode")));
+  if (!volumeSequenceNode)
+  {
+    volumeSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::New();
+  }
+
   std::string volumeName = storageNode->GetFileNameWithoutExtension(fileName.c_str());
   volumeSequenceNode->SetName(scene->GenerateUniqueName(volumeName).c_str());
   scene->AddNode(volumeSequenceNode.GetPointer());
@@ -584,7 +609,7 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadVolumeSequence(c
   }
 
   //storageNode->SetCenterImage(options & vtkSlicerVolumesLogic::CenterImage);
-  scene->AddNode(storageNode.GetPointer());
+  scene->AddNode(storageNode);
   volumeSequenceNode->SetAndObserveStorageNodeID(storageNode->GetID());
 
   if (scene->GetCacheManager() && this->GetMRMLScene()->GetCacheManager()->IsRemoteReference(fileName.c_str()))
@@ -621,9 +646,14 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadVolumeSequence(c
     // there are already sequence nodes (and a browser node) in the scene from the same acquisition
     sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(foundSequenceBrowserNodes->GetItemAsObject(0));
   }
-  if (sequenceBrowserNode.GetPointer() == NULL)
+  if (!sequenceBrowserNode)
   {
-    sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::New();
+    sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::Take(vtkMRMLSequenceBrowserNode::SafeDownCast(scene->CreateNodeByClass("vtkMRMLSequenceBrowserNode")));
+    if (!sequenceBrowserNode)
+    {
+      sequenceBrowserNode = vtkSmartPointer<vtkMRMLSequenceBrowserNode>::New();
+    }
+
     if (volumeName == baseNodeName)
     {
       // Make the volume name distinguishable from the sequence node name

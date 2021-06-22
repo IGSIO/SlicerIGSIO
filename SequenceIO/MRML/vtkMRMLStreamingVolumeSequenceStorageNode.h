@@ -39,20 +39,20 @@ public:
   static vtkMRMLStreamingVolumeSequenceStorageNode* New();
   vtkTypeMacro(vtkMRMLStreamingVolumeSequenceStorageNode, vtkMRMLStorageNode);
 
-  virtual vtkMRMLNode* CreateNodeInstance() override;
+  vtkMRMLNode* CreateNodeInstance() override;
 
   ///
   /// Get node XML tag name (like Storage, Model)
-  virtual const char* GetNodeTagName() override {return "VideoStorage";};
+  const char* GetNodeTagName() override {return "VideoStorage";};
 
   /// Return true if the node can be read in.
-  virtual bool CanReadInReferenceNode(vtkMRMLNode* refNode) override;
+  bool CanReadInReferenceNode(vtkMRMLNode* refNode) override;
 
   /// Return true if the node can be written by using thie writer.
-  virtual bool CanWriteFromReferenceNode(vtkMRMLNode* refNode) override;
+  bool CanWriteFromReferenceNode(vtkMRMLNode* refNode) override;
 
   /// Return a default file extension for writing
-  virtual const char* GetDefaultWriteFileExtension() override;
+  const char* GetDefaultWriteFileExtension() override;
 
   static bool ReadVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
   static bool WriteVideo(std::string fileName, vtkIGSIOTrackedFrameList* trackedFrameList);
@@ -62,13 +62,13 @@ public:
   vtkGetMacro(CodecFourCC, std::string);
 
   /// Read node attributes from XML file
-  virtual void ReadXMLAttributes(const char** atts) override;
+  void ReadXMLAttributes(const char** atts) override;
   /// Write this node's information to a MRML file in XML format.
-  virtual void WriteXML(ostream& of, int indent) override;
+  void WriteXML(ostream& of, int indent) override;
   /// Copy the node's attributes to this object
-  virtual void Copy(vtkMRMLNode* node) override;
+  void Copy(vtkMRMLNode* node) override;
   /// Print the contents of the node
-  virtual void PrintSelf(ostream& os, vtkIndent indent) override;
+  void PrintSelf(ostream& os, vtkIndent indent) override;
 
 protected:
   vtkMRMLStreamingVolumeSequenceStorageNode();
@@ -76,22 +76,22 @@ protected:
   vtkMRMLStreamingVolumeSequenceStorageNode(const vtkMRMLStreamingVolumeSequenceStorageNode&);
   void operator=(const vtkMRMLStreamingVolumeSequenceStorageNode&);
 
-  virtual int WriteDataInternal(vtkMRMLNode* refNode) override;
+  int WriteDataInternal(vtkMRMLNode* refNode) override;
 
   /// Does the actual reading. Returns 1 on success, 0 otherwise.
   /// Returns 0 by default (read not supported).
   /// This implementation delegates most everything to the superclass
   /// but it has an early exit if the file to be read is incompatible.
-  virtual int ReadDataInternal(vtkMRMLNode* refNode) override;
+  int ReadDataInternal(vtkMRMLNode* refNode) override;
 
   /// Initialize all the supported write file types
-  virtual void InitializeSupportedReadFileTypes() override;
+  void InitializeSupportedReadFileTypes() override;
 
   /// Initialize all the supported write file types
-  virtual void InitializeSupportedWriteFileTypes() override;
+  void InitializeSupportedWriteFileTypes() override;
 
   /// Update the supported compression presets
-  virtual void UpdateCompressionPresets() override;
+  void UpdateCompressionPresets() override;
 
   std::string CodecFourCC;
 };

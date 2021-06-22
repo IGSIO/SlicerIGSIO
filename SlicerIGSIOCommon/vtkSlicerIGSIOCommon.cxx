@@ -105,6 +105,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     }
   }
 
+  vtkSmartPointer<vtkMRMLScene> mrmlScene = sequenceNode->GetScene();
+
   vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = NULL;
 
   // How many digits are required to represent the frame numbers
@@ -122,17 +124,41 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
       unsigned int numberOfScalarComponents = 0;
       if (trackedFrame->GetNumberOfScalarComponents(numberOfScalarComponents) && numberOfScalarComponents > 1)
       {
-        volumeNode = vtkSmartPointer<vtkMRMLVectorVolumeNode>::New();
+        if (mrmlScene)
+        {
+          volumeNode = vtkSmartPointer<vtkMRMLVolumeNode>::Take(vtkMRMLVolumeNode::SafeDownCast(mrmlScene->CreateNodeByClass("vtkMRMLVectorVolumeNode")));
+        }
+        if (!volumeNode)
+        {
+          volumeNode = vtkSmartPointer<vtkMRMLVectorVolumeNode>::New();
+        }
+
       }
       else
       {
-        volumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+        if (mrmlScene)
+        {
+          volumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::Take(vtkMRMLScalarVolumeNode::SafeDownCast(mrmlScene->CreateNodeByClass("vtkMRMLScalarVolumeNode")));
+        }
+        if (!volumeNode)
+        {
+          volumeNode = vtkSmartPointer<vtkMRMLScalarVolumeNode>::New();
+        }
       }
       volumeNode->SetAndObserveImageData(trackedFrame->GetImageData()->GetImage());
     }
     else
     {
-      vtkSmartPointer<vtkMRMLStreamingVolumeNode> streamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::New();
+      vtkSmartPointer<vtkMRMLStreamingVolumeNode> streamingVolumeNode = nullptr;
+      if (sequenceNode->GetScene())
+      {
+        streamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::Take(vtkMRMLStreamingVolumeNode::SafeDownCast(sequenceNode->GetScene()->CreateNodeByClass("vtkMRMLStreamingVolumeNode")));
+      }
+      if (!streamingVolumeNode)
+      {
+        streamingVolumeNode = vtkSmartPointer<vtkMRMLStreamingVolumeNode>::New();
+      }
+
       vtkSmartPointer<vtkStreamingVolumeFrame> currentFrame = trackedFrame->GetImageData()->GetEncodedFrame();
 
       // The previous frame is only relevant if the current frame is not a keyframe
@@ -239,7 +265,16 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(vtkIGSIOTrackedFram
       transformNameIt->GetTransformName(transformName);
       if (transformName != trackedFrameName + "ToPhysical")
       {
-        vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::New();
+        vtkSmartPointer<vtkMRMLLinearTransformNode> transformNode = nullptr;
+        if (scene)
+        {
+          transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::Take(vtkMRMLLinearTransformNode::SafeDownCast(scene->CreateNodeByClass("vtkMRMLLinearTransformNode")));
+        }
+        if (!transformNode)
+        {
+          transformNode = vtkSmartPointer<vtkMRMLLinearTransformNode>::New();
+        }
+
         transformNode->SetMatrixTransformToParent(transformMatrix);
 
         // Convert frame to a string with the a maximum number of digits (frameNumberMaxLength)
