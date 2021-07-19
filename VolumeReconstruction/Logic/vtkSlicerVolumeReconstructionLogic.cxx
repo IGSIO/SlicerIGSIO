@@ -260,7 +260,7 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
     holeFiller->SetHFElement(0, hfElement);
   }
   reconstructor->SetImageCoordinateFrame("Image");
-  reconstructor->SetReferenceCoordinateFrame("World");
+  reconstructor->SetReferenceCoordinateFrame("ROI");
   reconstructor->SetClipRectangleOrigin(volumeReconstructionNode->GetClipRectangleOrigin());
   reconstructor->SetClipRectangleSize(volumeReconstructionNode->GetClipRectangleSize());
   reconstructor->Reset();
@@ -335,24 +335,32 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     return false;
   }
 
-  vtkNew<vtkTransform> imageToWorldTransform;
-  imageToWorldTransform->Identity();
-  imageToWorldTransform->PostMultiply();
+  vtkNew<vtkTransform> imageToROITransform;
+  imageToROITransform->Identity();
+  imageToROITransform->PostMultiply();
 
   vtkNew<vtkMatrix4x4> ijkToRASMatrix;
   inputVolumeNode->GetIJKToRASMatrix(ijkToRASMatrix);
-  imageToWorldTransform->Concatenate(ijkToRASMatrix);
+  imageToROITransform->Concatenate(ijkToRASMatrix);
 
-  vtkNew<vtkMatrix4x4> parentToWorldMatrix;
-  vtkMRMLTransformNode* transformNode = inputVolumeNode->GetParentTransformNode();
-  if (transformNode)
+  vtkMRMLTransformNode* imageParentTransformNode = inputVolumeNode->GetParentTransformNode();
+  if (imageParentTransformNode)
   {
-    transformNode->GetMatrixTransformToWorld(parentToWorldMatrix);
-    imageToWorldTransform->Concatenate(parentToWorldMatrix);
+    vtkNew<vtkMatrix4x4> parentToWorldMatrix;
+    imageParentTransformNode->GetMatrixTransformToWorld(parentToWorldMatrix);
+    imageToROITransform->Concatenate(parentToWorldMatrix);
+  }
+
+  vtkMRMLTransformNode* roiParentTransformNode = inputROINode->GetParentTransformNode();
+  if (roiParentTransformNode)
+  {
+    vtkNew<vtkMatrix4x4> worldToParentMatrix;
+    roiParentTransformNode->GetMatrixTransformFromWorld(worldToParentMatrix);
+    imageToROITransform->Concatenate(worldToParentMatrix);
   }
 
   vtkNew<vtkIGSIOTransformRepository> transformRepository;
-  transformRepository->SetTransform(igsioTransformName("ImageToWorld"), imageToWorldTransform->GetMatrix());
+  transformRepository->SetTransform(igsioTransformName("ImageToROI"), imageToROITransform->GetMatrix());
 
   vtkImageData* inputImageData = inputVolumeNode->GetImageData();
 
@@ -417,6 +425,14 @@ void vtkSlicerVolumeReconstructionLogic::GetReconstructedVolume(vtkMRMLVolumeRec
   outputVolumeNode->GetImageData()->SetOrigin(0, 0, 0);
   outputVolumeNode->SetOrigin(origin);
 
+  const char* parentTransformNodeID = nullptr;
+  vtkSmartPointer<vtkMRMLAnnotationROINode> inputROINode = volumeReconstructionNode->GetInputROINode();
+  if (inputROINode && inputROINode->GetParentTransformNode())
+  {
+    parentTransformNodeID = inputROINode->GetParentTransformNode()->GetID();
+  }
+  outputVolumeNode->SetAndObserveTransformNodeID(parentTransformNodeID);
+
   volumeReconstructionNode->InvokeEvent(vtkMRMLVolumeReconstructionNode::VolumeReconstructionFinished);
 }
 
@@ -479,6 +495,13 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
     {
       this->GetMRMLScene()->AddNode(inputROINode);
     }
+
+    vtkSmartPointer<vtkMRMLVolumeNode> outputVolumeNode = volumeReconstructionNode->GetOutputVolumeNode();
+    if (outputVolumeNode && outputVolumeNode->GetParentTransformNode())
+    {
+      inputROINode->SetAndObserveTransformNodeID(outputVolumeNode->GetParentTransformNode()->GetID());
+    }
+
     volumeReconstructionNode->SetAndObserveInputROINode(inputROINode);
     this->CalculateROIFromVolumeSequence(inputSequenceBrowser, inputVolumeNode, inputROINode);
   }
@@ -524,8 +547,12 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
     return;
   }
 
-  double rasBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
-  inputVolumeNode->GetRASBounds(rasBounds);
+  vtkNew<vtkTransform> imageToROITransform;
+  imageToROITransform->PostMultiply();
+
+  double roiBounds[6] = { VTK_DOUBLE_MAX, VTK_DOUBLE_MIN,
+                          VTK_DOUBLE_MAX, VTK_DOUBLE_MIN,
+                          VTK_DOUBLE_MAX, VTK_DOUBLE_MIN };
 
   const int numberOfFrames = masterSequence->GetNumberOfDataNodes();
   int selectedItemNumber = inputSequenceBrowser->GetSelectedItemNumber();
@@ -533,12 +560,55 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   {
     inputSequenceBrowser->SetSelectedItemNumber(i);
 
-    double selectedRASBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
-    inputVolumeNode->GetRASBounds(selectedRASBounds);
+    imageToROITransform->Identity();
+
+    vtkMRMLTransformNode* imageParentTransformNode = inputVolumeNode->GetParentTransformNode();
+    if (imageParentTransformNode)
+    {
+      vtkNew<vtkMatrix4x4> parentToWorldMatrix;
+      imageParentTransformNode->GetMatrixTransformToWorld(parentToWorldMatrix);
+      imageToROITransform->Concatenate(parentToWorldMatrix);
+    }
+
+
+
+
+    vtkMRMLTransformNode* roiParentTransformNode = outputROINodeRAS->GetParentTransformNode();
+    if (roiParentTransformNode)
+    {
+      vtkNew<vtkMatrix4x4> worldToROIMatrix;
+      roiParentTransformNode->GetMatrixTransformFromWorld(worldToROIMatrix);
+      imageToROITransform->Concatenate(worldToROIMatrix);
+    }
+
+    double selectedROIBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
+    inputVolumeNode->GetBounds(selectedROIBounds);
+
+    // Transform all of the current image bounds from the local coordinates of the input image to the local coordinates of the ROI node
+    double corner000[3] = { selectedROIBounds[0], selectedROIBounds[2], selectedROIBounds[4] };
+    imageToROITransform->TransformPoint(corner000, corner000);
+    double corner001[3] = { selectedROIBounds[0], selectedROIBounds[2], selectedROIBounds[5] };
+    imageToROITransform->TransformPoint(corner001, corner001);
+    double corner010[3] = { selectedROIBounds[0], selectedROIBounds[3], selectedROIBounds[4] };
+    imageToROITransform->TransformPoint(corner010, corner010);
+    double corner011[3] = { selectedROIBounds[0], selectedROIBounds[3], selectedROIBounds[5] };
+    imageToROITransform->TransformPoint(corner011, corner011);
+    double corner100[3] = { selectedROIBounds[1], selectedROIBounds[2], selectedROIBounds[4] };
+    imageToROITransform->TransformPoint(corner100, corner100);
+    double corner101[3] = { selectedROIBounds[1], selectedROIBounds[2], selectedROIBounds[5] };
+    imageToROITransform->TransformPoint(corner101, corner101);
+    double corner110[3] = { selectedROIBounds[1], selectedROIBounds[3], selectedROIBounds[4] };
+    imageToROITransform->TransformPoint(corner110, corner110);
+    double corner111[3] = { selectedROIBounds[1], selectedROIBounds[3], selectedROIBounds[5] };
+    imageToROITransform->TransformPoint(corner111, corner111);
+
     for (int i = 0; i < 3; ++i)
     {
-      rasBounds[2 * i] = std::min(selectedRASBounds[2 * i], rasBounds[2 * i]);
-      rasBounds[2 * i + 1] = std::max(selectedRASBounds[2 * i + 1], rasBounds[2 * i + 1]);
+      selectedROIBounds[2 * i] = std::min({ corner000[i], corner001[i], corner010[i], corner011[i], corner100[i], corner101[i], corner110[i], corner111[i] });
+      selectedROIBounds[2 * i + 1] = std::max({ corner000[i], corner001[i], corner010[i], corner011[i], corner100[i], corner101[i], corner110[i], corner111[i] });
+
+      roiBounds[2 * i] = std::min(selectedROIBounds[2 * i], roiBounds[2 * i]);
+      roiBounds[2 * i + 1] = std::max(selectedROIBounds[2 * i + 1], roiBounds[2 * i + 1]);
     }
   }
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
@@ -547,8 +617,8 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   double centerRAS[3] = { 0 };
   for (int i = 0; i < 3; ++i)
   {
-    radiusRAS[i] = 0.5 * (rasBounds[2 * i + 1] - rasBounds[2 * i]);
-    centerRAS[i] = (rasBounds[2 * i + 1] + rasBounds[2 * i]) / 2.0;
+    radiusRAS[i] = 0.5 * (roiBounds[2 * i + 1] - roiBounds[2 * i]);
+    centerRAS[i] = (roiBounds[2 * i + 1] + roiBounds[2 * i]) / 2.0;
   }
   outputROINodeRAS->SetXYZ(centerRAS);
   outputROINodeRAS->SetRadiusXYZ(radiusRAS);
