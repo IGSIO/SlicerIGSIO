@@ -337,7 +337,8 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
 
   vtkNew<vtkTransform> imageToWorldTransform;
   imageToWorldTransform->Identity();
-  imageToWorldTransform->PreMultiply();
+  imageToWorldTransform->PostMultiply();
+
   vtkNew<vtkMatrix4x4> ijkToRASMatrix;
   inputVolumeNode->GetIJKToRASMatrix(ijkToRASMatrix);
   imageToWorldTransform->Concatenate(ijkToRASMatrix);
