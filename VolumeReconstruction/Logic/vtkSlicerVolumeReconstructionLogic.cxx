@@ -21,6 +21,7 @@ Care Ontario.
 // MRML includes
 #include <vtkMRMLAnnotationROINode.h>
 #include <vtkMRMLLinearTransformNode.h>
+#include <vtkMRMLMarkupsROINode.h>
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
@@ -217,13 +218,6 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
     return;
   }
 
-  vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
-  if (!inputROINode)
-  {
-    vtkErrorMacro("Invalid input ROI node!");
-    return;
-  }
-
   vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
@@ -231,9 +225,32 @@ void vtkSlicerVolumeReconstructionLogic::StartVolumeReconstruction(vtkMRMLVolume
     return;
   }
 
-  double bounds[6] = { 0 };
-  inputROINode->GetBounds(bounds);
-  double outputSpacing[3] = { 0 };
+  vtkMRMLAnnotationROINode* annotationInputROINode = vtkMRMLAnnotationROINode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
+  vtkMRMLMarkupsROINode* markupsInputROINode = vtkMRMLMarkupsROINode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
+  if (!annotationInputROINode && !markupsInputROINode)
+  {
+    vtkErrorMacro("Invalid input ROI node!");
+    return;
+  }
+
+  double bounds[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+  if (annotationInputROINode)
+  {
+    annotationInputROINode->GetBounds(bounds);
+  }
+  else if (markupsInputROINode)
+  {
+    double size[3] = { 0.0, 0.0, 0.0 };
+    markupsInputROINode->GetSize(size);
+    bounds[0] = -size[0] / 2.0;
+    bounds[1] = size[0] / 2.0;
+    bounds[2] = -size[1] / 2.0;
+    bounds[3] = size[1] / 2.0;
+    bounds[4] = -size[2] / 2.0;
+    bounds[5] = size[2] / 2.0;
+  }
+
+  double outputSpacing[3] = { 0.0, 0.0, 0.0 };
   volumeReconstructionNode->GetOutputSpacing(outputSpacing);
   int outputExtent[6] = {
     0, static_cast<int>(std::ceil((bounds[1] - bounds[0]) / outputSpacing[0])),
@@ -321,13 +338,6 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     return false;
   }
 
-  vtkMRMLAnnotationROINode* inputROINode = volumeReconstructionNode->GetInputROINode();
-  if (!inputROINode)
-  {
-    vtkErrorMacro("Invalid input ROI node!");
-    return false;
-  }
-
   vtkIGSIOVolumeReconstructor* reconstructor = this->Internal->Reconstructors[volumeReconstructionNode].Reconstructor;
   if (!reconstructor)
   {
@@ -335,8 +345,15 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     return false;
   }
 
+  vtkMRMLAnnotationROINode* annotationInputROINode = vtkMRMLAnnotationROINode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
+  vtkMRMLMarkupsROINode* markupsInputROINode = vtkMRMLMarkupsROINode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
+  if (!annotationInputROINode && !markupsInputROINode)
+  {
+    vtkErrorMacro("Invalid input ROI node!");
+    return false;
+  }
+
   vtkNew<vtkTransform> imageToROITransform;
-  imageToROITransform->Identity();
   imageToROITransform->PostMultiply();
 
   vtkNew<vtkMatrix4x4> ijkToRASMatrix;
@@ -351,12 +368,19 @@ bool vtkSlicerVolumeReconstructionLogic::AddVolumeNodeToReconstructedVolume(vtkM
     imageToROITransform->Concatenate(parentToWorldMatrix);
   }
 
-  vtkMRMLTransformNode* roiParentTransformNode = inputROINode->GetParentTransformNode();
+  vtkMRMLTransformNode* roiParentTransformNode = vtkMRMLTransformableNode::SafeDownCast(volumeReconstructionNode->GetInputROINode())->GetParentTransformNode();
   if (roiParentTransformNode)
   {
     vtkNew<vtkMatrix4x4> worldToParentMatrix;
     roiParentTransformNode->GetMatrixTransformFromWorld(worldToParentMatrix);
     imageToROITransform->Concatenate(worldToParentMatrix);
+  }
+
+  if (markupsInputROINode)
+  {
+    vtkNew<vtkMatrix4x4> nodeToObjectMatrix;
+    vtkMatrix4x4::Invert(markupsInputROINode->GetObjectToNodeMatrix(), nodeToObjectMatrix);
+    imageToROITransform->Concatenate(nodeToObjectMatrix);
   }
 
   vtkNew<vtkIGSIOTransformRepository> transformRepository;
@@ -415,23 +439,36 @@ void vtkSlicerVolumeReconstructionLogic::GetReconstructedVolume(vtkMRMLVolumeRec
     vtkErrorMacro("Could not retrieve reconstructed image");
   }
 
-  double spacing[3];
+  double spacing[3] = { 0.0, 0.0, 0.0 };
   outputVolumeNode->GetImageData()->GetSpacing(spacing);
-  outputVolumeNode->GetImageData()->SetSpacing(1, 1, 1);
+  outputVolumeNode->GetImageData()->SetSpacing(1.0, 1.0, 1.0);
   outputVolumeNode->SetSpacing(spacing);
 
-  double origin[3];
+  double origin[3] = { 0.0, 0.0, 0.0 };
   outputVolumeNode->GetImageData()->GetOrigin(origin);
-  outputVolumeNode->GetImageData()->SetOrigin(0, 0, 0);
+  outputVolumeNode->GetImageData()->SetOrigin(0.0, 0.0, 0.0);
   outputVolumeNode->SetOrigin(origin);
 
   const char* parentTransformNodeID = nullptr;
-  vtkSmartPointer<vtkMRMLAnnotationROINode> inputROINode = volumeReconstructionNode->GetInputROINode();
+  vtkMRMLTransformableNode* inputROINode = vtkMRMLTransformableNode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
   if (inputROINode && inputROINode->GetParentTransformNode())
   {
     parentTransformNodeID = inputROINode->GetParentTransformNode()->GetID();
   }
   outputVolumeNode->SetAndObserveTransformNodeID(parentTransformNodeID);
+
+  vtkMRMLMarkupsROINode* markupsROINode = vtkMRMLMarkupsROINode::SafeDownCast(inputROINode);
+  if (markupsROINode)
+  {
+    vtkMatrix4x4* objectToNodeMatrix = markupsROINode->GetObjectToNodeMatrix();
+    outputVolumeNode->SetIJKToRASDirectionMatrix(objectToNodeMatrix);
+
+    // Reconstructed volume origin is in ROI coordinates. Need to convert to Node
+    vtkNew<vtkTransform> objectToNodeTransform;
+    objectToNodeTransform->SetMatrix(objectToNodeMatrix);
+    objectToNodeTransform->TransformPoint(origin, origin);
+    outputVolumeNode->SetOrigin(origin);
+  }
 
   volumeReconstructionNode->InvokeEvent(vtkMRMLVolumeReconstructionNode::VolumeReconstructionFinished);
 }
@@ -473,7 +510,7 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
     return;
   }
 
-  vtkSmartPointer<vtkMRMLAnnotationROINode> inputROINode = volumeReconstructionNode->GetInputROINode();
+  vtkSmartPointer<vtkMRMLTransformableNode> inputROINode = vtkMRMLTransformableNode::SafeDownCast(volumeReconstructionNode->GetInputROINode());
   if (!inputROINode)
   {
     if (this->GetMRMLScene())
@@ -502,8 +539,16 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
       inputROINode->SetAndObserveTransformNodeID(outputVolumeNode->GetParentTransformNode()->GetID());
     }
 
-    volumeReconstructionNode->SetAndObserveInputROINode(inputROINode);
-    this->CalculateROIFromVolumeSequence(inputSequenceBrowser, inputVolumeNode, inputROINode);
+    if (vtkMRMLAnnotationROINode::SafeDownCast(inputROINode))
+    {
+      volumeReconstructionNode->SetAndObserveInputROINode(vtkMRMLAnnotationROINode::SafeDownCast(inputROINode));
+    }
+    else if (vtkMRMLMarkupsROINode::SafeDownCast(inputROINode))
+    {
+      volumeReconstructionNode->SetAndObserveInputROINode(vtkMRMLMarkupsROINode::SafeDownCast(inputROINode));
+    }
+
+    this->CalculateROIFromVolumeSequenceInternal(inputSequenceBrowser, inputVolumeNode, inputROINode);
   }
 
   // Begin volume reconstruction
@@ -527,6 +572,20 @@ void vtkSlicerVolumeReconstructionLogic::ReconstructVolumeFromSequence(vtkMRMLVo
 //---------------------------------------------------------------------------
 void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
   vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS)
+{
+  this->CalculateROIFromVolumeSequenceInternal(inputSequenceBrowser, inputVolumeNode, outputROINodeRAS);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+  vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLMarkupsROINode* outputROINodeRAS)
+{
+  this->CalculateROIFromVolumeSequenceInternal(inputSequenceBrowser, inputVolumeNode, outputROINodeRAS);
+}
+
+//---------------------------------------------------------------------------
+void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequenceInternal(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+  vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLNode* outputROINodeRAS)
 {
   if (!inputSequenceBrowser)
   {
@@ -573,12 +632,20 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
 
 
 
-    vtkMRMLTransformNode* roiParentTransformNode = outputROINodeRAS->GetParentTransformNode();
+    vtkMRMLTransformNode* roiParentTransformNode = vtkMRMLTransformableNode::SafeDownCast(outputROINodeRAS)->GetParentTransformNode();
     if (roiParentTransformNode)
     {
-      vtkNew<vtkMatrix4x4> worldToROIMatrix;
-      roiParentTransformNode->GetMatrixTransformFromWorld(worldToROIMatrix);
-      imageToROITransform->Concatenate(worldToROIMatrix);
+      vtkNew<vtkMatrix4x4> worldToNodeMatrix;
+      roiParentTransformNode->GetMatrixTransformFromWorld(worldToNodeMatrix);
+      imageToROITransform->Concatenate(worldToNodeMatrix);
+    }
+
+    vtkMRMLMarkupsROINode* markupsInputROINode = vtkMRMLMarkupsROINode::SafeDownCast(outputROINodeRAS);
+    if (markupsInputROINode)
+    {
+      vtkNew<vtkMatrix4x4> nodeToObjectMatrix;
+      vtkMatrix4x4::Invert(markupsInputROINode->GetObjectToNodeMatrix(), nodeToObjectMatrix);
+      imageToROITransform->Concatenate(nodeToObjectMatrix);
     }
 
     double selectedROIBounds[6] = { 0.0, -1.0, 0.0, -1.0, 0.0, -1.0 };
@@ -613,15 +680,27 @@ void vtkSlicerVolumeReconstructionLogic::CalculateROIFromVolumeSequence(vtkMRMLS
   }
   inputSequenceBrowser->SetSelectedItemNumber(selectedItemNumber);
 
-  double radiusRAS[3] = { 0 };
-  double centerRAS[3] = { 0 };
+  double radius[3] = { 0 };
+  double center[3] = { 0 };
   for (int i = 0; i < 3; ++i)
   {
-    radiusRAS[i] = 0.5 * (roiBounds[2 * i + 1] - roiBounds[2 * i]);
-    centerRAS[i] = (roiBounds[2 * i + 1] + roiBounds[2 * i]) / 2.0;
+    radius[i] = 0.5 * (roiBounds[2 * i + 1] - roiBounds[2 * i]);
+    center[i] = (roiBounds[2 * i + 1] + roiBounds[2 * i]) / 2.0;
   }
-  outputROINodeRAS->SetXYZ(centerRAS);
-  outputROINodeRAS->SetRadiusXYZ(radiusRAS);
+
+  vtkMRMLAnnotationROINode* outputAnnotationROINode = vtkMRMLAnnotationROINode::SafeDownCast(outputROINodeRAS);
+  if (outputAnnotationROINode)
+  {
+    outputAnnotationROINode->SetXYZ(center);
+    outputAnnotationROINode->SetRadiusXYZ(radius);
+  }
+
+  vtkMRMLMarkupsROINode* outputMarkupsROINode = vtkMRMLMarkupsROINode::SafeDownCast(outputROINodeRAS);
+  if (outputMarkupsROINode)
+  {
+    outputMarkupsROINode->SetCenter(center);
+    outputMarkupsROINode->SetSize(radius);
+  }
 }
 
 //---------------------------------------------------------------------------

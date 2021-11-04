@@ -42,7 +42,7 @@ Care Ontario.
 
 // Slicer MRML includes
 #include <vtkMRMLAnnotationROINode.h>
-#include <vtkMRMLAnnotationDisplayNode.h>
+#include <vtkMRMLMarkupsROINode.h>
 #include <vtkMRMLScalarVolumeNode.h>
 #include <vtkMRMLScene.h>
 
@@ -357,7 +357,7 @@ void qSlicerVolumeReconstructionModuleWidget::updateWidgetFromMRML()
   d->OutputVolumeSelector->setCurrentNode(outputVolumeNode);
   d->OutputVolumeSelector->blockSignals(wasBlocking);
 
-  vtkMRMLAnnotationROINode* inputROINode = d->VolumeReconstructionNode->GetInputROINode();
+  vtkMRMLDisplayableNode* inputROINode = vtkMRMLDisplayableNode::SafeDownCast(d->VolumeReconstructionNode->GetInputROINode());
   wasBlocking = d->InputROISelector->blockSignals(true);
   d->InputROISelector->setCurrentNode(inputROINode);
   d->InputROISelector->blockSignals(wasBlocking);
@@ -472,8 +472,20 @@ void qSlicerVolumeReconstructionModuleWidget::updateMRMLFromWidget()
   vtkMRMLScalarVolumeNode* outputVolumeNode = vtkMRMLScalarVolumeNode::SafeDownCast(d->OutputVolumeSelector->currentNode());
   d->VolumeReconstructionNode->SetAndObserveOutputVolumeNode(outputVolumeNode);
 
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->InputROISelector->currentNode());
-  d->VolumeReconstructionNode->SetAndObserveInputROINode(reconstructionROINode);
+  vtkMRMLAnnotationROINode* reconstructionAnnotationROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->InputROISelector->currentNode());
+  vtkMRMLMarkupsROINode* reconstructionMarkupsROINode = vtkMRMLMarkupsROINode::SafeDownCast(d->InputROISelector->currentNode());
+  if (reconstructionAnnotationROINode)
+  {
+    d->VolumeReconstructionNode->SetAndObserveInputROINode(reconstructionAnnotationROINode);
+  }
+  else if (reconstructionMarkupsROINode)
+  {
+    d->VolumeReconstructionNode->SetAndObserveInputROINode(reconstructionMarkupsROINode);
+  }
+  else
+  {
+    d->VolumeReconstructionNode->SetAndObserveInputROINode((vtkMRMLMarkupsROINode*)nullptr);
+  }
 
   double outputSpacing[3] = { 0,0,0 };
   outputSpacing[0] = d->XSpacingSpinbox->value();
@@ -511,7 +523,7 @@ void qSlicerVolumeReconstructionModuleWidget::updateMRMLFromWidget()
 void qSlicerVolumeReconstructionModuleWidget::onToggleROIVisible()
 {
   Q_D(qSlicerVolumeReconstructionModuleWidget);
-  vtkMRMLAnnotationROINode* reconstructionROINode = vtkMRMLAnnotationROINode::SafeDownCast(d->InputROISelector->currentNode());
+  vtkMRMLDisplayableNode* reconstructionROINode = vtkMRMLDisplayableNode::SafeDownCast(d->InputROISelector->currentNode());
   if (!reconstructionROINode)
   {
     return;

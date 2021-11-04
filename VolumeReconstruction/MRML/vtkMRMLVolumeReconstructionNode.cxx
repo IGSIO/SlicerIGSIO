@@ -22,6 +22,7 @@
 
 // MRML includes
 #include <vtkMRMLAnnotationROINode.h>
+#include <vtkMRMLMarkupsROINode.h>
 #include <vtkMRMLScene.h>
 #include <vtkMRMLVolumeNode.h>
 
@@ -250,6 +251,12 @@ void vtkMRMLVolumeReconstructionNode::SetAndObserveInputROINode(vtkMRMLAnnotatio
 }
 
 //----------------------------------------------------------------------------
+void vtkMRMLVolumeReconstructionNode::SetAndObserveInputROINode(vtkMRMLMarkupsROINode* node)
+{
+  this->SetNodeReferenceID(this->GetInputROINodeReferenceRole(), (node ? node->GetID() : NULL));
+}
+
+//----------------------------------------------------------------------------
 void vtkMRMLVolumeReconstructionNode::SetAndObserveOutputVolumeNode(vtkMRMLVolumeNode* node)
 {
   this->SetNodeReferenceID(this->GetOutputVolumeNodeReferenceRole(), (node ? node->GetID() : NULL));
@@ -268,9 +275,9 @@ vtkMRMLVolumeNode* vtkMRMLVolumeReconstructionNode::GetInputVolumeNode()
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLAnnotationROINode* vtkMRMLVolumeReconstructionNode::GetInputROINode()
+vtkMRMLNode* vtkMRMLVolumeReconstructionNode::GetInputROINode()
 {
-  return vtkMRMLAnnotationROINode::SafeDownCast(this->GetNodeReference(this->GetInputROINodeReferenceRole()));
+  return this->GetNodeReference(this->GetInputROINodeReferenceRole());
 }
 
 //----------------------------------------------------------------------------

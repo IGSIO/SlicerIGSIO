@@ -24,6 +24,7 @@ Care Ontario.
 
 #include "vtkSlicerVolumeReconstructionModuleLogicExport.h"
 
+
 // Slicer includes
 #include <vtkSlicerBaseLogic.h>
 #include <vtkSlicerModuleLogic.h>
@@ -41,10 +42,12 @@ Care Ontario.
 // IGSIO includes
 #include <vtkIGSIOPasteSliceIntoVolume.h>
 
-class vtkMRMLIGTLConnectorNode;
-class vtkMRMLVolumeNode;
 class vtkMRMLAnnotationROINode;
+class vtkMRMLIGTLConnectorNode;
+class vtkMRMLMarkupsROINode;
+class vtkMRMLVolumeNode;
 class vtkMRMLVolumeReconstructionNode;
+
 
 /// \ingroup Slicer_QtModules_VolumeReconstruction
 class VTK_SLICER_VOLUMERECONSTRUCTION_MODULE_LOGIC_EXPORT vtkSlicerVolumeReconstructionLogic : public vtkSlicerModuleLogic
@@ -68,6 +71,10 @@ public:
 
   void CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
     vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLAnnotationROINode* outputROINodeRAS);
+  void CalculateROIFromVolumeSequence(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+    vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLMarkupsROINode* outputROINodeRAS);
+  void CalculateROIFromVolumeSequenceInternal(vtkMRMLSequenceBrowserNode* inputSequenceBrowser,
+    vtkMRMLVolumeNode* inputVolumeNode, vtkMRMLNode* outputROINodeRAS);
 
   vtkMRMLVolumeNode* GetOrAddOutputVolumeNode(vtkMRMLVolumeReconstructionNode* volumeReconstructionNode);
 

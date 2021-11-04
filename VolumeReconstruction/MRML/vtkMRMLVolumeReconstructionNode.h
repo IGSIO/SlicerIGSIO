@@ -34,6 +34,7 @@
 #include <vtkIGSIOPasteSliceIntoVolume.h>
 
 class vtkMRMLAnnotationROINode;
+class vtkMRMLMarkupsROINode;
 class vtkMRMLSequenceBrowserNode;
 class vtkMRMLVolumeNode;
 
@@ -122,8 +123,9 @@ public:
   */
   const char* GetInputROINodeReferenceRole() { return "inputROINode"; };
   const char* GetInputROINodeReferenceMRMLAttributeName() { return "inputROINodeRef"; };
-  vtkMRMLAnnotationROINode* GetInputROINode();
+  vtkMRMLNode* GetInputROINode();
   virtual void SetAndObserveInputROINode(vtkMRMLAnnotationROINode* roiNode);
+  virtual void SetAndObserveInputROINode(vtkMRMLMarkupsROINode* roiNode);
 
   /*!
   OutputVolumeNode is the volume node that the reconstruction results will be read into.
