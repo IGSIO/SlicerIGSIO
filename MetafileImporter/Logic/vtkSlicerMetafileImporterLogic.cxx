@@ -302,7 +302,8 @@ void vtkSlicerMetafileImporterLogic::WriteSequenceMetafileImages(const std::stri
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes/*=NULL*/)
+vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes/*=NULL*/,
+const qSlicerFileReader::IOProperties& properties/*=IOProperties()*/)
 {
   // Map the frame numbers to timestamps
   std::map< int, std::string > frameNumberToIndexValueMap;
@@ -358,7 +359,15 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(con
   vtkInfoMacro("ReadTransforms time: " << timer->GetElapsedTime() << "sec\n");
   timer->StartTimer();
 #endif
-  std::string imageBaseNodeName = vtkMRMLSequenceStorageNode::GetSequenceBaseName(fileNameName, IMAGE_NODE_BASE_NAME);
+  std::string imageBaseNodeName;
+  if (properties.contains("name"))
+  {
+    imageBaseNodeName = properties["name"].toString().toStdString();
+  }
+  else
+  {
+    imageBaseNodeName = vtkMRMLSequenceStorageNode::GetSequenceBaseName(fileNameName, IMAGE_NODE_BASE_NAME);
+  }
 #ifdef ENABLE_PERFORMANCE_PROFILING
   timer->StopTimer();
   vtkInfoMacro("ReadImages time: " << timer->GetElapsedTime() << "sec\n");
@@ -366,18 +375,25 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(con
 
   // Get the shortest base name for all nodes
   std::string shortestBaseNodeName;
-  for (std::deque< vtkSmartPointer<vtkMRMLSequenceNode> > ::iterator synchronizedNodesIt = createdSequenceNodes.begin();
-    synchronizedNodesIt != createdSequenceNodes.end(); ++synchronizedNodesIt)
+  if (properties.contains("name"))
   {
-    const char* sourceName = (*synchronizedNodesIt)->GetAttribute("Sequences.Source");
-    if (!sourceName)
+      shortestBaseNodeName = properties["name"].toString().toStdString();
+  }
+  else
+  {
+    for (std::deque< vtkSmartPointer<vtkMRMLSequenceNode> > ::iterator synchronizedNodesIt = createdSequenceNodes.begin();
+      synchronizedNodesIt != createdSequenceNodes.end(); ++synchronizedNodesIt)
     {
-      continue;
-    }
-    std::string baseNodeName = vtkMRMLSequenceStorageNode::GetSequenceBaseName(fileNameName, sourceName);
-    if (shortestBaseNodeName.empty() || baseNodeName.size() < shortestBaseNodeName.size())
-    {
-      shortestBaseNodeName = baseNodeName;
+      const char* sourceName = (*synchronizedNodesIt)->GetAttribute("Sequences.Source");
+      if (!sourceName)
+      {
+        continue;
+      }
+      std::string baseNodeName = vtkMRMLSequenceStorageNode::GetSequenceBaseName(fileNameName, sourceName);
+      if (shortestBaseNodeName.empty() || baseNodeName.size() < shortestBaseNodeName.size())
+      {
+        shortestBaseNodeName = baseNodeName;
+      }
     }
   }
 

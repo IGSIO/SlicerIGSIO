@@ -106,7 +106,7 @@ bool qSlicerMetafileReader::load(const IOProperties& properties)
 
   vtkNew<vtkCollection> loadedSequenceNodes;
 
-  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer());
+  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer(), properties);
   if (browserNode == NULL)
   {
     return false;

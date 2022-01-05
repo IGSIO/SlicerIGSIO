@@ -24,6 +24,9 @@
 #ifndef __vtkSlicerMetafileImporterLogic_h
 #define __vtkSlicerMetafileImporterLogic_h
 
+// SlicerQt includes
+#include "qSlicerFileReader.h"
+
 // MRML Sequence includes
 #include "vtkMRMLLinearTransformSequenceStorageNode.h"
 
@@ -81,7 +84,8 @@ public:
     \param addedNodes if not NULL then returns sequence nodes that are added to the scene.
     Returns the created browser node on success, NULL on failure.
   */
-  vtkMRMLSequenceBrowserNode* ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes=NULL);
+  vtkMRMLSequenceBrowserNode* ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes=NULL,
+      const qSlicerFileReader::IOProperties& properties=qSlicerFileReader::IOProperties());
 
   /*! Write sequence metafile contents to the file */
   bool WriteSequenceMetafile(const std::string& fileName, vtkMRMLSequenceBrowserNode* browserNode);
