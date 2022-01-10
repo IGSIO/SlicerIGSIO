@@ -173,7 +173,7 @@ vtkMRMLSequenceNode* vtkSlicerMetafileImporterLogic::ReadSequenceMetafileImages(
   {
     imagesSequenceNode = vtkSmartPointer<vtkMRMLSequenceNode>::New();
   }
-  
+
   this->GetMRMLScene()->AddNode(imagesSequenceNode);
   imagesSequenceNode->SetIndexName("time");
   imagesSequenceNode->SetIndexUnit("s");
@@ -302,7 +302,8 @@ void vtkSlicerMetafileImporterLogic::WriteSequenceMetafileImages(const std::stri
 }
 
 //----------------------------------------------------------------------------
-vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes/*=NULL*/)
+vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes/*=NULL*/,
+const std::string& outputBrowserNodeID/*=std::string()*/)
 {
   // Map the frame numbers to timestamps
   std::map< int, std::string > frameNumberToIndexValueMap;
@@ -393,11 +394,18 @@ vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(con
       // push to front as we prefer the image to be the master node
       createdSequenceNodes.push_front(createdImageNode);
     }
-    vtkSmartPointer<vtkCollection> foundSequenceBrowserNodes = vtkSmartPointer<vtkCollection>::Take(
-      this->GetMRMLScene()->GetNodesByClassByName("vtkMRMLSequenceBrowserNode", shortestBaseNodeName.c_str()));
-    if (foundSequenceBrowserNodes->GetNumberOfItems() > 0)
+    if (!outputBrowserNodeID.empty())
     {
-      sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(foundSequenceBrowserNodes->GetItemAsObject(0));
+        sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(this->GetMRMLScene()->GetNodeByID(outputBrowserNodeID));
+    }
+    else
+    {
+      vtkSmartPointer<vtkCollection> foundSequenceBrowserNodes = vtkSmartPointer<vtkCollection>::Take(
+        this->GetMRMLScene()->GetNodesByClassByName("vtkMRMLSequenceBrowserNode", shortestBaseNodeName.c_str()));
+      if (foundSequenceBrowserNodes->GetNumberOfItems() > 0)
+      {
+        sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(foundSequenceBrowserNodes->GetItemAsObject(0));
+      }
     }
     if (!sequenceBrowserNode)
     {
