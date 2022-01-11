@@ -20,6 +20,8 @@ set(MODULE_INCLUDE_DIRECTORIES
   )
 
 set(MODULE_SRCS
+  qSlicerMetafileIOOptionsWidget.cxx
+  qSlicerMetafileIOOptionsWidget.h
   qSlicer${MODULE_NAME}Module.cxx
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.cxx
@@ -29,12 +31,14 @@ set(MODULE_SRCS
   )
 
 set(MODULE_MOC_SRCS
+  qSlicerMetafileIOOptionsWidget.h
   qSlicer${MODULE_NAME}Module.h
   qSlicer${MODULE_NAME}ModuleWidget.h
   qSlicerMetafileReader.h
   )
 
 set(MODULE_UI_SRCS
+  Resources/UI/qSlicerMetafileIOOptionsWidget.ui
   Resources/UI/qSlicer${MODULE_NAME}ModuleWidget.ui
   )
 

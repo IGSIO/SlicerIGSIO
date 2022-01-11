@@ -25,6 +25,7 @@
 // SlicerQt includes
 #include "qSlicerApplication.h"
 #include "qSlicerMetafileReader.h"
+#include "qSlicerMetafileIOOptionsWidget.h"
 #include "qSlicerMetafileImporterModule.h"
 #include "qSlicerSequencesModule.h"
 #include "qSlicerAbstractModuleRepresentation.h"
@@ -92,6 +93,15 @@ qSlicerIO::IOFileType qSlicerMetafileReader::fileType() const
 QStringList qSlicerMetafileReader::extensions() const
 {
   return QStringList() << "Sequence Metafile (*.seq.mha *.seq.mhd *.mha *.mhd)";
+}
+
+//-----------------------------------------------------------------------------
+qSlicerIOOptions* qSlicerMetafileReader::options() const
+{
+  // set the mrml scene on the options widget to allow selecting a color node
+  qSlicerIOOptionsWidget* options = new qSlicerMetafileIOOptionsWidget;
+  options->setMRMLScene(this->mrmlScene());
+  return options;
 }
 
 //-----------------------------------------------------------------------------
