@@ -25,6 +25,7 @@
 // SlicerQt includes
 #include "qSlicerApplication.h"
 #include "qSlicerMetafileReader.h"
+#include "qSlicerMetafileIOOptionsWidget.h"
 #include "qSlicerMetafileImporterModule.h"
 #include "qSlicerSequencesModule.h"
 #include "qSlicerAbstractModuleRepresentation.h"
@@ -95,6 +96,15 @@ QStringList qSlicerMetafileReader::extensions() const
 }
 
 //-----------------------------------------------------------------------------
+qSlicerIOOptions* qSlicerMetafileReader::options() const
+{
+  // set the mrml scene on the options widget to allow selecting a color node
+  qSlicerIOOptionsWidget* options = new qSlicerMetafileIOOptionsWidget;
+  options->setMRMLScene(this->mrmlScene());
+  return options;
+}
+
+//-----------------------------------------------------------------------------
 bool qSlicerMetafileReader::load(const IOProperties& properties)
 {
   Q_D(qSlicerMetafileReader);
@@ -106,7 +116,12 @@ bool qSlicerMetafileReader::load(const IOProperties& properties)
 
   vtkNew<vtkCollection> loadedSequenceNodes;
 
-  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer());
+  QString outputBrowserNodeID;
+  if (properties.contains("outputBrowserNodeID"))
+  {
+      outputBrowserNodeID = properties["outputBrowserNodeID"].toString();
+  }
+  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer(), outputBrowserNodeID.toStdString());
   if (browserNode == NULL)
   {
     return false;
