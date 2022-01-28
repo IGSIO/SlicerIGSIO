@@ -50,6 +50,9 @@ qSlicerMetafileIOOptionsWidget::qSlicerMetafileIOOptionsWidget(QWidget* parentWi
 
   connect(d->OutputBrowserNodeIDEdit, SIGNAL(textChanged(QString)),
           this, SLOT(updateProperties()));
+  connect(d->SaveSequenceChangesCheckbox, SIGNAL(stateChanged(int)),
+          this, SLOT(updateProperties()));
+  updateProperties();  // ensure that the default gui values are set as properties
 }
 
 //-----------------------------------------------------------------------------
@@ -67,4 +70,5 @@ void qSlicerMetafileIOOptionsWidget::updateProperties()
     {
     d->Properties.remove("outputBrowserNodeID");
     }
+  d->Properties["saveSequenceChanges"] = d->SaveSequenceChangesCheckbox->isChecked();
 }

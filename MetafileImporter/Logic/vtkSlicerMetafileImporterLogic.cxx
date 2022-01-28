@@ -303,7 +303,7 @@ void vtkSlicerMetafileImporterLogic::WriteSequenceMetafileImages(const std::stri
 
 //----------------------------------------------------------------------------
 vtkMRMLSequenceBrowserNode* vtkSlicerMetafileImporterLogic::ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes/*=NULL*/,
-const std::string& outputBrowserNodeID/*=std::string()*/)
+const std::string& outputBrowserNodeID/*=std::string()*/, bool saveSequenceChanges/*=true*/)
 {
   // Map the frame numbers to timestamps
   std::map< int, std::string > frameNumberToIndexValueMap;
@@ -475,7 +475,7 @@ const std::string& outputBrowserNodeID/*=std::string()*/)
         // Image
         // If save changes are allowed then proxy nodes are updated using shallow copy, which is much faster for images
         // (and images are usually not modified, so the risk of accidentally modifying data in the sequence is low).
-        sequenceBrowserNode->SetSaveChanges(*synchronizedNodesIt, true);
+        sequenceBrowserNode->SetSaveChanges(*synchronizedNodesIt, saveSequenceChanges);
         // Show image in slice viewers
         vtkMRMLVolumeNode* imageProxyVolumeNode = vtkMRMLVolumeNode::SafeDownCast(sequenceBrowserNode->GetProxyNode(*synchronizedNodesIt));
         if (imageProxyVolumeNode)
