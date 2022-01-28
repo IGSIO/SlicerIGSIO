@@ -81,7 +81,8 @@ public:
     \param addedNodes if not NULL then returns sequence nodes that are added to the scene.
     Returns the created browser node on success, NULL on failure.
   */
-  vtkMRMLSequenceBrowserNode* ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes=NULL, const std::string& outputBrowserID=std::string());
+  vtkMRMLSequenceBrowserNode* ReadSequenceFile(const std::string& fileName, vtkCollection* addedSequenceNodes=NULL, const std::string& outputBrowserID=std::string(),
+      bool saveSequenceChanges=true);
 
   /*! Write sequence metafile contents to the file */
   bool WriteSequenceMetafile(const std::string& fileName, vtkMRMLSequenceBrowserNode* browserNode);

@@ -49,6 +49,16 @@
      </property>
     </widget>
    </item>
+   <item>
+    <widget class="QCheckBox" name="SaveSequenceChangesCheckbox">
+     <property name="text">
+      <string>Save Sequence Changes</string>
+     </property>
+     <property name="checked">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
   </layout>
  </widget>
  <customwidgets>

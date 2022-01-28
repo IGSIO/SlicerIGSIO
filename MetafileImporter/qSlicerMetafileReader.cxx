@@ -121,7 +121,13 @@ bool qSlicerMetafileReader::load(const IOProperties& properties)
   {
       outputBrowserNodeID = properties["outputBrowserNodeID"].toString();
   }
-  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer(), outputBrowserNodeID.toStdString());
+  bool saveSequenceChanges = true;
+  if (properties.contains("saveSequenceChanges"))
+  {
+      saveSequenceChanges = properties["saveSequenceChanges"].toBool();
+  }
+  vtkMRMLSequenceBrowserNode* browserNode = d->MetafileImporterLogic->ReadSequenceFile(fileName.toStdString(), loadedSequenceNodes.GetPointer(), outputBrowserNodeID.toStdString(),
+      saveSequenceChanges);
   if (browserNode == NULL)
   {
     return false;
