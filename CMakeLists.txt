@@ -63,6 +63,8 @@ add_subdirectory(VolumeReconstruction)
 add_subdirectory(MetafileImporter)
 
 #-----------------------------------------------------------------------------
+# Add IGSIO to SlicerIGSIOConfig
+set(SlicerIGSIO_CUSTOM_CONFIG "include(\"${IGSIO_DIR}/IGSIOConfig.cmake\")")
 include(${Slicer_EXTENSION_GENERATE_CONFIG})
 
 #-----------------------------------------------------------------------------
