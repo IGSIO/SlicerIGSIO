@@ -33,7 +33,6 @@ namespace
 //-------------------------------------------------------
 vtkSlicerIGSIOLogger::vtkSlicerIGSIOLogger()
 {
-  m_LogLevel = LOG_LEVEL_WARNING;
 }
 
 //-------------------------------------------------------
