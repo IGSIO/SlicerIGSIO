@@ -134,13 +134,29 @@ bool qSlicerSequenceIOReader::load(const IOProperties& properties)
   }
 
   vtkSmartPointer<vtkMRMLSequenceBrowserNode> sequenceBrowserNode = vtkMRMLSequenceBrowserNode::SafeDownCast(
-        this->mrmlScene()->AddNewNodeByClass("vtkMRMLSequenceBrowserNode", fileNameNoExtension));
+    this->mrmlScene()->AddNewNodeByClass("vtkMRMLSequenceBrowserNode", fileNameNoExtension));
   if (!vtkSlicerIGSIOCommon::TrackedFrameListToSequenceBrowser(trackedFrameList, sequenceBrowserNode))
   {
     this->mrmlScene()->RemoveNode(sequenceBrowserNode);
     qCritical() << Q_FUNC_INFO << " could not convert tracked frame list to sequence browser node";
     return false;
   }
+
+  vtkNew<vtkCollection> loadedSequenceNodes;
+  sequenceBrowserNode->GetSynchronizedSequenceNodes(loadedSequenceNodes, true);
+
+  QStringList loadedNodes;
+  loadedNodes << QString(sequenceBrowserNode->GetID());
+  for (int i = 0; i < loadedSequenceNodes->GetNumberOfItems(); i++)
+  {
+    vtkMRMLNode* loadedNode = vtkMRMLNode::SafeDownCast(loadedSequenceNodes->GetItemAsObject(i));
+    if (loadedNode == NULL)
+    {
+      continue;
+    }
+    loadedNodes << QString(loadedNode->GetID());
+  }
+  this->setLoadedNodes(loadedNodes);
 
   vtkSlicerApplicationLogic* appLogic = this->SequenceIOLogic()->GetApplicationLogic();
   vtkMRMLSelectionNode* selectionNode = appLogic ? appLogic->GetSelectionNode() : 0;
