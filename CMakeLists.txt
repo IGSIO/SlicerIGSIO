@@ -36,13 +36,6 @@ endif()
 
 option(SlicerIGSIO_USE_GPU "Build with GPU support" ${SlicerIGSIO_USE_GPU_DEFAULT})
 
-if (WIN32)
-  SET(CMAKE_C_USE_RESPONSE_FILE_FOR_OBJECTS ON)
-  SET(CMAKE_C_USE_RESPONSE_FILE_FOR_LIBRARIES ON)
-  SET(CMAKE_CXX_USE_RESPONSE_FILE_FOR_OBJECTS ON)
-  SET(CMAKE_CXX_USE_RESPONSE_FILE_FOR_LIBRARIES ON)
-endif()
-
 #-----------------------------------------------------------------------------
 # SuperBuild setup
 option(${EXTENSION_NAME}_SUPERBUILD "Build ${EXTENSION_NAME} and the projects it depends on." ON)
