@@ -85,10 +85,10 @@ public:
 
 protected:
   void SetMRMLSceneInternal(vtkMRMLScene* newScene) override;
-  void OnMRMLSceneNodeAdded(vtkMRMLNode* node);
+  void OnMRMLSceneNodeAdded(vtkMRMLNode* node) override;
   void OnMRMLSceneNodeRemoved(vtkMRMLNode* node) override;
 
-  virtual void ProcessMRMLNodesEvents(vtkObject* caller, unsigned long event, void* callData);
+  virtual void ProcessMRMLNodesEvents(vtkObject* caller, unsigned long event, void* callData) override;
 
   //----------------------------------------------------------------
   // Constructor, destructor etc.

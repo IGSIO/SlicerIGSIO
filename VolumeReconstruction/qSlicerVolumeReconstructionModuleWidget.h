@@ -67,7 +67,7 @@ protected slots:
 
   virtual void onLiveUpdateIntervalTimeout();
 
-  virtual void setMRMLScene(vtkMRMLScene*);
+  virtual void setMRMLScene(vtkMRMLScene*) override;
 
 private:
   Q_DECLARE_PRIVATE(qSlicerVolumeReconstructionModuleWidget);

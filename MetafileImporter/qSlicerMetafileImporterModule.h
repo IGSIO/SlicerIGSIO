@@ -49,17 +49,17 @@ public:
 
   qSlicerGetTitleMacro(QTMODULE_TITLE);
 
-  virtual QString helpText()const override;
-  virtual QString acknowledgementText()const override;
-  virtual QStringList contributors()const override;
+  virtual QString helpText() const override;
+  virtual QString acknowledgementText() const override;
+  virtual QStringList contributors() const override;
 
-  virtual QIcon icon()const override;
+  virtual QIcon icon() const override;
 
-  virtual QStringList categories()const override;
+  virtual QStringList categories() const override;
   virtual QStringList dependencies() const override;
 
   /// Make this module hidden
-  virtual bool isHidden()const override { return true; };
+  virtual bool isHidden() const override { return true; };
 
 protected:
 

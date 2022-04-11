@@ -49,39 +49,39 @@ public:
   qSlicerGetTitleMacro(QTMODULE_TITLE);
 
   /// Help to use the module
-  virtual QString helpText()const;
+  virtual QString helpText() const override;
 
   /// Return acknowledgements
-  virtual QString acknowledgementText()const;
+  virtual QString acknowledgementText() const override;
 
   /// Return a custom icon for the module
-  virtual QIcon icon()const;
+  virtual QIcon icon() const override;
 
   /// Module category
-  virtual QStringList categories()const;
+  virtual QStringList categories() const override;
 
   /// Dependencies on other Slicer modules
-  virtual QStringList dependencies()const;
+  virtual QStringList dependencies() const override;
 
   /// Return the authors of the module
-  virtual QStringList contributors()const;
+  virtual QStringList contributors() const override;
 
   /// Make this module hidden
-  bool isHidden()const override { return true; };
+  bool isHidden() const override { return true; };
 
 protected:
 
   /// Initialize the module. Register the volumes reader/writer
-  virtual void setup();
+  virtual void setup() override;
 
   /// Create and return the widget representation associated to this module
-  virtual qSlicerAbstractModuleRepresentation* createWidgetRepresentation();
+  virtual qSlicerAbstractModuleRepresentation* createWidgetRepresentation() override;
 
   /// Create and return the logic associated to this module
-  virtual vtkMRMLAbstractLogic* createLogic();
+  virtual vtkMRMLAbstractLogic* createLogic() override;
 
 public slots:
-  virtual void setMRMLScene(vtkMRMLScene*);
+  virtual void setMRMLScene(vtkMRMLScene*) override;
 
 protected:
   QScopedPointer<qSlicerSequenceIOModulePrivate> d_ptr;
