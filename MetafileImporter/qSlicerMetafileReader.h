@@ -41,12 +41,12 @@ public:
   void setMetafileImporterLogic( vtkSlicerMetafileImporterLogic* newMetafileImporterLogic);
   vtkSlicerMetafileImporterLogic* MetafileImporterLogic() const;
 
-  virtual QString description() const;
-  virtual IOFileType fileType() const;
-  virtual QStringList extensions() const;
+  virtual QString description() const override;
+  virtual IOFileType fileType() const override;
+  virtual QStringList extensions() const override;
   qSlicerIOOptions* options()const override;
 
-  virtual bool load( const IOProperties& properties );
+  virtual bool load( const IOProperties& properties ) override;
   
 protected:
   QScopedPointer< qSlicerMetafileReaderPrivate > d_ptr;
