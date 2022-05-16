@@ -59,7 +59,6 @@ mark_as_superbuild(IGSIO_DIR)
 add_subdirectory(SlicerIGSIOCommon)
 add_subdirectory(SequenceIO)
 add_subdirectory(VideoUtil)
-add_subdirectory(VolumeReconstruction)
 add_subdirectory(MetafileImporter)
 
 #-----------------------------------------------------------------------------
