@@ -25,7 +25,12 @@ mark_as_superbuild(Slicer_DIR)
 #-----------------------------------------------------------------------------
 # Options
 
-option(SlicerIGSIO_USE_VP9 "Build with VP9 support" ON)
+set (SlicerIGSIO_USE_VP9_DEFAULT ON)
+if (APPLE)
+  set (SlicerIGSIO_USE_VP9_DEFAULT OFF)
+endif()
+
+option(SlicerIGSIO_USE_VP9 "Build with VP9 support" ${SlicerIGSIO_USE_VP9_DEFAULT})
 mark_as_superbuild(SlicerIGSIO_USE_VP9:BOOL)
 
 set(SlicerIGSIO_USE_GPU_DEFAULT OFF)
