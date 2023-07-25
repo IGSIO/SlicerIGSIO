@@ -107,14 +107,19 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
 
   vtkSmartPointer<vtkMRMLScene> mrmlScene = sequenceNode->GetScene();
 
-  vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = NULL;
-
   // How many digits are required to represent the frame numbers
   int frameNumberMaxLength = std::floor(std::log10(trackedFrameList->GetNumberOfTrackedFrames())) + 1;
 
   for (unsigned int i = 0; i < trackedFrameList->GetNumberOfTrackedFrames(); ++i)
   {
     igsioTrackedFrame* trackedFrame = trackedFrameList->GetTrackedFrame(i);
+    std::string frameStatus = trackedFrame->GetFrameField(FRAME_STATUS_TRACKNAME);
+    int frameStatusInt = vtkVariant(frameStatus.c_str()).ToInt();
+    if (frameStatusInt != FrameStatus::Frame_OK)
+    {
+      continue;
+    }
+
     std::stringstream timestampSS;
     timestampSS << trackedFrame->GetTimestamp();
 
@@ -162,13 +167,8 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
       vtkSmartPointer<vtkStreamingVolumeFrame> currentFrame = trackedFrame->GetImageData()->GetEncodedFrame();
 
       // The previous frame is only relevant if the current frame is not a keyframe
-      if (!trackedFrame->GetImageData()->GetEncodedFrame()->IsKeyFrame())
-      {
-        currentFrame->SetPreviousFrame(previousFrame);
-      }
       streamingVolumeNode->SetAndObserveFrame(currentFrame);
       volumeNode = streamingVolumeNode;
-      previousFrame = currentFrame;
     }
 
     vtkSmartPointer<vtkMatrix4x4> ijkToRASTransformMatrix = vtkSmartPointer<vtkMatrix4x4>::New();
@@ -195,12 +195,7 @@ bool vtkSlicerIGSIOCommon::TrackedFrameListToVolumeSequence(vtkIGSIOTrackedFrame
     nameStr << "Image_" << frameNumberSS.str() << std::ends;
     std::string volumeName = nameStr.str();
     volumeNode->SetName(volumeName.c_str());
-
-    std::string frameStatus = trackedFrame->GetFrameField(FRAME_STATUS_TRACKNAME);
-    if (!frameStatus.empty() || vtkVariant(frameStatus).ToInt() != Frame_Skip)
-    {
-      sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
-    }
+    sequenceNode->SetDataNodeAtValue(volumeNode, timestampSS.str());
   }
 
   sequenceNode->SetAttribute("Sequences.Source", "Image");
@@ -340,7 +335,7 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
 
 
   int dimensions[3] = { 0, 0, 0 };
-  vtkSmartPointer<vtkStreamingVolumeFrame> lastFrame = NULL;
+  vtkStreamingVolumeFrame* lastFrame = nullptr;
   double timestamp = 0;
   double lastTimestamp = 0.0;
   for (int i = 0; i < sequenceNode->GetNumberOfDataNodes(); ++i)
@@ -377,18 +372,27 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     igsioTransformName imageToPhysicalName;
     imageToPhysicalName.SetTransformName(trackName + "ToPhysical");
 
-    std::stack<vtkSmartPointer<vtkStreamingVolumeFrame> > frameStack;
-    frameStack.push(frame);
-    if (!frame->IsKeyFrame())
+    std::stack<vtkStreamingVolumeFrame*> frameStack;
     {
-      vtkStreamingVolumeFrame* currentFrame = frame->GetPreviousFrame();
-      while (currentFrame && currentFrame != lastFrame)
+      vtkStreamingVolumeFrame* currentFrame = frame;
+      while (currentFrame)
       {
         frameStack.push(currentFrame);
+        if (currentFrame->IsKeyFrame())
+        {
+          // Keyframe -- We have all the info needed to decode the indexed frame.
+          break;
+        }
+
         currentFrame = currentFrame->GetPreviousFrame();
+        if (currentFrame == lastFrame)
+        {
+          // The next frame is already processed, so we can stop here.
+          break;
+        }
       }
+      lastFrame = frame;
     }
-    lastFrame = frame;
 
     int initialStackSize = frameStack.size();
     while (frameStack.size() > 0)
@@ -408,12 +412,6 @@ bool vtkSlicerIGSIOCommon::VolumeSequenceToTrackedFrameList(vtkMRMLSequenceNode*
     lastTimestamp = timestamp;
   }
   trackedFrameList->GetEncodingFourCC(codecFourCC);
-
-  FrameSizeType frameSize = { 0, 0, 0 };
-  for (int i = 0; i < 3; ++i)
-  {
-    frameSize[i] = (unsigned int)dimensions[i];
-  }
 
   return true;
 }
@@ -541,7 +539,7 @@ bool vtkSlicerIGSIOCommon::EncodeVideoSequence(vtkMRMLSequenceNode* inputSequenc
     currentFrameBlock.StartFrame = 0;
     currentFrameBlock.EndFrame = 0;
     currentFrameBlock.ReEncodingRequired = false;
-    vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = NULL;
+    vtkSmartPointer<vtkStreamingVolumeFrame> previousFrame = nullptr;
     for (int i = startIndex; i <= endIndex; ++i)
     {
       // TODO: for now, only support sequences of vtkMRMLStreamingVolumeNode
@@ -655,7 +653,7 @@ bool vtkSlicerIGSIOCommon::EncodeVideoSequence(vtkMRMLSequenceNode* inputSequenc
           return false;
         }
 
-        vtkSmartPointer<vtkImageData> imageData = NULL;
+        vtkSmartPointer<vtkImageData> imageData = nullptr;
         vtkMRMLStreamingVolumeNode* inputStreamingVolumeNode = vtkMRMLStreamingVolumeNode::SafeDownCast(inputVolumeNode);
         if (inputStreamingVolumeNode && inputStreamingVolumeNode->GetFrame())
         {
