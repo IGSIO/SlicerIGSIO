@@ -116,16 +116,16 @@ ExternalProject_Execute(${proj} \"build\" make)
   # Launcher setting specific to build tree
 
   # library paths
-  set(${proj}_LIBRARY_PATHS_LAUNCHER_BUILD)
   if(UNIX)
+    set(${proj}_LIBRARY_PATHS_LAUNCHER_BUILD)
     list(APPEND ${proj}_LIBRARY_PATHS_LAUNCHER_BUILD
       ${VP9_LIBRARY_DIR}
       )
+    mark_as_superbuild(
+      VARS ${proj}_LIBRARY_PATHS_LAUNCHER_BUILD
+      LABELS "LIBRARY_PATHS_LAUNCHER_BUILD"
+      )
   endif()
-  mark_as_superbuild(
-    VARS ${proj}_LIBRARY_PATHS_LAUNCHER_BUILD
-    LABELS "LIBRARY_PATHS_LAUNCHER_BUILD"
-    )
 
   # paths
   set(${proj}_PATHS_LAUNCHER_BUILD
@@ -134,14 +134,6 @@ ExternalProject_Execute(${proj} \"build\" make)
   mark_as_superbuild(
     VARS ${proj}_PATHS_LAUNCHER_BUILD
     LABELS "PATHS_LAUNCHER_BUILD"
-    )
-
-  # environment variables
-  set(${proj}_ENVVARS_LAUNCHER_BUILD
-    )
-  mark_as_superbuild(
-    VARS ${proj}_ENVVARS_LAUNCHER_BUILD
-    LABELS "ENVVARS_LAUNCHER_BUILD"
     )
 
   #-----------------------------------------------------------------------------
