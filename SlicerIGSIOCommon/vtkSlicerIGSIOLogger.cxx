@@ -24,6 +24,10 @@ Care Ontario.
 #include <vtkIGSIOAccurateTimer.h>
 #include <vtkIGSIORecursiveCriticalSection.h>
 
+// STD includes
+#include <iostream>
+
+
 //-----------------------------------------------------------------------------
 namespace
 {
