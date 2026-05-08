@@ -1,5 +1,13 @@
 set(proj YASM)
 
+# YASM is only required on Linux/macOS to compile VP9. On Windows, VP9 uses
+# pre-built binaries and does not need YASM.
+if(WIN32)
+  ExternalProject_Add_Empty(${proj} DEPENDS "")
+  mark_as_superbuild(${proj}_DIR:PATH)
+  return()
+endif()
+
 # Set dependency list
 set(${proj}_DEPENDS "")
 if(DEFINED Slicer_SOURCE_DIR)
