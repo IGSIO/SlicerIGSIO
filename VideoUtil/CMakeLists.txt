@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.20.6...3.22.6 FATAL_ERROR)
 
 find_package(IGSIO REQUIRED)
 if (DEFINED Slicer_EXTENSION_SOURCE_DIRS) # Custom build
