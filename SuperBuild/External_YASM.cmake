@@ -39,17 +39,15 @@ if(NOT DEFINED YASM_DIR AND NOT ${CMAKE_PROJECT_NAME}_USE_SYSTEM_${proj})
       "-DCMAKE_PROJECT_yasm_INCLUDE:FILEPATH=${CMAKE_ROOT}/Modules/CTestUseLaunchers.cmake")
   endif()
 
-  find_package(PythonInterp "2.7" REQUIRED QUIET)
-
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_REPOSITORY
-    "https://github.com/yasm/yasm.git"
+    "https://github.com/jamesobutler/yasm.git"
     QUIET
     )
 
   ExternalProject_SetIfNotDefined(
     ${CMAKE_PROJECT_NAME}_${proj}_GIT_TAG
-    master
+    81d067aa35343cd18727f8843db3e0c044c930e6  # igsio-v1.3.0-2026-01-03-a2f8bdf
     QUIET
     )
 
