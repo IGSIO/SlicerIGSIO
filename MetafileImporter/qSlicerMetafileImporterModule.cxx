@@ -23,7 +23,6 @@
 #include "qSlicerMetafileImporterModule.h"
 #include "qSlicerMetafileImporterModuleWidget.h"
 #include "qSlicerMetafileReader.h"
-#include "qSlicerSequencesReader.h"
 
 // Slicer includes
 #include "qSlicerAbstractCoreModule.h"
