@@ -26,7 +26,9 @@ mark_as_superbuild(Slicer_DIR)
 # Options
 
 set (SlicerIGSIO_USE_VP9_DEFAULT ON)
-if (APPLE)
+# No VP9 where it is not built: macOS, and WebAssembly (3D Slicer in a web browser), where its
+# YASM assembler and the Python project it depends on are not available.
+if (APPLE OR EMSCRIPTEN)
   set (SlicerIGSIO_USE_VP9_DEFAULT OFF)
 endif()
 
