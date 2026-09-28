@@ -18,6 +18,7 @@ Care Ontario.
 
 ==============================================================================*/
 
+#include <iostream>
 #include "vtkSlicerIGSIOLogger.h"
 
 // IGSIO includes
